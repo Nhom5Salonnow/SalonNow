@@ -110,7 +110,7 @@ function simulateWaitlistDemo() {
   const slotList = document.getElementById("slotList");
   const demoStatus = document.getElementById("demoStatus");
   if (!slotList || !demoStatus) return;
-  demoStatus.textContent = "Detecting...";
+  demoStatus.textContent = "Đang phát hiện...";
   // simulate cancellation after 1s
   setTimeout(() => {
     // mark first booked slot as available and auto-book
@@ -118,18 +118,18 @@ function simulateWaitlistDemo() {
     for (let i = 0; i < items.length; i++) {
       const el = items[i];
       const state = el.querySelector("span:last-child");
-      if (state && state.textContent.includes("Booked")) {
-        state.textContent = "Cancelled";
+      if (state && state.textContent.includes("Đã đặt")) {
+        state.textContent = "Đã hủy";
         el.classList.add("bg-yellow-50");
         showToast(
-          "Slot 10:00 cancelled — Smart Waitlist found a match and auto-confirmed for a user."
+          "Khung giờ 10:00 đã hủy — Danh sách chờ thông minh đã tìm thấy khớp và tự động xác nhận cho người dùng."
         );
         // update status after brief pause
         setTimeout(() => {
-          state.textContent = "Auto-booked";
+          state.textContent = "Tự động đặt";
           el.classList.remove("bg-yellow-50");
           el.classList.add("bg-green-50");
-          demoStatus.textContent = "Auto-filled";
+          demoStatus.textContent = "Đã lấp đầy";
         }, 900);
         break;
       }
