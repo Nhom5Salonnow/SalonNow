@@ -141,3 +141,64 @@ function simulateWaitlistDemo() {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeProjectModal();
 });
+
+// Carousel functionality
+let currentSlide = 0;
+const totalSlides = 4;
+
+function moveCarousel(direction) {
+  currentSlide += direction;
+  if (currentSlide < 0) currentSlide = totalSlides - 1;
+  if (currentSlide >= totalSlides) currentSlide = 0;
+  updateCarousel();
+}
+
+function goToSlide(index) {
+  currentSlide = index;
+  updateCarousel();
+}
+
+function updateCarousel() {
+  const carousel = document.getElementById("carousel");
+  if (!carousel) return;
+  
+  carousel.style.transform = `translateX(-${currentSlide * 100}%)`;
+  
+  // Update dots
+  const dots = document.querySelectorAll(".carousel-dot");
+  dots.forEach((dot, index) => {
+    if (index === currentSlide) {
+      dot.classList.remove("bg-gray-300");
+      dot.classList.add("bg-rose-400");
+    } else {
+      dot.classList.remove("bg-rose-400");
+      dot.classList.add("bg-gray-300");
+    }
+  });
+}
+
+// Auto-play carousel
+let carouselInterval;
+function startCarouselAutoPlay() {
+  carouselInterval = setInterval(() => {
+    moveCarousel(1);
+  }, 5000); // Change slide every 5 seconds
+}
+
+function stopCarouselAutoPlay() {
+  if (carouselInterval) {
+    clearInterval(carouselInterval);
+  }
+}
+
+// Start autoplay when page loads
+document.addEventListener("DOMContentLoaded", function () {
+  startCarouselAutoPlay();
+  
+  // Pause autoplay on hover
+  const carouselContainer = document.getElementById("carousel");
+  if (carouselContainer) {
+    carouselContainer.parentElement.addEventListener("mouseenter", stopCarouselAutoPlay);
+    carouselContainer.parentElement.addEventListener("mouseleave", startCarouselAutoPlay);
+  }
+});

@@ -94,3 +94,17 @@
   overflow: visible;
   clip: auto;
 }
+
+/* Carousel styles */
+#carousel {
+  transition: transform 0.5s ease-in-out;
+}
+
+.carousel-dot {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.carousel-dot:hover {
+  transform: scale(1.2);
+}
