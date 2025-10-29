@@ -25,3 +25,72 @@
 .group:hover .group-hover\:scale-105 {
   transform: scale(1.05);
 }
+
+/* Modal backdrop and panel */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+}
+.modal-panel {
+  width: 90%;
+  max-width: 900px;
+  background: linear-gradient(180deg, #ffffff 0%, #fff7f9 100%);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(243, 145, 158, 0.08);
+}
+
+/* Toast notifications */
+.toast-container {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 70;
+}
+.toast {
+  min-width: 240px;
+  background: white;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08);
+  border-left: 4px solid #fb7185;
+}
+
+/* Timeline tweaks */
+.timeline {
+  position: relative;
+}
+
+/* small utility for subtle fade-in */
+.fade-in {
+  animation: fadeInUp 550ms ease both;
+}
+@keyframes fadeInUp {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Accessibility helpers */
+.sr-only-focusable:focus {
+  position: static !important;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+}

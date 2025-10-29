@@ -15,9 +15,18 @@
     >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
-          <div class="flex items-center space-x-2">
-            <i data-lucide="scissors" class="w-6 h-6 text-rose-400"></i>
-            <span class="text-2xl font-bold text-gray-900">Salon Now</span>
+          <div class="flex items-center space-x-3">
+            <button
+              aria-label="Open menu"
+              class="md:hidden mr-1"
+              onclick="toggleMobileMenu()"
+            >
+              <i data-lucide="menu" class="w-6 h-6 text-gray-700"></i>
+            </button>
+            <div class="flex items-center space-x-2">
+              <i data-lucide="scissors" class="w-6 h-6 text-rose-400"></i>
+              <span class="text-2xl font-bold text-gray-900">Salon Now</span>
+            </div>
           </div>
           <div class="hidden md:flex space-x-8">
             <button
@@ -44,7 +53,51 @@
             >
               Contact
             </button>
+            <button
+              onclick="openProjectModal()"
+              class="text-gray-600 hover:text-rose-400 transition-colors"
+            >
+              Project
+            </button>
           </div>
+        </div>
+      </div>
+      <!-- Mobile menu -->
+      <div
+        id="mobileMenu"
+        class="md:hidden hidden border-t border-gray-100 bg-white/95 backdrop-blur-sm"
+      >
+        <div class="px-4 py-3 space-y-2">
+          <button
+            onclick="scrollToSection('features'); toggleMobileMenu()"
+            class="w-full text-left text-gray-700 py-2"
+          >
+            Features
+          </button>
+          <button
+            onclick="scrollToSection('team'); toggleMobileMenu()"
+            class="w-full text-left text-gray-700 py-2"
+          >
+            Team
+          </button>
+          <button
+            onclick="scrollToSection('screenshots'); toggleMobileMenu()"
+            class="w-full text-left text-gray-700 py-2"
+          >
+            Screenshots
+          </button>
+          <button
+            onclick="scrollToSection('contact'); toggleMobileMenu()"
+            class="w-full text-left text-gray-700 py-2"
+          >
+            Contact
+          </button>
+          <button
+            onclick="openProjectModal(); toggleMobileMenu()"
+            class="w-full text-left text-gray-700 py-2"
+          >
+            Project Overview
+          </button>
         </div>
       </div>
     </nav>
@@ -106,6 +159,80 @@
           <p class="text-xl text-gray-600 max-w-2xl mx-auto">
             Everything you need for a seamless beauty service booking experience
           </p>
+        </div>
+        <div class="max-w-4xl mx-auto mb-12">
+          <div
+            class="rounded-2xl p-6 bg-gradient-to-r from-white to-rose-50 border border-rose-100 shadow-lg flex flex-col md:flex-row items-center gap-6"
+          >
+            <div class="flex-1">
+              <h3 class="text-2xl font-bold text-gray-900">
+                Smart Waitlist — Fill cancelled slots automatically
+              </h3>
+              <p class="mt-2 text-gray-600">
+                Our Smart Waitlist notifies customers when preferred slots open
+                and can auto-confirm bookings to maximize salon revenue.
+              </p>
+              <div class="mt-4 flex gap-3">
+                <button
+                  onclick="openProjectModal()"
+                  class="bg-rose-400 text-white px-4 py-2 rounded-lg shadow hover:bg-rose-500"
+                >
+                  Learn how it works
+                </button>
+                <button
+                  onclick="simulateWaitlistDemo()"
+                  class="bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  Try demo
+                </button>
+              </div>
+            </div>
+            <div class="w-full md:w-64">
+              <div
+                id="waitlistDemo"
+                class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm"
+              >
+                <div class="flex justify-between items-center mb-2">
+                  <div class="text-sm text-gray-500">Next slots</div>
+                  <div
+                    class="text-xs text-green-500 font-medium"
+                    id="demoStatus"
+                  >
+                    Monitoring
+                  </div>
+                </div>
+                <ul id="slotList" class="space-y-2">
+                  <li
+                    class="flex justify-between items-center p-2 rounded-lg bg-gray-50"
+                  >
+                    <span class="text-sm">10:00 • Haircut</span>
+                    <span class="text-xs text-gray-500">Booked</span>
+                  </li>
+                  <li
+                    class="flex justify-between items-center p-2 rounded-lg bg-gray-50"
+                  >
+                    <span class="text-sm">11:30 • Color</span>
+                    <span class="text-xs text-gray-500">Booked</span>
+                  </li>
+                  <li
+                    class="flex justify-between items-center p-2 rounded-lg bg-gray-50"
+                  >
+                    <span class="text-sm">13:00 • Styling</span>
+                    <span class="text-xs text-gray-500">Available</span>
+                  </li>
+                </ul>
+                <div class="mt-3 flex gap-2">
+                  <button
+                    id="simulateBtn"
+                    onclick="simulateWaitlistDemo()"
+                    class="flex-1 bg-rose-400 text-white py-2 rounded-md"
+                  >
+                    Simulate Cancellation
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div
@@ -240,6 +367,113 @@
               Access special promotions, loyalty rewards, and exclusive offers
               for regular customers.
             </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Roadmap / Timeline -->
+    <section id="roadmap" class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <div class="max-w-5xl mx-auto">
+        <div class="text-center mb-12">
+          <h2 class="text-4xl font-bold text-gray-900 mb-4">
+            Roadmap & Timeline
+          </h2>
+          <p class="text-gray-600">
+            10-week plan to deliver the core platform and Smart Waitlist
+            feature.
+          </p>
+        </div>
+        <div class="relative">
+          <div
+            class="border-l-2 border-rose-100 absolute h-full left-6 top-0"
+          ></div>
+          <div class="space-y-8">
+            <div class="pl-12">
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-full bg-rose-400 text-white flex items-center justify-center font-bold"
+                >
+                  1
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-900">
+                    Sprint 1 — Platform & Design
+                  </div>
+                  <div class="text-gray-600 text-sm">
+                    Research, UI/UX, setup enviroments
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="pl-12">
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-full bg-rose-400 text-white flex items-center justify-center font-bold"
+                >
+                  2
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-900">
+                    Sprint 2 — Core System
+                  </div>
+                  <div class="text-gray-600 text-sm">
+                    Authentication, salon & service management
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="pl-12">
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-full bg-rose-400 text-white flex items-center justify-center font-bold"
+                >
+                  3
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-900">
+                    Sprint 3 — Explore
+                  </div>
+                  <div class="text-gray-600 text-sm">
+                    Search, filter, reviews
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="pl-12">
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-full bg-rose-400 text-white flex items-center justify-center font-bold"
+                >
+                  4
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-900">
+                    Sprint 4 — Booking Flow
+                  </div>
+                  <div class="text-gray-600 text-sm">
+                    Full booking flow & availability management
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="pl-12">
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-full bg-rose-400 text-white flex items-center justify-center font-bold"
+                >
+                  5
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-900">
+                    Sprint 5 — Waitlist & Launch
+                  </div>
+                  <div class="text-gray-600 text-sm">
+                    Smart Waitlist and production launch
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
