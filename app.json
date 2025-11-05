@@ -35,7 +35,6 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "dark": {
-            "image": "./assets/images/logo.png",
             "backgroundColor": "#000000"
           }
         }
