@@ -1,59 +1,36 @@
-// import { Button } from '@/components/Button';
-// import { getData, removeData } from '@/utils/asyncStorage';
-// import { router } from 'expo-router';
-// import { useEffect } from 'react';
-// import { Text, View } from 'react-native';
+import { useEffect } from 'react';
+import { View, ActivityIndicator } from 'react-native';
+import { router } from 'expo-router';
+import { STORAGE_KEYS, getData } from '@/utils/asyncStorage';
+import { Colors } from '@/constants';
 
-export default function HomeScreen() {}
+export default function Index() {
+  useEffect(() => {
+    checkOnboardingStatus();
+  }, []);
 
-// useEffect(() => {
-//   checkFirstTimeOpen();
-// }, []);
-// const checkFirstTimeOpen = async () => {
-//   let onboarded = await getData('onboarded');
-//   if (onboarded !== '1') {
-//     router.replace('/onboarding');
-//   }
-// };
-// return (
-//   <View className="flex-1 justify-center items-center">
-//     <Text className="m-6 uppercase font-bold text-3xl text-center">This is the homepage</Text>
-//     <Button title="View Onboarding Again" onPress={() => router.replace('/onboarding')} />
-//     <Button title="View Tab layout" onPress={() => router.push('/nav/login')} />
-//     <Button title="Clear Storage" variant="danger" onPress={() => removeData('onboarded')} />
-//   </View>
-// );
-// export default function OnboardingScreen() {
-// const backToHome = () => {
-//   storeData('onboarded', '1');
-//   router.replace('/');
-// };
-// return (
-//   <View className="flex-1 justify-center items-center">
-//     <Onboarding
-//       onDone={backToHome}
-//       onSkip={backToHome}
-//       pages={[
-//         {
-//           backgroundColor: '#000',
-//           image: <Image source={require('../../assets/images/react-logo.png')} />,
-//           title: 'Onboarding',
-//           subtitle: 'Welcome',
-//         },
-//         {
-//           backgroundColor: '#000',
-//           image: <Image source={require('../../assets/images/react-logo.png')} />,
-//           title: 'Onboarding',
-//           subtitle: 'This is the onboarding screen',
-//         },
-//         {
-//           backgroundColor: '#000',
-//           image: <Image source={require('../../assets/images/react-logo.png')} />,
-//           title: 'Onboarding',
-//           subtitle: 'Done with React Native Onboarding Swiper',
-//         },
-//       ]}
-//     />
-//   </View>
-// );
-// }
+  const checkOnboardingStatus = async () => {
+    try {
+      const hasCompletedOnboarding = await getData(STORAGE_KEYS.HAS_COMPLETED_ONBOARDING);
+
+      if (hasCompletedOnboarding === 'true') {
+        // User has completed onboarding, go to tabs (home)
+        router.replace('/home' as any);
+      } else {
+        // First time user, show onboarding
+        router.replace('/onboarding');
+      }
+    } catch (error) {
+      console.error('Error checking onboarding status:', error);
+      // Default to onboarding if error
+      router.replace('/onboarding');
+    }
+  };
+
+  // Show loading spinner while checking
+  return (
+    <View className="flex-1 justify-center items-center bg-white">
+      <ActivityIndicator size="large" color={Colors.primary} />
+    </View>
+  );
+}
