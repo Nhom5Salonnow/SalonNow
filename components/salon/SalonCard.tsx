@@ -1,8 +1,6 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { router } from 'expo-router';
-import { Salon } from '@/types';
 import { Card } from '@/components/ui';
+import { Salon } from '@/types';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 interface SalonCardProps {
   salon: Salon;
