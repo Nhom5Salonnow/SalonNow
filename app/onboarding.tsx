@@ -2,7 +2,7 @@ import { PaginationDots } from "@/components/ui";
 import { ONBOARDING_SLIDES } from "@/constants";
 import { STORAGE_KEYS, storeData } from "@/utils/asyncStorage";
 import { router } from "expo-router";
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -13,7 +13,7 @@ import {
   ViewToken,
 } from "react-native";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -31,14 +31,18 @@ export default function OnboardingScreen() {
 
   const handleNext = () => {
     if (currentIndex < ONBOARDING_SLIDES.length - 1) {
-      const nextIndex = currentIndex + 1;
-      flatListRef.current?.scrollToOffset({
-        offset: SCREEN_WIDTH * nextIndex,
-        animated: true,
-      });
+      scrollToIndex(currentIndex + 1);
     } else {
       handleDone();
     }
+  };
+
+  const scrollToIndex = (index: number) => {
+    flatListRef.current?.scrollToOffset({
+      offset: SCREEN_WIDTH * index,
+      animated: true,
+    });
+    setCurrentIndex(index);
   };
 
   const onViewableItemsChanged = useRef(
@@ -56,65 +60,27 @@ export default function OnboardingScreen() {
   const renderSlide = ({ item }: { item: (typeof ONBOARDING_SLIDES)[0] }) => {
     return (
       <View
-        className="bg-white items-center justify-between py-8 px-6"
-        style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT }}
+        className="items-center justify-center px-6"
+        style={{ width: SCREEN_WIDTH }}
       >
-        {/* Status Bar */}
-        {/* <StatusBar /> */}
-
-        {/* Logo */}
-        <Text
-          className="text-[40px] text-black mt-8"
-          style={{ fontWeight: "400" }}
-        >
-          Salon Now
-        </Text>
-
         {/* Illustration */}
-        <View className="flex-1 items-center justify-center w-full max-w-md">
+        <View className="w-full max-w-md mb-8">
           <Image
             source={{ uri: item.imageUrl }}
-            className="w-full h-full max-w-[426px]"
+            className="w-full aspect-square"
             resizeMode="contain"
           />
         </View>
 
         {/* Content */}
         <View className="items-center gap-2 px-4 max-w-md">
-          <Text className="text-[28px] font-bold text-center leading-[42px] text-salon-dark">
+          <Text className="text-3xl font-bold text-center leading-[42px] text-salon-dark">
             {item.title}
           </Text>
-          <Text className="text-[17px] text-center leading-[25px] text-salon-gray-light max-w-[280px]">
+          <Text className="text-lg text-center leading-[25px] text-salon-gray-light max-w-[280px]">
             {item.subtitle}
           </Text>
         </View>
-
-        {/* Pagination Dots */}
-        <PaginationDots
-          length={ONBOARDING_SLIDES.length}
-          currentIndex={currentIndex}
-        />
-
-        {/* Next Button */}
-        <TouchableOpacity
-          onPress={handleNext}
-          className="h-[58px] px-12 justify-center items-center rounded-xl bg-salon-primary"
-        >
-          <Text className="text-white text-[21px] font-bold tracking-wider capitalize">
-            {currentIndex === ONBOARDING_SLIDES.length - 1
-              ? "Get Started"
-              : "Next"}
-          </Text>
-        </TouchableOpacity>
-
-        {/* Skip Button */}
-        {currentIndex < ONBOARDING_SLIDES.length - 1 && (
-          <TouchableOpacity onPress={handleSkip} className="mt-2">
-            <Text className="text-salon-gray-light text-[13px] leading-9">
-              Skip!
-            </Text>
-          </TouchableOpacity>
-        )}
       </View>
     );
   };
@@ -127,19 +93,64 @@ export default function OnboardingScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      <FlatList
-        ref={flatListRef}
-        data={ONBOARDING_SLIDES}
-        renderItem={renderSlide}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
-        getItemLayout={getItemLayout}
-        scrollEnabled={true}
-      />
+      {/* Fixed Header - Logo */}
+      <View className="pt-20 pb-8 items-center">
+        <Text className="text-5xl text-black font-semibold">
+          Salon Now
+        </Text>
+      </View>
+
+      {/* Scrollable Content Area */}
+      <View className="flex-1 justify-center">
+        <FlatList
+          ref={flatListRef}
+          data={ONBOARDING_SLIDES}
+          renderItem={renderSlide}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
+          getItemLayout={getItemLayout}
+          scrollEnabled={true}
+        />
+      </View>
+
+      {/* Fixed Footer */}
+      <View className="pb-8 px-6 gap-4 items-center">
+        {/* Pagination Dots - Clickable */}
+        <PaginationDots
+          length={ONBOARDING_SLIDES.length}
+          currentIndex={currentIndex}
+          onDotPress={scrollToIndex}
+        />
+
+        {/* Next Button */}
+        <TouchableOpacity
+          onPress={handleNext}
+          className="py-4 px-12 justify-center items-center rounded-xl bg-salon-primary w-full max-w-md"
+        >
+          <Text className="text-white text-2xl font-bold tracking-wider capitalize">
+            {currentIndex === ONBOARDING_SLIDES.length - 1
+              ? "Get Started"
+              : "Next"}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Skip Button - Always takes space */}
+        <View className="h-10 justify-center">
+          {currentIndex < ONBOARDING_SLIDES.length - 1 ? (
+            <TouchableOpacity onPress={handleSkip}>
+              <Text className="text-salon-gray-light text-lg">
+                Skip!
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <View />
+          )}
+        </View>
+      </View>
     </View>
   );
 }
