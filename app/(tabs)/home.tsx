@@ -5,7 +5,6 @@ import {
 } from "@/components/salon";
 import { HOME_CATEGORIES } from "@/constants";
 import { Bell, Menu, ShoppingCart } from "lucide-react-native";
-import React from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 // Mock data for specialists
@@ -55,7 +54,7 @@ export default function HomeScreen() {
         {/* <StatusBar time="12:24" /> */}
 
         {/* Header */}
-        <View className="px-6 mt-6 flex-row items-center justify-between relative z-10">
+        <View className="px-6 mt-4 flex-row items-center justify-between relative z-10">
           <View className="flex-row items-center gap-4">
             {/* Menu Icon */}
             <TouchableOpacity className="p-2">
@@ -65,7 +64,7 @@ export default function HomeScreen() {
             {/* Greeting */}
             <View>
               <Text
-                className="text-[20px] text-black/80"
+                className="text-[25px] text-black/80"
                 style={{ fontWeight: "400" }}
               >
                 Hi
@@ -100,7 +99,7 @@ export default function HomeScreen() {
         </View>
 
         {/* Promotional Banners */}
-        <View className="mt-6 relative z-10">
+        <View className="mt-4 relative z-10">
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -124,16 +123,16 @@ Save Some"
 
         {/* Shopping Cart */}
         <TouchableOpacity
-          className="absolute right-8 z-20"
-          style={{ top: 297 }}
+          className="absolute right-9 z-30"
+          style={{ top: 280 }}
         >
-          <ShoppingCart size={32} color="#1E1E1E" strokeWidth={2} />
+          <ShoppingCart size={25} color="#1E1E1E" strokeWidth={2} />
         </TouchableOpacity>
 
         {/* Categories */}
-        <View className="px-6 mt-8 relative z-10">
+        <View className="px-6 mt-6 relative z-10">
           <Text
-            className="text-[20px] text-salon-dark mb-4"
+            className="text-[20px] text-salon-dark mb-3"
             style={{ fontWeight: "400" }}
           >
             Categories
@@ -151,9 +150,9 @@ Save Some"
         </View>
 
         {/* Hair Specialist */}
-        <View className="mt-8 relative z-10">
+        <View className="mt-10 relative z-10">
           <Text
-            className="text-[20px] text-salon-dark mb-4 px-6"
+            className="text-[20px] text-salon-dark mb-3 px-6"
             style={{ fontWeight: "400" }}
           >
             Hair Specialist
@@ -177,7 +176,7 @@ Save Some"
         </View>
 
         {/* Bottom spacing for navigation */}
-        <View className="h-24" />
+        <View className="h-8" />
       </ScrollView>
     </View>
   );
