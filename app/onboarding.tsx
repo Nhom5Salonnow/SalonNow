@@ -15,6 +15,30 @@ import {
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
+// Responsive helpers
+const isSmallDevice = SCREEN_WIDTH <= 375; // iPhone SE, iPhone 8
+const isMediumDevice = SCREEN_WIDTH > 375 && SCREEN_WIDTH < 414; // iPhone 12/13, Galaxy S8
+
+// Responsive values
+const RESPONSIVE = {
+  headerPaddingVertical: isSmallDevice ? 0 : isMediumDevice ? 32 : 48,
+  logoFontSize: isSmallDevice ? 30 : isMediumDevice ? 36 : 48,
+
+  contentGap: isSmallDevice ? 6 : 8,
+
+  titleFontSize: isSmallDevice ? 22 : isMediumDevice ? 26 : 28,
+  titleLineHeight: isSmallDevice ? 30 : isMediumDevice ? 36 : 42,
+  subtitleFontSize: isSmallDevice ? 14 : isMediumDevice ? 16 : 17,
+  subtitleLineHeight: isSmallDevice ? 20 : isMediumDevice ? 23 : 25,
+
+  buttonPaddingY: isSmallDevice ? 12 : isMediumDevice ? 14 : 16,
+  buttonPaddingX: isSmallDevice ? 32 : isMediumDevice ? 40 : 48,
+  buttonFontSize: isSmallDevice ? 18 : isMediumDevice ? 20 : 21,
+
+  skipFontSize: isSmallDevice ? 14 : isMediumDevice ? 16 : 18,
+  footerGap: isSmallDevice ? 12 : isMediumDevice ? 14 : 16,
+};
+
 export default function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
@@ -64,7 +88,7 @@ export default function OnboardingScreen() {
         style={{ width: SCREEN_WIDTH }}
       >
         {/* Illustration */}
-        <View className="w-full max-w-md mb-8">
+        <View className="w-full max-w-md">
           <Image
             source={{ uri: item.imageUrl }}
             className="w-full aspect-square"
@@ -73,11 +97,26 @@ export default function OnboardingScreen() {
         </View>
 
         {/* Content */}
-        <View className="items-center gap-2 px-4 max-w-md">
-          <Text className="text-3xl font-bold text-center leading-[42px] text-salon-dark">
+        <View
+          className="items-center px-4 max-w-md"
+          style={{ gap: RESPONSIVE.contentGap }}
+        >
+          <Text
+            className="font-bold text-center text-salon-dark"
+            style={{
+              fontSize: RESPONSIVE.titleFontSize,
+              lineHeight: RESPONSIVE.titleLineHeight,
+            }}
+          >
             {item.title}
           </Text>
-          <Text className="text-lg text-center leading-[25px] text-salon-gray-light max-w-[280px]">
+          <Text
+            className="text-center text-salon-gray-light max-w-[280px]"
+            style={{
+              fontSize: RESPONSIVE.subtitleFontSize,
+              lineHeight: RESPONSIVE.subtitleLineHeight,
+            }}
+          >
             {item.subtitle}
           </Text>
         </View>
@@ -92,10 +131,16 @@ export default function OnboardingScreen() {
   });
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-white py-6">
       {/* Fixed Header - Logo */}
-      <View className="pt-20 pb-8 items-center">
-        <Text className="text-5xl text-black font-semibold">
+      <View
+        className="items-center"
+        style={{paddingVertical: RESPONSIVE.headerPaddingVertical}}
+      >
+        <Text
+          className="text-black font-semibold"
+          style={{ fontSize: RESPONSIVE.logoFontSize }}
+        >
           Salon Now
         </Text>
       </View>
@@ -118,7 +163,10 @@ export default function OnboardingScreen() {
       </View>
 
       {/* Fixed Footer */}
-      <View className="pb-8 px-6 gap-4 items-center">
+      <View
+        className="px-6 items-center"
+        style={{gap: RESPONSIVE.footerGap}}
+      >
         {/* Pagination Dots - Clickable */}
         <PaginationDots
           length={ONBOARDING_SLIDES.length}
@@ -129,9 +177,16 @@ export default function OnboardingScreen() {
         {/* Next Button */}
         <TouchableOpacity
           onPress={handleNext}
-          className="py-4 px-12 justify-center items-center rounded-xl bg-salon-primary w-full max-w-md"
+          className="justify-center items-center rounded-xl bg-salon-primary w-full max-w-md"
+          style={{
+            paddingVertical: RESPONSIVE.buttonPaddingY,
+            paddingHorizontal: RESPONSIVE.buttonPaddingX,
+          }}
         >
-          <Text className="text-white text-2xl font-bold tracking-wider capitalize">
+          <Text
+            className="text-white font-bold tracking-wider capitalize"
+            style={{ fontSize: RESPONSIVE.buttonFontSize }}
+          >
             {currentIndex === ONBOARDING_SLIDES.length - 1
               ? "Get Started"
               : "Next"}
@@ -142,7 +197,10 @@ export default function OnboardingScreen() {
         <View className="h-10 justify-center">
           {currentIndex < ONBOARDING_SLIDES.length - 1 ? (
             <TouchableOpacity onPress={handleSkip}>
-              <Text className="text-salon-gray-light text-lg">
+              <Text
+                className="text-salon-gray-light"
+                style={{ fontSize: RESPONSIVE.skipFontSize }}
+              >
                 Skip!
               </Text>
             </TouchableOpacity>
