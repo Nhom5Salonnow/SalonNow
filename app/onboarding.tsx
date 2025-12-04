@@ -1,10 +1,10 @@
 import { PaginationDots } from "@/components/ui";
 import { ONBOARDING_SLIDES } from "@/constants";
 import { STORAGE_KEYS, storeData } from "@/utils/asyncStorage";
+import { hp, rf, SCREEN_WIDTH, wp } from "@/utils/responsive";
 import { router } from "expo-router";
 import { useRef, useState } from "react";
 import {
-  Dimensions,
   FlatList,
   Image,
   Text,
@@ -13,44 +13,18 @@ import {
   ViewToken,
 } from "react-native";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
-// Responsive helpers
-const isSmallDevice = SCREEN_WIDTH <= 375; // iPhone SE, iPhone 8
-const isMediumDevice = SCREEN_WIDTH > 375 && SCREEN_WIDTH < 414; // iPhone 12/13, Galaxy S8
-
-// Responsive values
-const RESPONSIVE = {
-  headerPaddingVertical: isSmallDevice ? 0 : isMediumDevice ? 32 : 48,
-  logoFontSize: isSmallDevice ? 30 : isMediumDevice ? 36 : 48,
-
-  contentGap: isSmallDevice ? 6 : 8,
-
-  titleFontSize: isSmallDevice ? 22 : isMediumDevice ? 26 : 28,
-  titleLineHeight: isSmallDevice ? 30 : isMediumDevice ? 36 : 42,
-  subtitleFontSize: isSmallDevice ? 14 : isMediumDevice ? 16 : 17,
-  subtitleLineHeight: isSmallDevice ? 20 : isMediumDevice ? 23 : 25,
-
-  buttonPaddingY: isSmallDevice ? 12 : isMediumDevice ? 14 : 16,
-  buttonPaddingX: isSmallDevice ? 32 : isMediumDevice ? 40 : 48,
-  buttonFontSize: isSmallDevice ? 18 : isMediumDevice ? 20 : 21,
-
-  skipFontSize: isSmallDevice ? 14 : isMediumDevice ? 16 : 18,
-  footerGap: isSmallDevice ? 12 : isMediumDevice ? 14 : 16,
-};
-
 export default function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
   const handleDone = async () => {
     await storeData(STORAGE_KEYS.HAS_COMPLETED_ONBOARDING, "true");
-    router.replace("/home" as any);
+    router.replace("/auth/login");
   };
 
   const handleSkip = async () => {
     await storeData(STORAGE_KEYS.HAS_COMPLETED_ONBOARDING, "true");
-    router.replace("/home" as any);
+    router.replace("/auth/login");
   };
 
   const handleNext = () => {
@@ -84,37 +58,38 @@ export default function OnboardingScreen() {
   const renderSlide = ({ item }: { item: (typeof ONBOARDING_SLIDES)[0] }) => {
     return (
       <View
-        className="items-center justify-center px-6"
-        style={{ width: SCREEN_WIDTH }}
+        className="items-center justify-center"
+        style={{ width: SCREEN_WIDTH, paddingHorizontal: wp(5) }}
       >
         {/* Illustration */}
-        <View className="w-full max-w-md">
+        <View style={{ width: wp(85) }}>
           <Image
             source={{ uri: item.imageUrl }}
-            className="w-full aspect-square"
+            style={{ width: "100%", aspectRatio: 1 }}
             resizeMode="contain"
           />
         </View>
 
         {/* Content */}
         <View
-          className="items-center px-4 max-w-md"
-          style={{ gap: RESPONSIVE.contentGap }}
+          className="items-center"
+          style={{ gap: hp(1), paddingHorizontal: wp(5) }}
         >
           <Text
             className="font-bold text-center text-salon-dark"
             style={{
-              fontSize: RESPONSIVE.titleFontSize,
-              lineHeight: RESPONSIVE.titleLineHeight,
+              fontSize: rf(26),
+              lineHeight: rf(38),
             }}
           >
             {item.title}
           </Text>
           <Text
-            className="text-center text-salon-gray-light max-w-[280px]"
+            className="text-center text-salon-gray-light"
             style={{
-              fontSize: RESPONSIVE.subtitleFontSize,
-              lineHeight: RESPONSIVE.subtitleLineHeight,
+              fontSize: rf(15),
+              lineHeight: rf(22),
+              maxWidth: wp(75),
             }}
           >
             {item.subtitle}
@@ -131,22 +106,22 @@ export default function OnboardingScreen() {
   });
 
   return (
-    <View className="flex-1 bg-white py-6">
+    <View className="flex-1 bg-white" style={{ paddingVertical: hp(3) }}>
       {/* Fixed Header - Logo */}
       <View
         className="items-center"
-        style={{paddingVertical: RESPONSIVE.headerPaddingVertical}}
+        style={{ paddingVertical: hp(4) }}
       >
         <Text
           className="text-black font-semibold"
-          style={{ fontSize: RESPONSIVE.logoFontSize }}
+          style={{ fontSize: rf(38) }}
         >
           Salon Now
         </Text>
       </View>
 
-      {/* Scrollable Content Area */}
-      <View className="flex-1 justify-center">
+      {/* Scrollable Content Area - Uses flex for adaptive height */}
+      <View style={{ flex: 1, justifyContent: "center" }}>
         <FlatList
           ref={flatListRef}
           data={ONBOARDING_SLIDES}
@@ -164,8 +139,8 @@ export default function OnboardingScreen() {
 
       {/* Fixed Footer */}
       <View
-        className="px-6 items-center"
-        style={{gap: RESPONSIVE.footerGap}}
+        className="items-center"
+        style={{ gap: hp(2), paddingHorizontal: wp(5) }}
       >
         {/* Pagination Dots - Clickable */}
         <PaginationDots
@@ -177,15 +152,15 @@ export default function OnboardingScreen() {
         {/* Next Button */}
         <TouchableOpacity
           onPress={handleNext}
-          className="justify-center items-center rounded-xl bg-salon-primary w-full max-w-md"
+          className="justify-center items-center rounded-xl bg-salon-primary"
           style={{
-            paddingVertical: RESPONSIVE.buttonPaddingY,
-            paddingHorizontal: RESPONSIVE.buttonPaddingX,
+            width: wp(90),
+            paddingVertical: hp(2),
           }}
         >
           <Text
             className="text-white font-bold tracking-wider capitalize"
-            style={{ fontSize: RESPONSIVE.buttonFontSize }}
+            style={{ fontSize: rf(18) }}
           >
             {currentIndex === ONBOARDING_SLIDES.length - 1
               ? "Get Started"
@@ -194,12 +169,12 @@ export default function OnboardingScreen() {
         </TouchableOpacity>
 
         {/* Skip Button - Always takes space */}
-        <View className="h-10 justify-center">
+        <View style={{ height: hp(4) }} className="justify-center">
           {currentIndex < ONBOARDING_SLIDES.length - 1 ? (
             <TouchableOpacity onPress={handleSkip}>
               <Text
                 className="text-salon-gray-light"
-                style={{ fontSize: RESPONSIVE.skipFontSize }}
+                style={{ fontSize: rf(15) }}
               >
                 Skip!
               </Text>

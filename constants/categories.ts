@@ -1,4 +1,4 @@
-import { ServiceCategory } from "@/types";
+import { ServiceCategory, HomeCategory } from "@/types";
 
 export const SERVICE_CATEGORIES: ServiceCategory[] = [
   {
@@ -38,13 +38,6 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     color: "#EC4899",
   },
 ];
-
-// Categories for Home screen (from design)
-export interface HomeCategory {
-  id: string;
-  name: string;
-  imageUrl: string;
-}
 
 export const HOME_CATEGORIES: HomeCategory[] = [
   {
