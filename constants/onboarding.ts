@@ -1,4 +1,9 @@
-import { OnboardingSlide } from "@/types";
+export interface OnboardingSlide {
+  id: string;
+  title: string;
+  subtitle: string;
+  imageUrl: string;
+}
 
 export const ONBOARDING_SLIDES: OnboardingSlide[] = [
   {

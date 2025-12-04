@@ -1,9 +1,7 @@
+export { BottomNavigation } from "./BottomNavigation";
 export { Button } from "./Button";
 export { Card } from "./Card";
 export { Input } from "./Input";
 export { Loading } from "./Loading";
 export { PaginationDots } from "./PaginationDots";
-export { StarRating } from "./StarRating";
-export { AppointmentCard } from "./AppointmentCard";
-export { ReviewCard } from "./ReviewCard";
-export { NotificationCard } from "./NotificationCard";
+export { StatusBar } from "./StatusBar";
