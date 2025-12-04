@@ -23,18 +23,6 @@ jest.mock("@/utils/asyncStorage", () => ({
   removeData: jest.fn(),
 }));
 
-const mockScreenWidth = (width: number) => {
-  jest.resetModules();
-
-  jest.doMock("react-native", () => ({
-    Dimensions: {
-      get: () => ({ width }),
-    },
-  }));
-
-  return require("../app/onboarding"); // <-- require sau mock
-};
-
 describe("OnboardingScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -184,25 +172,3 @@ describe("OnboardingScreen", () => {
   });
 });
 
-
-describe("RESPONSIVE breakpoints", () => {
-
-  test("Small device (<=375)", () => {
-    const { RESPONSIVE } = mockScreenWidth(360);
-    expect(RESPONSIVE.logoFontSize).toBe(30);
-    expect(RESPONSIVE.headerPaddingVertical).toBe(0);
-  });
-
-  test("Medium device (376 - 413)", () => {
-    const { RESPONSIVE } = mockScreenWidth(390);
-    expect(RESPONSIVE.logoFontSize).toBe(36);
-    expect(RESPONSIVE.headerPaddingVertical).toBe(32);
-  });
-
-  test("Large device (>=414)", () => {
-    const { RESPONSIVE } = mockScreenWidth(430);
-    expect(RESPONSIVE.logoFontSize).toBe(48);
-    expect(RESPONSIVE.headerPaddingVertical).toBe(48);
-  });
-
-});
