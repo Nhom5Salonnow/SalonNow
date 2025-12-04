@@ -52,12 +52,6 @@
         "projectId": "bc89eeac-27ab-41aa-a8c6-083949e54435"
       }
     },
-    "owner": "yudov",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/bc89eeac-27ab-41aa-a8c6-083949e54435"
-    }
+    "owner": "yudov"
   }
 }

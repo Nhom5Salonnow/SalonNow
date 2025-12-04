@@ -50,18 +50,3 @@ export interface TimeSlot {
   endTime: string;
   isAvailable: boolean;
 }
-
-// Home screen category
-export interface HomeCategory {
-  id: string;
-  name: string;
-  imageUrl: string;
-}
-
-// Onboarding slide
-export interface OnboardingSlide {
-  id: string;
-  title: string;
-  subtitle: string;
-  imageUrl: string;
-}
