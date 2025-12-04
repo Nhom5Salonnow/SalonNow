@@ -1,4 +1,5 @@
 import { Colors, APPOINTMENT_HISTORY, DEFAULT_USER } from "@/constants";
+import { DecorativeCircle } from "@/components";
 import { STORAGE_KEYS, getData } from "@/utils/asyncStorage";
 import { hp, rf, wp } from "@/utils/responsive";
 import { AppointmentCard } from "@/components/ui";
@@ -41,29 +42,8 @@ export default function BookingsScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Decorative pink circles */}
-      <View
-        className="absolute rounded-full"
-        style={{
-          left: -wp(25),
-          top: -hp(6),
-          width: wp(75),
-          height: wp(75),
-          backgroundColor: Colors.salon.pinkLight,
-          opacity: 0.4,
-        }}
-      />
-      <View
-        className="absolute rounded-full"
-        style={{
-          right: -wp(20),
-          bottom: hp(6),
-          width: wp(50),
-          height: wp(50),
-          backgroundColor: Colors.salon.pinkLight,
-          opacity: 0.3,
-        }}
-      />
+      <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
+      <DecorativeCircle position="bottomRight" size="medium" opacity={0.3} />
 
       {/* Header with Menu */}
       <View style={{ paddingHorizontal: wp(5), paddingTop: hp(6) }}>

@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, TextInput } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { router } from 'expo-router';
-import { ChevronLeft, Pencil, Home, Grid, MessageSquare, User } from 'lucide-react-native';
+import { ChevronLeft, Pencil } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { LinearGradient } from 'expo-linear-gradient';
+import { FormField, AdminBottomNav } from '@/components';
 
 export default function EditEmployeeScreen() {
   const [fullName, setFullName] = useState('Doe John');
@@ -106,81 +107,30 @@ export default function EditEmployeeScreen() {
             elevation: 4,
           }}
         >
-          {/* Full Name */}
-          <View className="flex-row items-center" style={{ marginBottom: hp(3) }}>
-            <Text style={{ fontSize: rf(16), color: '#000', width: wp(25) }}>
-              Full Name
-            </Text>
-            <TextInput
-              value={fullName}
-              onChangeText={setFullName}
-              className="flex-1 rounded-full bg-gray-50 px-4"
-              style={{
-                paddingVertical: hp(1.5),
-                fontSize: rf(14),
-                borderWidth: 1,
-                borderColor: '#E5E7EB',
-              }}
-            />
-          </View>
-
-          {/* Age */}
-          <View className="flex-row items-center" style={{ marginBottom: hp(3) }}>
-            <Text style={{ fontSize: rf(16), color: '#000', width: wp(25) }}>
-              Age
-            </Text>
-            <TextInput
-              value={age}
-              onChangeText={setAge}
-              keyboardType="numeric"
-              className="flex-1 rounded-full bg-gray-50 px-4"
-              style={{
-                paddingVertical: hp(1.5),
-                fontSize: rf(14),
-                borderWidth: 1,
-                borderColor: '#E5E7EB',
-              }}
-            />
-          </View>
-
-          {/* Phone */}
-          <View className="flex-row items-center" style={{ marginBottom: hp(3) }}>
-            <Text style={{ fontSize: rf(16), color: '#000', width: wp(25) }}>
-              Phone
-            </Text>
-            <TextInput
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
-              className="flex-1 rounded-full bg-gray-50 px-4"
-              style={{
-                paddingVertical: hp(1.5),
-                fontSize: rf(14),
-                borderWidth: 1,
-                borderColor: '#E5E7EB',
-              }}
-            />
-          </View>
-
-          {/* Email */}
-          <View className="flex-row items-center" style={{ marginBottom: hp(3) }}>
-            <Text style={{ fontSize: rf(16), color: '#000', width: wp(25) }}>
-              Email
-            </Text>
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              className="flex-1 rounded-full bg-gray-50 px-4"
-              style={{
-                paddingVertical: hp(1.5),
-                fontSize: rf(14),
-                borderWidth: 1,
-                borderColor: '#E5E7EB',
-              }}
-            />
-          </View>
+          <FormField
+            label="Full Name"
+            value={fullName}
+            onChangeText={setFullName}
+          />
+          <FormField
+            label="Age"
+            value={age}
+            onChangeText={setAge}
+            keyboardType="numeric"
+          />
+          <FormField
+            label="Phone"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+          />
+          <FormField
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
         </View>
 
         {/* Action Buttons */}
@@ -220,36 +170,7 @@ export default function EditEmployeeScreen() {
         <View style={{ height: hp(15) }} />
       </ScrollView>
 
-      {/* Bottom Navigation */}
-      <View
-        className="absolute bottom-0 left-0 right-0 flex-row items-center justify-around"
-        style={{
-          paddingVertical: hp(2),
-          paddingBottom: hp(3),
-          backgroundColor: Colors.salon.pinkBg,
-          borderTopLeftRadius: wp(6),
-          borderTopRightRadius: wp(6),
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => router.push('/admin/home' as any)}
-          className="items-center"
-        >
-          <Home size={rf(24)} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => router.push('/admin/dashboard' as any)}
-          className="items-center"
-        >
-          <Grid size={rf(24)} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <MessageSquare size={rf(24)} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <User size={rf(24)} color="#000" />
-        </TouchableOpacity>
-      </View>
+      <AdminBottomNav />
     </View>
   );
 }

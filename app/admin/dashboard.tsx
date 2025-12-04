@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { router } from 'expo-router';
-import { Home, Grid, MessageSquare, User } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
+import { DecorativeCircle, AdminBottomNav } from '@/components';
 
 type ReportPeriod = 'Daily' | 'Weekly' | 'Monthly';
 
@@ -28,23 +27,11 @@ export default function AdminDashboardScreen() {
   const [selectedPeriod, setSelectedPeriod] = useState<ReportPeriod>('Weekly');
 
   const periods: ReportPeriod[] = ['Daily', 'Weekly', 'Monthly'];
-
   const maxRevenue = Math.max(...REVENUE_DATA.map(d => d.value));
 
   return (
     <View className="flex-1 bg-white">
-      {/* Decorative pink background */}
-      <View
-        className="absolute rounded-full"
-        style={{
-          left: -wp(30),
-          top: -hp(10),
-          width: wp(80),
-          height: wp(80),
-          backgroundColor: Colors.salon.pinkLight,
-          opacity: 0.4,
-        }}
-      />
+      <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
@@ -196,7 +183,6 @@ export default function AdminDashboardScreen() {
               overflow: 'hidden',
             }}
           >
-            {/* SVG-like wave using View */}
             <View
               style={{
                 position: 'absolute',
@@ -224,33 +210,7 @@ export default function AdminDashboardScreen() {
         <View style={{ height: hp(12) }} />
       </ScrollView>
 
-      {/* Bottom Navigation */}
-      <View
-        className="absolute bottom-0 left-0 right-0 flex-row items-center justify-around"
-        style={{
-          paddingVertical: hp(2),
-          paddingBottom: hp(3),
-          backgroundColor: Colors.salon.pinkBg,
-          borderTopLeftRadius: wp(6),
-          borderTopRightRadius: wp(6),
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => router.push('/admin/home' as any)}
-          className="items-center"
-        >
-          <Home size={rf(24)} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <Grid size={rf(24)} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <MessageSquare size={rf(24)} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <User size={rf(24)} color="#000" />
-        </TouchableOpacity>
-      </View>
+      <AdminBottomNav activeTab="dashboard" />
     </View>
   );
 }

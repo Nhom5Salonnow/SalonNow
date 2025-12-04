@@ -3,6 +3,7 @@ import {
   PromoCard,
   SpecialistCard,
 } from "@/components/salon";
+import { DecorativeCircle } from "@/components";
 import { Colors, HOME_CATEGORIES, SPECIALISTS } from "@/constants";
 import { hp, rf, wp } from "@/utils/responsive";
 import { router } from "expo-router";
@@ -37,17 +38,7 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Decorative pink circle */}
-      <View
-        className="absolute rounded-full"
-        style={{
-          left: -wp(50),
-          top: -hp(25),
-          width: wp(110),
-          height: wp(110),
-          backgroundColor: Colors.salon.pinkLight,
-        }}
-      />
+      <DecorativeCircle position="topLeft" size="xlarge" />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}

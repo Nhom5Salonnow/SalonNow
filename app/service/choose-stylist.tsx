@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { Menu, Search, Users, User } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
+import { DecorativeCircle, QuoteBanner } from '@/components';
 
 interface Stylist {
   id: string;
@@ -48,18 +49,7 @@ export default function ChooseStylistScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Pink decorative background */}
-      <View
-        className="absolute rounded-full"
-        style={{
-          left: -wp(30),
-          top: -hp(5),
-          width: wp(70),
-          height: wp(70),
-          backgroundColor: Colors.salon.pinkLight,
-          opacity: 0.5,
-        }}
-      />
+      <DecorativeCircle position="topLeft" size="large" opacity={0.5} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
@@ -79,31 +69,11 @@ export default function ChooseStylistScreen() {
         </View>
 
         {/* Banner */}
-        <View
-          className="mx-4 mt-4 rounded-3xl overflow-hidden"
-          style={{ backgroundColor: Colors.primary, height: hp(20) }}
-        >
-          <View className="flex-row h-full">
-            <View className="flex-1 justify-center pl-5">
-              <Text
-                style={{
-                  fontSize: rf(18),
-                  fontStyle: 'italic',
-                  color: '#000',
-                  lineHeight: rf(26),
-                }}
-              >
-                {'"Crafting Confidence,\nOne Cut at a Time."'}
-              </Text>
-            </View>
-            <Image
-              source={{
-                uri: 'https://api.builder.io/api/v1/image/assets/TEMP/ecb938fe586592c9eaf8a05b9a2510da712412e7?width=298',
-              }}
-              style={{ width: wp(40), height: '100%' }}
-              resizeMode="cover"
-            />
-          </View>
+        <View className="mx-4 mt-4">
+          <QuoteBanner
+            quote='"Crafting Confidence,\nOne Cut at a Time."'
+            imageUrl="https://api.builder.io/api/v1/image/assets/TEMP/ecb938fe586592c9eaf8a05b9a2510da712412e7?width=298"
+          />
         </View>
 
         {/* Menu Title */}

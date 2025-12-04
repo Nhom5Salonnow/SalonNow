@@ -1,8 +1,9 @@
 import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { router } from 'expo-router';
-import { ChevronLeft, Search, Pencil, Plus, Star, Home, Grid, MessageSquare, User } from 'lucide-react-native';
+import { ChevronLeft, Search, Pencil, Plus, Star } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
+import { DecorativeCircle, AdminBottomNav } from '@/components';
 
 interface ServiceItem {
   id: string;
@@ -52,29 +53,8 @@ export default function EditCategoryScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Decorative pink circles */}
-      <View
-        className="absolute rounded-full"
-        style={{
-          left: -wp(20),
-          top: -hp(5),
-          width: wp(60),
-          height: wp(60),
-          backgroundColor: Colors.salon.pinkLight,
-          opacity: 0.5,
-        }}
-      />
-      <View
-        className="absolute rounded-full"
-        style={{
-          right: -wp(20),
-          top: hp(10),
-          width: wp(40),
-          height: wp(40),
-          backgroundColor: Colors.salon.pinkLight,
-          opacity: 0.3,
-        }}
-      />
+      <DecorativeCircle position="topLeft" size="large" opacity={0.5} />
+      <DecorativeCircle position="topRight" size="medium" opacity={0.3} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
@@ -225,36 +205,7 @@ export default function EditCategoryScreen() {
         <View style={{ height: hp(15) }} />
       </ScrollView>
 
-      {/* Bottom Navigation */}
-      <View
-        className="absolute bottom-0 left-0 right-0 flex-row items-center justify-around"
-        style={{
-          paddingVertical: hp(2),
-          paddingBottom: hp(3),
-          backgroundColor: Colors.salon.pinkBg,
-          borderTopLeftRadius: wp(6),
-          borderTopRightRadius: wp(6),
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => router.push('/admin/home' as any)}
-          className="items-center"
-        >
-          <Home size={rf(24)} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => router.push('/admin/dashboard' as any)}
-          className="items-center"
-        >
-          <Grid size={rf(24)} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <MessageSquare size={rf(24)} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <User size={rf(24)} color="#000" />
-        </TouchableOpacity>
-      </View>
+      <AdminBottomNav />
     </View>
   );
 }

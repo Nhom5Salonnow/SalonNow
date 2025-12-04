@@ -1,8 +1,9 @@
 import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { router } from 'expo-router';
-import { Menu, Bell, X, Plus, Pencil, Home, Grid, MessageSquare, User } from 'lucide-react-native';
+import { Menu, Bell, X, Plus, Pencil } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { Colors, HOME_CATEGORIES, SPECIALISTS } from '@/constants';
+import { DecorativeCircle, AdminBottomNav } from '@/components';
 
 const PROMO_BANNERS = [
   {
@@ -22,17 +23,7 @@ export default function AdminHomeScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Decorative pink circle */}
-      <View
-        className="absolute rounded-full"
-        style={{
-          left: -wp(50),
-          top: -hp(25),
-          width: wp(110),
-          height: wp(110),
-          backgroundColor: Colors.salon.pinkLight,
-        }}
-      />
+      <DecorativeCircle position="topLeft" size="xlarge" />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
@@ -270,33 +261,7 @@ export default function AdminHomeScreen() {
         <View style={{ height: hp(15) }} />
       </ScrollView>
 
-      {/* Bottom Navigation */}
-      <View
-        className="absolute bottom-0 left-0 right-0 flex-row items-center justify-around"
-        style={{
-          paddingVertical: hp(2),
-          paddingBottom: hp(3),
-          backgroundColor: Colors.salon.pinkBg,
-          borderTopLeftRadius: wp(6),
-          borderTopRightRadius: wp(6),
-        }}
-      >
-        <TouchableOpacity className="items-center">
-          <Home size={rf(24)} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => router.push('/admin/dashboard' as any)}
-          className="items-center"
-        >
-          <Grid size={rf(24)} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <MessageSquare size={rf(24)} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <User size={rf(24)} color="#000" />
-        </TouchableOpacity>
-      </View>
+      <AdminBottomNav activeTab="home" />
     </View>
   );
 }

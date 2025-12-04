@@ -1,4 +1,5 @@
 import { Colors } from "@/constants";
+import { DecorativeCircle } from "@/components";
 import { STORAGE_KEYS, getData, removeData } from "@/utils/asyncStorage";
 import { hp, rf, wp } from "@/utils/responsive";
 import { router } from "expo-router";
@@ -85,29 +86,8 @@ export default function ProfileScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Decorative pink circles */}
-      <View
-        className="absolute rounded-full"
-        style={{
-          left: -wp(38),
-          top: -hp(12),
-          width: wp(90),
-          height: wp(90),
-          backgroundColor: Colors.salon.pinkLight,
-          opacity: 0.4,
-        }}
-      />
-      <View
-        className="absolute rounded-full"
-        style={{
-          right: -wp(25),
-          bottom: -hp(6),
-          width: wp(65),
-          height: wp(65),
-          backgroundColor: Colors.salon.pinkLight,
-          opacity: 0.3,
-        }}
-      />
+      <DecorativeCircle position="topLeft" size="xlarge" opacity={0.4} />
+      <DecorativeCircle position="bottomRight" size="large" opacity={0.3} />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header with Menu */}

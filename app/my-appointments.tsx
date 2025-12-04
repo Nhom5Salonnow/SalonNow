@@ -5,8 +5,7 @@ import { ChevronLeft } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { LinearGradient } from 'expo-linear-gradient';
-
-const DAYS = ['Mo', 'Tue', 'Wed', 'Th', 'Fri', 'Sa', 'Su'];
+import { WeekCalendar, generateWeekDays } from '@/components';
 
 interface Appointment {
   id: string;
@@ -52,12 +51,8 @@ export default function MyAppointmentsScreen() {
   const [selectedDate, setSelectedDate] = useState(12);
   const currentMonth = 'April';
 
-  const weekDays = DAYS.map((day, index) => ({
-    day,
-    date: 10 + index,
-    isSelected: 10 + index === selectedDate,
-    hasAppointment: [12, 14].includes(10 + index),
-  }));
+  // Generate week days with appointments using helper
+  const weekDays = generateWeekDays(10, selectedDate, [12, 14]);
 
   const getStatusColor = (status: string) => {
     return status === 'confirmed' ? '#86EFAC' : Colors.primary;
@@ -91,61 +86,14 @@ export default function MyAppointmentsScreen() {
           <View style={{ width: wp(7) }} />
         </View>
 
-        {/* Month */}
-        <Text
-          className="text-center"
-          style={{ fontSize: rf(18), color: '#6B7280', marginTop: hp(2) }}
-        >
-          {currentMonth}
-        </Text>
-
-        {/* Calendar Week View */}
-        <View
-          className="flex-row justify-between px-6"
-          style={{ marginTop: hp(3) }}
-        >
-          {weekDays.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => setSelectedDate(item.date)}
-              className="items-center"
-            >
-              <Text
-                style={{
-                  fontSize: rf(14),
-                  color: item.isSelected ? '#000' : '#9CA3AF',
-                  fontWeight: item.isSelected ? '600' : '400',
-                }}
-              >
-                {item.day}
-              </Text>
-              <View
-                className="items-center justify-center mt-2"
-                style={{
-                  width: wp(10),
-                  height: wp(10),
-                  borderRadius: wp(5),
-                  backgroundColor: item.isSelected ? '#F3F4F6' : 'transparent',
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: rf(16),
-                    color: item.isSelected ? '#000' : '#9CA3AF',
-                    fontWeight: item.isSelected ? '600' : '400',
-                  }}
-                >
-                  {item.date}
-                </Text>
-              </View>
-              {item.hasAppointment && (
-                <View
-                  className="rounded-full bg-red-400 mt-1"
-                  style={{ width: wp(1.5), height: wp(1.5) }}
-                />
-              )}
-            </TouchableOpacity>
-          ))}
+        {/* Week Calendar */}
+        <View style={{ marginTop: hp(2) }}>
+          <WeekCalendar
+            month={currentMonth}
+            weekDays={weekDays}
+            onSelectDate={setSelectedDate}
+            showAppointmentIndicator
+          />
         </View>
 
         {/* Appointments List */}
