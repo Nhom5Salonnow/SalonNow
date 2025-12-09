@@ -165,5 +165,37 @@ describe('HomeScreen', () => {
 
       expect(mockPush).toHaveBeenCalledWith('/appointment');
     });
+
+    it('should navigate to notifications when notification button is pressed', () => {
+      const { getByTestId } = render(<HomeScreen />);
+
+      fireEvent.press(getByTestId('notification-button'));
+
+      expect(mockPush).toHaveBeenCalledWith('/notifications');
+    });
+
+    it('should navigate to profile when profile button is pressed', () => {
+      const { getByTestId } = render(<HomeScreen />);
+
+      fireEvent.press(getByTestId('profile-button'));
+
+      expect(mockPush).toHaveBeenCalledWith('/profile');
+    });
+
+    it('should navigate to promo service when promo card is pressed', () => {
+      const { getByTestId } = render(<HomeScreen />);
+
+      fireEvent.press(getByTestId('promo-button'));
+
+      expect(mockPush).toHaveBeenCalledWith('/service/hair-design');
+    });
+
+    it('should navigate to payment when cart button is pressed', () => {
+      const { getByTestId } = render(<HomeScreen />);
+
+      fireEvent.press(getByTestId('cart-button'));
+
+      expect(mockPush).toHaveBeenCalledWith('/payment');
+    });
   });
 });

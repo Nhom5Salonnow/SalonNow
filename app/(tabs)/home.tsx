@@ -70,6 +70,7 @@ export default function HomeScreen() {
           <View className="flex-row items-center" style={{ gap: wp(3) }}>
             {/* Notification */}
             <TouchableOpacity
+              testID="notification-button"
               onPress={handleNotificationPress}
               className="relative items-center justify-center rounded-lg border border-gray-200"
               style={{ width: wp(11), height: wp(11) }}
@@ -89,6 +90,7 @@ export default function HomeScreen() {
 
             {/* Profile */}
             <TouchableOpacity
+              testID="profile-button"
               onPress={handleProfilePress}
               className="rounded-full overflow-hidden"
               style={{ width: wp(14), height: wp(14) }}
@@ -112,7 +114,7 @@ export default function HomeScreen() {
             style={{ paddingHorizontal: wp(2) }}
             contentContainerStyle={{ gap: wp(4) }}
           >
-            <TouchableOpacity onPress={handlePromoPress} activeOpacity={0.9}>
+            <TouchableOpacity testID="promo-button" onPress={handlePromoPress} activeOpacity={0.9}>
               <PromoCard
                 title="Look Awesome &
 Save Some"
@@ -133,6 +135,7 @@ Save Some"
 
         {/* Shopping Cart */}
         <TouchableOpacity
+          testID="cart-button"
           onPress={handleCartPress}
           className="absolute z-30"
           style={{ top: hp(35), right: wp(9) }}
