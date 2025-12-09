@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { User, LoginInput, SignupInput } from '@/types';
-import { authService } from '@/services';
+import { authService } from '@/api';
 import { getData, STORAGE_KEYS } from '@/utils/asyncStorage';
 
 export function useAuth() {

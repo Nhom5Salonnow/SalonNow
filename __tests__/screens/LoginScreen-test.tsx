@@ -1,0 +1,177 @@
+import React from 'react';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import LoginScreen from '@/app/auth/login';
+
+// Mock AsyncStorage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  setItem: jest.fn(),
+  getItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+}));
+
+// Mock expo-router
+const mockReplace = jest.fn();
+const mockPush = jest.fn();
+jest.mock('expo-router', () => ({
+  router: {
+    replace: (path: string) => mockReplace(path),
+    push: (path: string) => mockPush(path),
+  },
+  Link: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+// Mock asyncStorage utilities
+const mockStoreData = jest.fn().mockResolvedValue(undefined);
+jest.mock('@/utils/asyncStorage', () => ({
+  storeData: (...args: any[]) => mockStoreData(...args),
+  getData: jest.fn(),
+  removeData: jest.fn(),
+  STORAGE_KEYS: {
+    AUTH_TOKEN: 'auth_token',
+    USER_DATA: 'user_data',
+    HAS_COMPLETED_ONBOARDING: 'has_completed_onboarding',
+  },
+}));
+
+// Mock responsive utilities
+jest.mock('@/utils/responsive', () => ({
+  wp: (value: number) => value * 4,
+  hp: (value: number) => value * 8,
+  rf: (value: number) => value,
+}));
+
+// Mock constants
+jest.mock('@/constants', () => ({
+  Colors: {
+    primary: '#FE697D',
+    salon: {
+      pinkLight: '#FFCCD3',
+      pinkBg: '#FFF5F5',
+      dark: '#1F2937',
+      coral: '#FF7F7F',
+    },
+    gray: {
+      300: '#D1D5DB',
+      400: '#9CA3AF',
+      500: '#6B7280',
+      600: '#4B5563',
+    },
+  },
+}));
+
+// Mock lucide-react-native
+jest.mock('lucide-react-native', () => ({
+  Eye: () => null,
+  EyeOff: () => null,
+  Mail: () => null,
+  Lock: () => null,
+}));
+
+// Mock expo-linear-gradient
+jest.mock('expo-linear-gradient', () => ({
+  LinearGradient: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+describe('LoginScreen', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('Rendering', () => {
+    it('should render without crashing', () => {
+      const { getAllByText } = render(<LoginScreen />);
+      // Login appears in tab and button
+      expect(getAllByText('Login').length).toBeGreaterThan(0);
+    });
+
+    it('should render email input', () => {
+      const { getByPlaceholderText } = render(<LoginScreen />);
+      expect(getByPlaceholderText('Email')).toBeTruthy();
+    });
+
+    it('should render password input', () => {
+      const { getByPlaceholderText } = render(<LoginScreen />);
+      expect(getByPlaceholderText('Password')).toBeTruthy();
+    });
+
+    it('should render login button', () => {
+      const { getAllByText } = render(<LoginScreen />);
+      // Login appears in tab and button
+      const loginTexts = getAllByText('Login');
+      expect(loginTexts.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should render sign up link', () => {
+      const { getByText } = render(<LoginScreen />);
+      // The screen shows "Sign-up" tab option
+      expect(getByText('Sign-up')).toBeTruthy();
+    });
+  });
+
+  describe('Form Input', () => {
+    it('should update email field when typing', () => {
+      const { getByPlaceholderText } = render(<LoginScreen />);
+      const emailInput = getByPlaceholderText('Email');
+
+      fireEvent.changeText(emailInput, 'test@example.com');
+
+      expect(emailInput.props.value).toBe('test@example.com');
+    });
+
+    it('should update password field when typing', () => {
+      const { getByPlaceholderText } = render(<LoginScreen />);
+      const passwordInput = getByPlaceholderText('Password');
+
+      fireEvent.changeText(passwordInput, 'password123');
+
+      expect(passwordInput.props.value).toBe('password123');
+    });
+  });
+
+  describe('Form Submission', () => {
+    it('should store auth token when login button is pressed', async () => {
+      const { getByPlaceholderText, getAllByText } = render(<LoginScreen />);
+
+      fireEvent.changeText(getByPlaceholderText('Email'), 'test@example.com');
+      fireEvent.changeText(getByPlaceholderText('Password'), 'password123');
+
+      // There might be multiple "Login" texts (title and button)
+      const loginButtons = getAllByText('Login');
+      fireEvent.press(loginButtons[loginButtons.length - 1]);
+
+      await waitFor(() => {
+        expect(mockStoreData).toHaveBeenCalledWith('auth_token', 'mock_token_123');
+      });
+    });
+
+    it('should navigate to home on successful login', async () => {
+      const { getByPlaceholderText, getAllByText } = render(<LoginScreen />);
+
+      fireEvent.changeText(getByPlaceholderText('Email'), 'test@example.com');
+      fireEvent.changeText(getByPlaceholderText('Password'), 'password123');
+
+      const loginButtons = getAllByText('Login');
+      fireEvent.press(loginButtons[loginButtons.length - 1]);
+
+      await waitFor(() => {
+        expect(mockReplace).toHaveBeenCalledWith('/home');
+      });
+    });
+  });
+
+  describe('Tab Navigation', () => {
+    it('should navigate to signup when Sign-up tab is pressed', () => {
+      const { getByText } = render(<LoginScreen />);
+
+      fireEvent.press(getByText('Sign-up'));
+
+      expect(mockPush).toHaveBeenCalledWith('/auth/signup');
+    });
+
+    it('should show Forget Password link', () => {
+      const { getByText } = render(<LoginScreen />);
+      expect(getByText('Forget Password?')).toBeTruthy();
+    });
+  });
+});
