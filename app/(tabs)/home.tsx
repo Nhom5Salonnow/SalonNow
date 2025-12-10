@@ -4,14 +4,40 @@ import {
   SpecialistCard,
 } from "@/components/salon";
 import { DecorativeCircle } from "@/components";
-import { Colors, HOME_CATEGORIES, SPECIALISTS } from "@/constants";
+import { Colors, HOME_CATEGORIES, SPECIALISTS, GUEST_USER } from "@/constants";
 import { hp, rf, wp } from "@/utils/responsive";
+import { STORAGE_KEYS, getData } from "@/utils/asyncStorage";
 import { router } from "expo-router";
-import { Bell, Menu, ShoppingCart } from "lucide-react-native";
-import { Image, ScrollView, Text, TouchableOpacity, View, Button } from "react-native";
-import * as Sentry from '@sentry/react-native';
+import { Bell, Menu, ShoppingCart, User } from "lucide-react-native";
+import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import { User as UserType } from "@/types";
 
 export default function HomeScreen() {
+  const [user, setUser] = useState<UserType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      const token = await getData(STORAGE_KEYS.AUTH_TOKEN);
+      if (token) {
+        const userData = await getData(STORAGE_KEYS.USER_DATA);
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
+      }
+    } catch (error) {
+      console.error("Error loading user data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const isGuest = !user;
   const handleCategoryPress = (categoryId: string) => {
     router.push(`/service/${categoryId}` as any);
   };
@@ -58,51 +84,59 @@ export default function HomeScreen() {
               <Text
                 style={{ fontSize: rf(22), fontWeight: "400", color: "rgba(0,0,0,0.8)" }}
               >
-                Hi
+                {isGuest ? "Welcome" : "Hi"}
               </Text>
               <Text
                 style={{ fontSize: rf(26), fontWeight: "400", color: "rgba(0,0,0,0.57)" }}
               >
-                Doe John
+                {isGuest ? GUEST_USER.name : user?.name || "User"}
               </Text>
             </View>
           </View>
 
           <View className="flex-row items-center" style={{ gap: wp(3) }}>
-            {/* Notification */}
-            <TouchableOpacity
-              testID="notification-button"
-              onPress={handleNotificationPress}
-              className="relative items-center justify-center rounded-lg border border-gray-200"
-              style={{ width: wp(11), height: wp(11) }}
-            >
-              <Bell size={rf(20)} color="#0B0C15" strokeWidth={1.5} />
-              <View
-                className="absolute rounded-full"
-                style={{
-                  top: wp(2),
-                  right: wp(2),
-                  width: wp(2),
-                  height: wp(2),
-                  backgroundColor: Colors.primary,
-                }}
-              />
-            </TouchableOpacity>
+            {/* Notification - only show for logged in users */}
+            {!isGuest && (
+              <TouchableOpacity
+                testID="notification-button"
+                onPress={handleNotificationPress}
+                className="relative items-center justify-center rounded-lg border border-gray-200"
+                style={{ width: wp(11), height: wp(11) }}
+              >
+                <Bell size={rf(20)} color="#0B0C15" strokeWidth={1.5} />
+                <View
+                  className="absolute rounded-full"
+                  style={{
+                    top: wp(2),
+                    right: wp(2),
+                    width: wp(2),
+                    height: wp(2),
+                    backgroundColor: Colors.primary,
+                  }}
+                />
+              </TouchableOpacity>
+            )}
 
-            {/* Profile */}
+            {/* Profile / Login Button */}
             <TouchableOpacity
               testID="profile-button"
-              onPress={handleProfilePress}
-              className="rounded-full overflow-hidden"
-              style={{ width: wp(14), height: wp(14) }}
+              onPress={isGuest ? () => router.push("/auth/login") : handleProfilePress}
+              className="rounded-full overflow-hidden items-center justify-center"
+              style={{
+                width: wp(14),
+                height: wp(14),
+                backgroundColor: isGuest ? Colors.salon.pinkLight : "transparent",
+              }}
             >
-              <Image
-                source={{
-                  uri: "https://api.builder.io/api/v1/image/assets/TEMP/bf83f7d9f51b91c7f1126d620657aa5f1b9a54bf?width=114",
-                }}
-                className="w-full h-full"
-                resizeMode="cover"
-              />
+              {isGuest ? (
+                <User size={rf(24)} color={Colors.primary} />
+              ) : (
+                <Image
+                  source={{ uri: user?.avatar }}
+                  className="w-full h-full"
+                  resizeMode="cover"
+                />
+              )}
             </TouchableOpacity>
           </View>
         </View>

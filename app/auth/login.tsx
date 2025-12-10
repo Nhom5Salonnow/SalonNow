@@ -1,5 +1,4 @@
 import { Colors } from "@/constants";
-import { STORAGE_KEYS, storeData } from "@/utils/asyncStorage";
 import { hp, rf, wp } from "@/utils/responsive";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -11,27 +10,35 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-    Button,
-    Pressable,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
-import * as Sentry from '@sentry/react-native';
-
+import { authService } from "@/api/authService";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async () => {
-    // TODO: Implement actual login logic with API
-    // For now, save a mock token to simulate login
-    await storeData(STORAGE_KEYS.AUTH_TOKEN, "mock_token_123");
-    await storeData(STORAGE_KEYS.USER_DATA, JSON.stringify({
-      name: "Doe John",
-      email: email || "doejohn@example.com",
-      phone: "+732 8888 111",
-    }));
-    router.replace("/home" as any);
+    if (!email.trim() || !password.trim()) {
+      setError("Please enter email and password");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await authService.login({ email, password });
+      router.replace("/home" as any);
+    } catch (err: any) {
+      setError(err.message || "Login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleTabChange = (tab: "login" | "signup") => {
@@ -162,6 +169,28 @@ export default function LoginScreen() {
               />
             </View>
 
+            {/* Error Message */}
+            {error && (
+              <View
+                className="rounded-xl"
+                style={{
+                  backgroundColor: "#FEE2E2",
+                  padding: hp(1.5),
+                  marginBottom: hp(2),
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: rf(14),
+                    color: "#DC2626",
+                    textAlign: "center",
+                  }}
+                >
+                  {error}
+                </Text>
+              </View>
+            )}
+
             {/* Forget Password */}
             <TouchableOpacity className="items-center" style={{ marginBottom: hp(3) }}>
               <Text
@@ -178,49 +207,51 @@ export default function LoginScreen() {
             {/* Login Button */}
             <TouchableOpacity
               onPress={handleLogin}
+              disabled={isLoading}
               className="rounded-2xl items-center justify-center"
               style={{
-                backgroundColor: Colors.primary,
+                backgroundColor: isLoading ? Colors.gray[400] : Colors.primary,
                 paddingVertical: hp(2),
               }}
             >
-              <Text
-                style={{
-                  fontSize: rf(18),
-                  fontWeight: "bold",
-                  color: "#fff",
-                }}
-              >
-                Login
-              </Text>
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text
+                  style={{
+                    fontSize: rf(18),
+                    fontWeight: "bold",
+                    color: "#fff",
+                  }}
+                >
+                  Login
+                </Text>
+              )}
             </TouchableOpacity>
 
-
-              <Pressable
-                  className="w-full py-3 bg-textPrimary500 items-center justify-center text-white font-bold rounded-lg tracking-wide"
-                  onPress={() => {
-                      console.log("=== TEST SENTRY: Crash tại nút + Đăng sách/tài liệu mới ===");
-                      // Gửi message
-                      Sentry.captureMessage(
-                          "Test Sentry từ nút + Đăng sách/tài liệu mới – Nhóm 4 test crash"
-                      );
-                      // Gửi exception
-                      Sentry.captureException(
-                          new Error(
-                              "SENTRY ERROR: Crash test – nút + Đăng sách/tài liệu mới (error + sourcemaps + performance)"
-                          )
-                      );
-                      // Crash thật
-                      throw new Error(
-                          "CRASHED: Crash test từ màn hình Đăng Sách/Tài Liệu – Sentry test"
-                      );
-                  }}
+            {/* Demo accounts info */}
+            <View style={{ marginTop: hp(3) }}>
+              <Text
+                style={{
+                  fontSize: rf(12),
+                  color: Colors.gray[500],
+                  textAlign: "center",
+                  marginBottom: hp(0.5),
+                }}
               >
-                  <Text className="text-white font-bold text-base tracking-wide">
-                      + Đăng sách/tài liệu mới
-                  </Text>
-              </Pressable>
-
+                Demo accounts:
+              </Text>
+              <Text
+                style={{
+                  fontSize: rf(11),
+                  color: Colors.gray[400],
+                  textAlign: "center",
+                }}
+              >
+                doejohn@example.com / 123456{"\n"}
+                test@test.com / test
+              </Text>
+            </View>
           </View>
         </KeyboardAvoidingView>
       </ImageBackground>

@@ -2,6 +2,14 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import ProfileScreen from '@/app/(tabs)/profile';
 
+// Mock AsyncStorage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  setItem: jest.fn(),
+  getItem: jest.fn(() => Promise.resolve('mock_token')),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+}));
+
 // Mock expo-router
 const mockBack = jest.fn();
 const mockPush = jest.fn();
@@ -63,6 +71,7 @@ jest.mock('lucide-react-native', () => ({
 // Mock components
 jest.mock('@/components', () => ({
   DecorativeCircle: () => null,
+  AuthGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 describe('ProfileScreen', () => {
@@ -149,13 +158,13 @@ describe('ProfileScreen', () => {
       });
     });
 
-    it('should navigate to login screen after logout', async () => {
+    it('should navigate to home screen after logout', async () => {
       const { getByText } = render(<ProfileScreen />);
 
       fireEvent.press(getByText('Logout'));
 
       await waitFor(() => {
-        expect(mockReplace).toHaveBeenCalledWith('/auth/login');
+        expect(mockReplace).toHaveBeenCalledWith('/home');
       });
     });
   });

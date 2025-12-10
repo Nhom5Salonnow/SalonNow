@@ -4,9 +4,9 @@ import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { LinearGradient } from 'expo-linear-gradient';
-import { WeekCalendar, generateWeekDays } from '@/components';
+import { WeekCalendar, generateWeekDays, AuthGuard } from '@/components';
 
-export default function AppointmentScreen() {
+function AppointmentContent() {
   const [selectedDate, setSelectedDate] = useState(12);
   const [selectedHour] = useState('2:00');
   const [selectedPeriod] = useState('P.M');
@@ -182,5 +182,13 @@ export default function AppointmentScreen() {
         </TouchableOpacity>
       </View>
     </View>
+  );
+}
+
+export default function AppointmentScreen() {
+  return (
+    <AuthGuard message="Please login to book an appointment with our stylists">
+      <AppointmentContent />
+    </AuthGuard>
   );
 }

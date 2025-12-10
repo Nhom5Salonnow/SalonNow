@@ -5,7 +5,7 @@ import { ChevronLeft } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { LinearGradient } from 'expo-linear-gradient';
-import { WeekCalendar, generateWeekDays } from '@/components';
+import { WeekCalendar, generateWeekDays, AuthGuard } from '@/components';
 
 interface Appointment {
   id: string;
@@ -47,7 +47,7 @@ const APPOINTMENTS: Appointment[] = [
   },
 ];
 
-export default function MyAppointmentsScreen() {
+function MyAppointmentsContent() {
   const [selectedDate, setSelectedDate] = useState(12);
   const currentMonth = 'April';
 
@@ -193,5 +193,13 @@ export default function MyAppointmentsScreen() {
         </TouchableOpacity>
       </View>
     </View>
+  );
+}
+
+export default function MyAppointmentsScreen() {
+  return (
+    <AuthGuard message="Please login to view your appointments">
+      <MyAppointmentsContent />
+    </AuthGuard>
   );
 }

@@ -2,6 +2,14 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import BookingsScreen from '@/app/(tabs)/bookings';
 
+// Mock AsyncStorage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  setItem: jest.fn(),
+  getItem: jest.fn(() => Promise.resolve('mock_token')),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+}));
+
 // Mock expo-router
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
@@ -71,6 +79,7 @@ jest.mock('lucide-react-native', () => ({
 // Mock components
 jest.mock('@/components', () => ({
   DecorativeCircle: () => null,
+  AuthGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 jest.mock('@/components/ui', () => ({

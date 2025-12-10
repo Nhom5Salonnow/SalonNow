@@ -2,6 +2,14 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import SplashScreen from '@/app/index';
 
+// Mock AsyncStorage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  setItem: jest.fn(),
+  getItem: jest.fn(() => Promise.resolve(null)),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+}));
+
 // Mock expo-router
 const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({
@@ -35,6 +43,8 @@ jest.mock('expo-linear-gradient', () => ({
 describe('SplashScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset to default behavior (null = not completed onboarding)
+    mockGetData.mockResolvedValue(null);
   });
 
   describe('Rendering', () => {
@@ -66,8 +76,7 @@ describe('SplashScreen', () => {
 
   describe('Navigation', () => {
     it('should navigate to onboarding when onboarding not completed', async () => {
-      mockGetData.mockResolvedValueOnce(null); // HAS_COMPLETED_ONBOARDING
-      mockGetData.mockResolvedValueOnce(null); // AUTH_TOKEN
+      mockGetData.mockResolvedValue(null); // HAS_COMPLETED_ONBOARDING = null
 
       const { getByText } = render(<SplashScreen />);
       fireEvent.press(getByText("Let's Start"));
@@ -77,21 +86,8 @@ describe('SplashScreen', () => {
       });
     });
 
-    it('should navigate to login when onboarding completed but not authenticated', async () => {
-      mockGetData.mockResolvedValueOnce('true'); // HAS_COMPLETED_ONBOARDING
-      mockGetData.mockResolvedValueOnce(null); // AUTH_TOKEN
-
-      const { getByText } = render(<SplashScreen />);
-      fireEvent.press(getByText("Let's Start"));
-
-      await waitFor(() => {
-        expect(mockReplace).toHaveBeenCalledWith('/auth/login');
-      });
-    });
-
-    it('should navigate to home when authenticated', async () => {
-      mockGetData.mockResolvedValueOnce('true'); // HAS_COMPLETED_ONBOARDING
-      mockGetData.mockResolvedValueOnce('mock_token'); // AUTH_TOKEN
+    it('should navigate to home when onboarding completed (no login required)', async () => {
+      mockGetData.mockResolvedValue('true'); // HAS_COMPLETED_ONBOARDING = true
 
       const { getByText } = render(<SplashScreen />);
       fireEvent.press(getByText("Let's Start"));
@@ -102,7 +98,7 @@ describe('SplashScreen', () => {
     });
 
     it('should navigate to onboarding when error occurs', async () => {
-      mockGetData.mockRejectedValueOnce(new Error('Storage error'));
+      mockGetData.mockRejectedValue(new Error('Storage error'));
 
       const { getByText } = render(<SplashScreen />);
 
@@ -119,7 +115,7 @@ describe('SplashScreen', () => {
     });
 
     it('should navigate to onboarding when onboarding value is not "true"', async () => {
-      mockGetData.mockResolvedValueOnce('false'); // HAS_COMPLETED_ONBOARDING - not 'true'
+      mockGetData.mockResolvedValue('false'); // HAS_COMPLETED_ONBOARDING = false
 
       const { getByText } = render(<SplashScreen />);
       fireEvent.press(getByText("Let's Start"));

@@ -5,3 +5,4 @@ export { QuoteBanner } from './QuoteBanner';
 export { WeekCalendar, generateWeekDays, WEEK_DAYS } from './WeekCalendar';
 export type { WeekDay } from './WeekCalendar';
 export { FormField } from './FormField';
+export { AuthGuard } from './AuthGuard';

@@ -283,5 +283,48 @@ export const DEFAULT_USER = {
   avatar: "https://api.builder.io/api/v1/image/assets/TEMP/bf83f7d9f51b91c7f1126d620657aa5f1b9a54bf?width=114",
 };
 
+// ==================== GUEST USER ====================
+export const GUEST_USER = {
+  name: "Guest",
+  avatar: null, // Will use default icon
+};
+
+// ==================== MOCK USERS FOR AUTHENTICATION ====================
+export interface MockUser {
+  id: string;
+  email: string;
+  password: string;
+  name: string;
+  phone: string;
+  avatar: string;
+}
+
+export const MOCK_USERS: MockUser[] = [
+  {
+    id: "1",
+    email: "doejohn@example.com",
+    password: "123456",
+    name: "Doe John",
+    phone: "+732 8888 111",
+    avatar: "https://api.builder.io/api/v1/image/assets/TEMP/bf83f7d9f51b91c7f1126d620657aa5f1b9a54bf?width=114",
+  },
+  {
+    id: "2",
+    email: "lucy@example.com",
+    password: "123456",
+    name: "Lucy Smith",
+    phone: "+732 9999 222",
+    avatar: "https://api.builder.io/api/v1/image/assets/TEMP/ab5fe51fab4ac2627711fedc485bf50f9f29dc9d?width=240",
+  },
+  {
+    id: "3",
+    email: "test@test.com",
+    password: "test",
+    name: "Test User",
+    phone: "+732 1111 333",
+    avatar: "https://api.builder.io/api/v1/image/assets/TEMP/c13a64eddbdb7480b9b4c7efde1b809bfdd47ab0?width=240",
+  },
+];
+
 // ==================== CALENDAR ====================
 export const WEEK_DAYS = ["Mo", "Tue", "Wed", "Th", "Fri", "Sa", "Su"];

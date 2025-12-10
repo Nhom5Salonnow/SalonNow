@@ -25,6 +25,16 @@ jest.mock('@/utils/responsive', () => ({
   rf: (value: number) => value,
 }));
 
+// Mock asyncStorage utilities
+const mockGetData = jest.fn();
+jest.mock('@/utils/asyncStorage', () => ({
+  getData: (key: string) => mockGetData(key),
+  STORAGE_KEYS: {
+    AUTH_TOKEN: 'authToken',
+    USER_DATA: 'userData',
+  },
+}));
+
 // Mock constants
 jest.mock('@/constants', () => ({
   Colors: {
@@ -51,6 +61,10 @@ jest.mock('@/constants', () => ({
     { id: '2', name: 'Lucy', rating: 2, phone: '+732 8888 111', imageUrl: 'http://example.com/s2.jpg' },
     { id: '3', name: 'Laila', rating: 0, phone: '+732 8888 111', imageUrl: 'http://example.com/s3.jpg' },
   ],
+  GUEST_USER: {
+    name: 'Guest',
+    avatar: null,
+  },
 }));
 
 // Mock lucide-react-native
@@ -58,6 +72,7 @@ jest.mock('lucide-react-native', () => ({
   Menu: () => null,
   Bell: () => null,
   ShoppingCart: () => null,
+  User: () => null,
 }));
 
 // Mock DecorativeCircle component
@@ -97,19 +112,20 @@ jest.mock('@/components/salon', () => ({
 describe('HomeScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default to guest mode (no token)
+    mockGetData.mockResolvedValue(null);
   });
 
-  describe('Rendering', () => {
+  describe('Rendering - Guest Mode', () => {
     it('should render without crashing', () => {
       const { getByText } = render(<HomeScreen />);
-      expect(getByText('Hi')).toBeTruthy();
+      expect(getByText('Welcome')).toBeTruthy();
     });
 
-    it('should render greeting text with default user name', () => {
-      const { getByText, getAllByText } = render(<HomeScreen />);
-      expect(getByText('Hi')).toBeTruthy();
-      // Doe John appears in greeting and as specialist name
-      expect(getAllByText('Doe John').length).toBeGreaterThan(0);
+    it('should render Welcome greeting for guest', () => {
+      const { getByText } = render(<HomeScreen />);
+      expect(getByText('Welcome')).toBeTruthy();
+      expect(getByText('Guest')).toBeTruthy();
     });
 
     it('should render Categories section title', () => {
@@ -149,7 +165,7 @@ describe('HomeScreen', () => {
     });
   });
 
-  describe('Navigation', () => {
+  describe('Navigation - Guest Mode', () => {
     it('should navigate to service detail when category is pressed', () => {
       const { getByTestId } = render(<HomeScreen />);
 
@@ -166,20 +182,12 @@ describe('HomeScreen', () => {
       expect(mockPush).toHaveBeenCalledWith('/appointment');
     });
 
-    it('should navigate to notifications when notification button is pressed', () => {
-      const { getByTestId } = render(<HomeScreen />);
-
-      fireEvent.press(getByTestId('notification-button'));
-
-      expect(mockPush).toHaveBeenCalledWith('/notifications');
-    });
-
-    it('should navigate to profile when profile button is pressed', () => {
+    it('should navigate to login when profile button is pressed (guest mode)', () => {
       const { getByTestId } = render(<HomeScreen />);
 
       fireEvent.press(getByTestId('profile-button'));
 
-      expect(mockPush).toHaveBeenCalledWith('/profile');
+      expect(mockPush).toHaveBeenCalledWith('/auth/login');
     });
 
     it('should navigate to promo service when promo card is pressed', () => {
@@ -196,6 +204,48 @@ describe('HomeScreen', () => {
       fireEvent.press(getByTestId('cart-button'));
 
       expect(mockPush).toHaveBeenCalledWith('/payment');
+    });
+  });
+
+  describe('Logged In Mode', () => {
+    beforeEach(() => {
+      // Setup logged in user
+      mockGetData.mockImplementation((key: string) => {
+        if (key === 'authToken') return Promise.resolve('mock_token');
+        if (key === 'userData') return Promise.resolve(JSON.stringify({
+          name: 'Test User',
+          email: 'test@test.com',
+          avatar: 'http://example.com/avatar.jpg',
+        }));
+        return Promise.resolve(null);
+      });
+    });
+
+    it('should show Hi greeting for logged in user', async () => {
+      const { findByText } = render(<HomeScreen />);
+      expect(await findByText('Hi')).toBeTruthy();
+    });
+
+    it('should navigate to profile when profile button is pressed (logged in)', async () => {
+      const { getByTestId, findByText } = render(<HomeScreen />);
+
+      // Wait for user data to load
+      await findByText('Hi');
+
+      fireEvent.press(getByTestId('profile-button'));
+
+      expect(mockPush).toHaveBeenCalledWith('/profile');
+    });
+
+    it('should navigate to notifications when notification button is pressed', async () => {
+      const { getByTestId, findByText } = render(<HomeScreen />);
+
+      // Wait for user data to load
+      await findByText('Hi');
+
+      fireEvent.press(getByTestId('notification-button'));
+
+      expect(mockPush).toHaveBeenCalledWith('/notifications');
     });
   });
 });
