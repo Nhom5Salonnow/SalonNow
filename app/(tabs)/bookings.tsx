@@ -1,5 +1,5 @@
 import { Colors, APPOINTMENT_HISTORY, DEFAULT_USER } from "@/constants";
-import { DecorativeCircle } from "@/components";
+import { DecorativeCircle, AuthGuard } from "@/components";
 import { STORAGE_KEYS, getData } from "@/utils/asyncStorage";
 import { hp, rf, wp } from "@/utils/responsive";
 import { AppointmentCard } from "@/components/ui";
@@ -14,7 +14,7 @@ interface UserData {
   phone: string;
 }
 
-export default function BookingsScreen() {
+function BookingsContent() {
   const [userData, setUserData] = useState<UserData | null>(null);
 
   useEffect(() => {
@@ -114,5 +114,13 @@ export default function BookingsScreen() {
         showsVerticalScrollIndicator={false}
       />
     </View>
+  );
+}
+
+export default function BookingsScreen() {
+  return (
+    <AuthGuard message="Please login to view your booking history">
+      <BookingsContent />
+    </AuthGuard>
   );
 }

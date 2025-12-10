@@ -2,6 +2,14 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import MyAppointmentsScreen from '@/app/my-appointments';
 
+// Mock AsyncStorage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  setItem: jest.fn(),
+  getItem: jest.fn(() => Promise.resolve('mock_token')),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+}));
+
 // Mock expo-router
 const mockBack = jest.fn();
 const mockPush = jest.fn();
@@ -72,6 +80,7 @@ jest.mock('@/components', () => ({
     }
     return days;
   },
+  AuthGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 describe('MyAppointmentsScreen', () => {
