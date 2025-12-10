@@ -18,7 +18,7 @@
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg)"
     ],
     "testMatch": [
-        "**/__tests__/**/*.ts?(x)"
+      "**/__tests__/**/*.ts?(x)"
     ],
     "collectCoverageFrom": [
       "app/**/*.{ts,tsx}",
@@ -43,6 +43,7 @@
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
+    "@sentry/react-native": "^7.7.0",
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "29.5.14",
     "expo": "54.0.22",

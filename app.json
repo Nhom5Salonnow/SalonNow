@@ -39,8 +39,24 @@
           }
         }
       ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "nhom5salonnow",
+          "organization": "nhom5salonnow"
+        }
+      ],
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "nhom5salonnow",
+          "organization": "nhom5salonnow"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
@@ -49,10 +65,10 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "bc89eeac-27ab-41aa-a8c6-083949e54435"
+        "projectId": "61e58703-a0c6-4098-afcf-2b31e3406168"
       }
     },
-    "owner": "yudov",
+    "owner": "salonnow",
     "runtimeVersion": {
       "policy": "appVersion"
     },

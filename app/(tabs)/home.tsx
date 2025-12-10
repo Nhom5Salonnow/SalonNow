@@ -8,7 +8,8 @@ import { Colors, HOME_CATEGORIES, SPECIALISTS } from "@/constants";
 import { hp, rf, wp } from "@/utils/responsive";
 import { router } from "expo-router";
 import { Bell, Menu, ShoppingCart } from "lucide-react-native";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, Text, TouchableOpacity, View, Button } from "react-native";
+import * as Sentry from '@sentry/react-native';
 
 export default function HomeScreen() {
   const handleCategoryPress = (categoryId: string) => {
