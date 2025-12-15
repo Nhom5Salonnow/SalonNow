@@ -163,9 +163,12 @@
     </section>
 
     <!-- Problem Section -->
-    <section id="problem" class="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+    <section
+      id="problem"
+      class="min-h-screen flex flex-col justify-center py-16 px-4 sm:px-6 lg:px-8 bg-white"
+    >
       <div class="max-w-7xl mx-auto">
-        <div class="text-center mb-16">
+        <div class="text-center mb-8">
           <div
             class="inline-flex items-center space-x-2 bg-red-100 text-red-600 px-4 py-2 rounded-full text-sm font-medium mb-6"
           >
@@ -185,11 +188,11 @@
             class="bg-gradient-to-br from-red-50 to-orange-50 p-8 rounded-2xl border border-red-100"
           >
             <div
-              class="bg-white w-14 h-14 rounded-xl flex items-center justify-center mb-6 shadow-md"
+              class="bg-white w-14 h-14 rounded-xl flex items-center justify-center mb-2 shadow-md"
             >
               <i data-lucide="user-x" class="w-7 h-7 text-red-500"></i>
             </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-4">
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">
               Khách hàng gặp khó
             </h3>
             <ul class="space-y-3 text-gray-700">
@@ -271,7 +274,7 @@
           </div>
         </div>
       </div>
-      <div class="flex justify-center">
+      <div class="flex justify-center mt-4 mb-0">
         <button onclick="scrollToSection('solution')" class="animate-bounce">
           <i data-lucide="chevron-down" class="w-8 h-8 text-rose-400"></i>
         </button>
@@ -281,94 +284,99 @@
     <!-- Solution Section -->
     <section
       id="solution"
-      class="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50"
+      class="min-h-screen flex flex-col justify-center py-10 px-4 sm:px-0 lg:px-8 bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50"
     >
-      <div class="max-w-7xl mx-auto">
-        <div class="text-center mb-16">
+      <div class="max-w-7xl mx-auto w-full">
+        <div class="text-center mb-6">
           <div
-            class="inline-flex items-center space-x-2 bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-sm font-medium mb-6"
+            class="inline-flex items-center space-x-2 bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-sm font-medium mb-4"
           >
             <i data-lucide="lightbulb" class="w-4 h-4"></i>
             <span>Giải pháp của chúng tôi</span>
           </div>
-          <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+          <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
             SalonNow - Giải pháp toàn diện
           </h2>
-          <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p class="text-lg text-gray-600 max-w-3xl mx-auto">
             Nền tảng đặt lịch thông minh kết nối khách hàng và salon một cách
             liền mạch
           </p>
         </div>
-        <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+
+        <div class="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto">
           <div
-            class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow"
+            class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow"
           >
             <div
-              class="bg-gradient-to-br from-blue-400 to-blue-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-6"
+              class="bg-gradient-to-br from-blue-400 to-blue-500 w-12 h-12 rounded-xl flex items-center justify-center mb-4"
             >
-              <i data-lucide="info" class="w-8 h-8 text-white"></i>
+              <i data-lucide="info" class="w-6 h-6 text-white"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-3">
+            <h3 class="text-lg font-bold text-gray-900 mb-2">
               Thông tin rõ ràng
             </h3>
-            <p class="text-gray-600 leading-relaxed">
+            <p class="text-sm text-gray-600 leading-relaxed">
               Xem đầy đủ thông tin về salon, dịch vụ, giá cả, đánh giá từ khách
               hàng thực tế
             </p>
           </div>
+
           <div
-            class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow"
+            class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow"
           >
             <div
-              class="bg-gradient-to-br from-green-400 to-green-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-6"
+              class="bg-gradient-to-br from-green-400 to-green-500 w-12 h-12 rounded-xl flex items-center justify-center mb-4"
             >
-              <i data-lucide="calendar-check" class="w-8 h-8 text-white"></i>
+              <i data-lucide="calendar-check" class="w-6 h-6 text-white"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-3">
+            <h3 class="text-lg font-bold text-gray-900 mb-2">
               Đặt lịch dễ dàng
             </h3>
-            <p class="text-gray-600 leading-relaxed">
+            <p class="text-sm text-gray-600 leading-relaxed">
               Chọn thời gian, thợ cắt tóc yêu thích, loại dịch vụ phù hợp chỉ
               với vài cú chạm
             </p>
           </div>
+
           <div
-            class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow"
+            class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow"
           >
             <div
-              class="bg-gradient-to-br from-amber-400 to-amber-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-6"
+              class="bg-gradient-to-br from-amber-400 to-amber-500 w-12 h-12 rounded-xl flex items-center justify-center mb-4"
             >
-              <i data-lucide="bell" class="w-8 h-8 text-white"></i>
+              <i data-lucide="bell" class="w-6 h-6 text-white"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-3">
+            <h3 class="text-lg font-bold text-gray-900 mb-2">
               Nhắc nhở thông minh
             </h3>
-            <p class="text-gray-600 leading-relaxed">
+            <p class="text-sm text-gray-600 leading-relaxed">
               Nhận thông báo tự động khi gần đến giờ hẹn, tránh quên lịch và đến
               đúng giờ
             </p>
           </div>
         </div>
-        <div class="mt-12 bg-white p-8 rounded-2xl shadow-lg max-w-4xl mx-auto">
-          <div class="flex flex-col md:flex-row items-center gap-6">
+
+        <div class="mt-6 bg-white p-6 rounded-2xl shadow-lg max-w-4xl mx-auto">
+          <div class="flex flex-col md:flex-row items-center gap-4">
             <div
-              class="bg-gradient-to-br from-rose-400 to-pink-500 w-20 h-20 rounded-2xl flex items-center justify-center flex-shrink-0"
+              class="bg-gradient-to-br from-rose-400 to-pink-500 w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0"
             >
-              <i data-lucide="sparkles" class="w-10 h-10 text-white"></i>
+              <i data-lucide="sparkles" class="w-8 h-8 text-white"></i>
             </div>
             <div class="flex-1 text-center md:text-left">
-              <h3 class="text-2xl font-bold text-gray-900 mb-2">
+              <h3 class="text-xl font-bold text-gray-900 mb-1">
                 Danh sách chờ thông minh
               </h3>
-              <p class="text-gray-600">
+              <p class="text-sm text-gray-600">
                 Tính năng độc quyền tự động thông báo khi có slot trống phù hợp,
-                giúp khách hàng không bỏ lỡ cơ hội và salon tối đa hóa doanh thu
+                giúp khách hàng không bỏ lỡ cơ hội.
               </p>
             </div>
           </div>
         </div>
       </div>
-      <div class="flex justify-center mt-8">
+
+      <div class="flex justify-center mt-6">
         <button onclick="scrollToSection('value')" class="animate-bounce">
           <i data-lucide="chevron-down" class="w-8 h-8 text-rose-400"></i>
         </button>
@@ -378,117 +386,123 @@
     <!-- Value Section -->
     <section
       id="value"
-      class="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50"
+      class="min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50"
     >
-      <div class="max-w-7xl mx-auto">
-        <div class="text-center mb-16">
+      <div class="max-w-7xl mx-auto w-full">
+        <div class="text-center mb-8">
           <div
-            class="inline-flex items-center space-x-2 bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-sm font-medium mb-6"
+            class="inline-flex items-center space-x-2 bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-sm font-medium mb-4"
           >
             <i data-lucide="trophy" class="w-4 h-4"></i>
             <span>Giá trị mang lại</span>
           </div>
-          <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+          <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
             Lợi ích cho mọi người
           </h2>
-          <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p class="text-lg text-gray-600 max-w-3xl mx-auto">
             SalonNow tạo ra giá trị thực sự cho cả khách hàng và chủ salon
           </p>
         </div>
-        <div class="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          <div class="bg-white p-10 rounded-3xl shadow-xl">
+
+        <div class="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          <div
+            class="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all"
+          >
             <div class="flex items-center gap-4 mb-6">
               <div
-                class="bg-gradient-to-br from-rose-400 to-pink-500 w-16 h-16 rounded-2xl flex items-center justify-center"
+                class="bg-gradient-to-br from-rose-400 to-pink-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
               >
-                <i data-lucide="heart" class="w-8 h-8 text-white"></i>
+                <i data-lucide="heart" class="w-6 h-6 text-white"></i>
               </div>
-              <h3 class="text-3xl font-bold text-gray-900">Cho khách hàng</h3>
+              <h3 class="text-2xl font-bold text-gray-900">Cho khách hàng</h3>
             </div>
-            <ul class="space-y-4 text-gray-700">
+
+            <ul class="space-y-3 text-gray-700">
               <li class="flex items-start">
                 <i
                   data-lucide="check-circle"
-                  class="w-6 h-6 text-green-500 mr-3 mt-0.5 flex-shrink-0"
+                  class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0"
                 ></i>
-                <span class="text-lg"
-                  >Tiết kiệm thời gian - đặt lịch mọi lúc mọi nơi chỉ trong vài
-                  giây</span
+                <span class="text-base"
+                  >Tiết kiệm thời gian - đặt lịch mọi lúc mọi nơi</span
                 >
               </li>
               <li class="flex items-start">
                 <i
                   data-lucide="check-circle"
-                  class="w-6 h-6 text-green-500 mr-3 mt-0.5 flex-shrink-0"
+                  class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0"
                 ></i>
-                <span class="text-lg"
+                <span class="text-base"
                   >Chọn lựa tự do - salon, thợ, dịch vụ theo ý muốn</span
                 >
               </li>
               <li class="flex items-start">
                 <i
                   data-lucide="check-circle"
-                  class="w-6 h-6 text-green-500 mr-3 mt-0.5 flex-shrink-0"
+                  class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0"
                 ></i>
-                <span class="text-lg"
+                <span class="text-base"
                   >Không lo quên lịch - nhắc nhở thông minh tự động</span
                 >
               </li>
               <li class="flex items-start">
                 <i
                   data-lucide="check-circle"
-                  class="w-6 h-6 text-green-500 mr-3 mt-0.5 flex-shrink-0"
+                  class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0"
                 ></i>
-                <span class="text-lg"
-                  >Trải nghiệm tốt hơn - thông tin rõ ràng, đánh giá minh
-                  bạch</span
+                <span class="text-base"
+                  >Trải nghiệm tốt hơn - thông tin rõ ràng, minh bạch</span
                 >
               </li>
             </ul>
           </div>
-          <div class="bg-white p-10 rounded-3xl shadow-xl">
+
+          <div
+            class="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all"
+          >
             <div class="flex items-center gap-4 mb-6">
               <div
-                class="bg-gradient-to-br from-blue-400 to-cyan-500 w-16 h-16 rounded-2xl flex items-center justify-center"
+                class="bg-gradient-to-br from-blue-400 to-cyan-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
               >
-                <i data-lucide="trending-up" class="w-8 h-8 text-white"></i>
+                <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
               </div>
-              <h3 class="text-3xl font-bold text-gray-900">Cho salon</h3>
+              <h3 class="text-2xl font-bold text-gray-900">Cho salon</h3>
             </div>
-            <ul class="space-y-4 text-gray-700">
+
+            <ul class="space-y-3 text-gray-700">
               <li class="flex items-start">
                 <i
                   data-lucide="check-circle"
-                  class="w-6 h-6 text-green-500 mr-3 mt-0.5 flex-shrink-0"
+                  class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0"
                 ></i>
-                <span class="text-lg"
+                <span class="text-base"
                   >Quản lý dễ dàng - hệ thống tự động, giảm sai sót</span
                 >
               </li>
               <li class="flex items-start">
                 <i
                   data-lucide="check-circle"
-                  class="w-6 h-6 text-green-500 mr-3 mt-0.5 flex-shrink-0"
+                  class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0"
                 ></i>
-                <span class="text-lg"
+                <span class="text-base"
                   >Tăng doanh thu - tối ưu lịch trống, giảm no-show</span
                 >
               </li>
               <li class="flex items-start">
                 <i
                   data-lucide="check-circle"
-                  class="w-6 h-6 text-green-500 mr-3 mt-0.5 flex-shrink-0"
+                  class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0"
                 ></i>
-                <span class="text-lg"
+                <span class="text-base"
                   >Tiếp cận khách mới - hiện diện trên nền tảng số</span
                 >
               </li>
               <li class="flex items-start">
                 <i
                   data-lucide="check-circle"
-                  class="w-6 h-6 text-green-500 mr-3 mt-0.5 flex-shrink-0"
+                  class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0"
                 ></i>
-                <span class="text-lg"
+                <span class="text-base"
                   >Dữ liệu thông minh - phân tích, báo cáo chi tiết</span
                 >
               </li>
@@ -496,7 +510,8 @@
           </div>
         </div>
       </div>
-      <div class="flex justify-center mt-8">
+
+      <div class="flex justify-center mt-6">
         <button onclick="scrollToSection('features')" class="animate-bounce">
           <i data-lucide="chevron-down" class="w-8 h-8 text-rose-400"></i>
         </button>
@@ -504,7 +519,10 @@
     </section>
 
     <!-- Features Section -->
-    <section id="features" class="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+    <section
+      id="features"
+      class="min-h-screen flex flex-col justify-center py-24 px-4 sm:px-6 lg:px-8 bg-white"
+    >
       <div class="max-w-7xl mx-auto">
         <div class="text-center mb-16">
           <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -737,178 +755,162 @@
     <!-- Screenshots Section -->
     <section
       id="screenshots"
-      class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+      class="min-h-screen flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8"
     >
-      <div class="max-w-7xl w-full h-full">
-        <div class="text-center mb-8">
-          <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+      <div class="max-w-7xl mx-auto w-full">
+        <div class="text-center mb-6">
+          <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
             Xem ứng dụng hoạt động
           </h2>
-          <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p class="text-lg text-gray-600 max-w-2xl mx-auto">
             Giao diện đẹp mắt được thiết kế để đặt lịch dễ dàng
           </p>
         </div>
-        <!-- Carousel Container -->
-        <div class="relative max-w-4xl mx-auto">
-          <div class="overflow-hidden rounded-2xl shadow-2xl">
+
+        <div class="relative max-w-md mx-auto">
+          <div
+            class="overflow-hidden rounded-2xl shadow-2xl bg-gradient-to-br from-gray-50 to-gray-100"
+          >
             <div
               id="carousel"
               class="flex transition-transform duration-500 ease-in-out"
             >
-              <div class="min-w-full flex justify-center items-center p-1">
+              <div class="min-w-full flex justify-center items-center p-2">
                 <img
                   src="./images/567176883_826148363697233_1353442746283220684_n.png"
-                  alt="Ảnh chụp màn hình ứng dụng Salon Now 1"
-                  class="h-[60vh] w-auto mx-auto object-contain rounded-xl shadow-lg"
+                  alt="Ảnh chụp màn hình 1"
+                  class="h-[50vh] w-auto mx-auto object-contain rounded-xl"
                 />
               </div>
-              <!-- <div class="min-w-full flex justify-center items-center bg-gradient-to-br from-blue-100 to-cyan-100 p-1">
-                <div class="text-center">
-                  <i data-lucide="smartphone" class="w-32 h-32 text-blue-500 mx-auto mb-4"></i>
-                  <p class="text-2xl font-semibold text-gray-700">Màn hình đặt lịch</p>
-                  <p class="text-gray-600 mt-2">Chọn thời gian và dịch vụ dễ dàng</p>
-                </div>
-                <img
-                  src="./images/567619937_1216735070504031_3791753539800472822_n.png"
-                  alt="Ảnh chụp màn hình ứng dụng Salon Now 1"
-                  class="max-w-full h-auto rounded-xl shadow-lg"
-                />
-              </div> -->
-              <div class="min-w-full flex justify-center items-center p-8">
-                <!-- <div class="text-center">
-                  <i data-lucide="calendar" class="w-32 h-32 text-purple-500 mx-auto mb-4"></i>
-                  <p class="text-2xl font-semibold text-gray-700">Quản lý lịch hẹn</p>
-                  <p class="text-gray-600 mt-2">Xem và quản lý tất cả lịch của bạn</p>
-                </div> -->
+
+              <div class="min-w-full flex justify-center items-center p-2">
                 <img
                   src="./images/568277341_906060709248053_1664735138621969487_n.png"
-                  alt="Ảnh chụp màn hình ứng dụng Salon Now 1"
-                  class="h-[60vh] w-auto mx-auto object-contain rounded-xl shadow-lg"
+                  alt="Ảnh chụp màn hình 2"
+                  class="h-[50vh] w-auto mx-auto object-contain rounded-xl"
                 />
               </div>
-              <div class="min-w-full flex justify-center items-center p-8">
-                <!-- <div class="text-center">
-                  <i data-lucide="user-check" class="w-32 h-32 text-green-500 mx-auto mb-4"></i>
-                  <p class="text-2xl font-semibold text-gray-700">Chọn thợ cắt tóc</p>
-                  <p class="text-gray-600 mt-2">Xem hồ sơ và đánh giá chi tiết</p>
-                </div> -->
+
+              <div class="min-w-full flex justify-center items-center p-2">
                 <img
                   src="./images/569858435_4294549870818680_4359872566544598617_n.png"
-                  alt="Ảnh chụp màn hình ứng dụng Salon Now 1"
-                  class="h-[60vh] w-auto mx-auto object-contain rounded-xl shadow-lg"
+                  alt="Ảnh chụp màn hình 3"
+                  class="h-[50vh] w-auto mx-auto object-contain rounded-xl"
                 />
               </div>
-              <div class="min-w-full flex justify-center items-center p-8">
+
+              <div class="min-w-full flex justify-center items-center p-2">
                 <img
                   src="./images/569865624_975621538113918_6510483785624265911_n.png"
-                  alt="Ảnh chụp màn hình ứng dụng Salon Now 1"
-                  class="h-[60vh] w-auto mx-auto object-contain rounded-xl shadow-lg"
+                  alt="Ảnh chụp màn hình 4"
+                  class="h-[50vh] w-auto mx-auto object-contain rounded-xl"
                 />
               </div>
             </div>
           </div>
-          <!-- Navigation Buttons -->
+
           <button
             onclick="moveCarousel(-1)"
-            class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition-all"
+            class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-all backdrop-blur-sm"
             aria-label="Ảnh trước"
           >
-            <i data-lucide="chevron-left" class="w-6 h-6 text-gray-700"></i>
+            <i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i>
           </button>
           <button
             onclick="moveCarousel(1)"
-            class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition-all"
+            class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-all backdrop-blur-sm"
             aria-label="Ảnh tiếp theo"
           >
-            <i data-lucide="chevron-right" class="w-6 h-6 text-gray-700"></i>
+            <i data-lucide="chevron-right" class="w-6 h-6 text-gray-800"></i>
           </button>
-          <!-- Dots Indicator -->
-          <div class="flex justify-center gap-2 mt-6">
+
+          <div class="flex justify-center gap-2 mt-4">
             <button
               onclick="goToSlide(0)"
-              class="carousel-dot w-3 h-3 rounded-full bg-rose-400 transition-all"
+              class="carousel-dot w-2.5 h-2.5 rounded-full bg-gray-300 transition-all"
               data-index="0"
             ></button>
             <button
               onclick="goToSlide(1)"
-              class="carousel-dot w-3 h-3 rounded-full bg-gray-300 transition-all"
+              class="carousel-dot w-2.5 h-2.5 rounded-full bg-gray-300 transition-all"
               data-index="1"
             ></button>
             <button
               onclick="goToSlide(2)"
-              class="carousel-dot w-3 h-3 rounded-full bg-gray-300 transition-all"
+              class="carousel-dot w-2.5 h-2.5 rounded-full bg-gray-300 transition-all"
               data-index="2"
             ></button>
             <button
               onclick="goToSlide(3)"
-              class="carousel-dot w-3 h-3 rounded-full bg-gray-300 transition-all"
+              class="carousel-dot w-2.5 h-2.5 rounded-full bg-gray-300 transition-all"
               data-index="3"
             ></button>
           </div>
-          <!-- Scroll Down Button -->
-          <div class="flex justify-center mt-8">
-            <button onclick="scrollToSection('tech')" class="animate-bounce">
-              <i data-lucide="chevron-down" class="w-8 h-8 text-rose-400"></i>
-            </button>
-          </div>
         </div>
+      </div>
+
+      <div class="flex justify-center mt-6">
+        <button onclick="scrollToSection('tech')" class="animate-bounce">
+          <i data-lucide="chevron-down" class="w-8 h-8 text-rose-400"></i>
+        </button>
       </div>
     </section>
 
     <!-- Tech Stack Section -->
-    <section id="tech" class="py-24 px-4 sm:px-6 lg:px-8 bg-white">
-      <div class="max-w-7xl mx-auto">
-        <div class="text-center mb-16">
+    <section
+      id="tech"
+      class="min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white"
+    >
+      <div class="max-w-7xl mx-auto w-full">
+        <div class="text-center mb-8">
           <div
-            class="inline-flex items-center space-x-2 bg-indigo-100 text-indigo-600 px-4 py-2 rounded-full text-sm font-medium mb-6"
+            class="mt-3 inline-flex items-center space-x-2 bg-indigo-100 text-indigo-600 px-4 py-2 rounded-full text-sm font-medium mb-4"
           >
             <i data-lucide="code" class="w-4 h-4"></i>
             <span>Công nghệ sử dụng</span>
           </div>
-          <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+          <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
             Stack công nghệ hiện đại
           </h2>
-          <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p class="text-lg text-gray-600 max-w-3xl mx-auto">
             Xây dựng trên nền tảng công nghệ mạnh mẽ và đáng tin cậy
           </p>
         </div>
 
-        <!-- Frontend -->
-        <div class="mb-12">
-          <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">
+        <div class="mb-8">
+          <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">
             Frontend / Mobile
           </h3>
-          <div class="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          <div class="grid md:grid-cols-2 gap-4 max-w-3xl mx-auto">
             <div
-              class="bg-gradient-to-br from-cyan-50 to-blue-50 p-6 rounded-2xl border border-cyan-100 hover:shadow-lg transition-shadow"
+              class="bg-gradient-to-br from-cyan-50 to-blue-50 p-4 rounded-2xl border border-cyan-100 hover:shadow-lg transition-shadow"
             >
               <div class="flex items-center gap-4">
                 <div
-                  class="bg-cyan-500 w-14 h-14 rounded-xl flex items-center justify-center"
+                  class="bg-cyan-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                 >
-                  <i data-lucide="smartphone" class="w-7 h-7 text-white"></i>
+                  <i data-lucide="smartphone" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                  <h4 class="text-xl font-bold text-gray-900">React Native</h4>
+                  <h4 class="text-lg font-bold text-gray-900">React Native</h4>
                   <p class="text-gray-600 text-sm">
                     Cross-platform mobile framework
                   </p>
                 </div>
               </div>
             </div>
+
             <div
-              class="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-2xl border border-purple-100 hover:shadow-lg transition-shadow"
+              class="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-2xl border border-purple-100 hover:shadow-lg transition-shadow"
             >
               <div class="flex items-center gap-4">
                 <div
-                  class="bg-purple-500 w-14 h-14 rounded-xl flex items-center justify-center"
+                  class="bg-purple-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                 >
-                  <i data-lucide="layout" class="w-7 h-7 text-white"></i>
+                  <i data-lucide="layout" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                  <h4 class="text-xl font-bold text-gray-900">
-                    React Native Elements
-                  </h4>
+                  <h4 class="text-lg font-bold text-gray-900">RN Elements</h4>
                   <p class="text-gray-600 text-sm">UI component library</p>
                 </div>
               </div>
@@ -916,53 +918,54 @@
           </div>
         </div>
 
-        <!-- Backend -->
-        <div class="mb-12">
-          <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">
+        <div class="mb-8">
+          <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">
             Backend
           </h3>
-          <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div class="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
             <div
-              class="bg-gradient-to-br from-red-50 to-rose-50 p-6 rounded-2xl border border-red-100 hover:shadow-lg transition-shadow"
+              class="bg-gradient-to-br from-red-50 to-rose-50 p-4 rounded-2xl border border-red-100 hover:shadow-lg transition-shadow"
             >
               <div class="flex items-center gap-4">
                 <div
-                  class="bg-red-500 w-14 h-14 rounded-xl flex items-center justify-center"
+                  class="bg-red-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                 >
-                  <i data-lucide="server" class="w-7 h-7 text-white"></i>
+                  <i data-lucide="server" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                  <h4 class="text-xl font-bold text-gray-900">NestJS</h4>
+                  <h4 class="text-lg font-bold text-gray-900">NestJS</h4>
                   <p class="text-gray-600 text-sm">Node.js framework</p>
                 </div>
               </div>
             </div>
+
             <div
-              class="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-100 hover:shadow-lg transition-shadow"
+              class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-2xl border border-blue-100 hover:shadow-lg transition-shadow"
             >
               <div class="flex items-center gap-4">
                 <div
-                  class="bg-blue-600 w-14 h-14 rounded-xl flex items-center justify-center"
+                  class="bg-blue-600 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                 >
-                  <i data-lucide="database" class="w-7 h-7 text-white"></i>
+                  <i data-lucide="database" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                  <h4 class="text-xl font-bold text-gray-900">PostgreSQL</h4>
+                  <h4 class="text-lg font-bold text-gray-900">PostgreSQL</h4>
                   <p class="text-gray-600 text-sm">Relational database</p>
                 </div>
               </div>
             </div>
+
             <div
-              class="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border border-green-100 hover:shadow-lg transition-shadow"
+              class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-2xl border border-green-100 hover:shadow-lg transition-shadow"
             >
               <div class="flex items-center gap-4">
                 <div
-                  class="bg-green-500 w-14 h-14 rounded-xl flex items-center justify-center"
+                  class="bg-green-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                 >
-                  <i data-lucide="shield" class="w-7 h-7 text-white"></i>
+                  <i data-lucide="shield" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                  <h4 class="text-xl font-bold text-gray-900">JWT</h4>
+                  <h4 class="text-lg font-bold text-gray-900">JWT</h4>
                   <p class="text-gray-600 text-sm">Authentication</p>
                 </div>
               </div>
@@ -970,57 +973,54 @@
           </div>
         </div>
 
-        <!-- Infrastructure -->
         <div>
-          <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">
+          <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">
             Infrastructure & DevOps
           </h3>
-          <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div class="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
             <div
-              class="bg-gradient-to-br from-orange-50 to-amber-50 p-6 rounded-2xl border border-orange-100 hover:shadow-lg transition-shadow"
+              class="bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-2xl border border-orange-100 hover:shadow-lg transition-shadow"
             >
               <div class="flex items-center gap-4">
                 <div
-                  class="bg-orange-500 w-14 h-14 rounded-xl flex items-center justify-center"
+                  class="bg-orange-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                 >
-                  <i data-lucide="cloud" class="w-7 h-7 text-white"></i>
+                  <i data-lucide="cloud" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                  <h4 class="text-xl font-bold text-gray-900">
-                    Cloud Services
-                  </h4>
-                  <p class="text-gray-600 text-sm">
-                    GCP + Cloud hosting & deployment
-                  </p>
+                  <h4 class="text-lg font-bold text-gray-900">Google Cloud</h4>
+                  <p class="text-gray-600 text-sm">Cloud hosting</p>
                 </div>
               </div>
             </div>
+
             <div
-              class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-2xl border border-yellow-100 hover:shadow-lg transition-shadow"
+              class="bg-gradient-to-br from-yellow-50 to-orange-50 p-4 rounded-2xl border border-yellow-100 hover:shadow-lg transition-shadow"
             >
               <div class="flex items-center gap-4">
                 <div
-                  class="bg-yellow-500 w-14 h-14 rounded-xl flex items-center justify-center"
+                  class="bg-yellow-500 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                 >
-                  <i data-lucide="bell-ring" class="w-7 h-7 text-white"></i>
+                  <i data-lucide="bell-ring" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                  <h4 class="text-xl font-bold text-gray-900">Firebase FCM</h4>
-                  <p class="text-gray-600 text-sm">Push notifications</p>
+                  <h4 class="text-lg font-bold text-gray-900">Firebase FCM</h4>
+                  <p class="text-gray-600 text-sm">Notifications</p>
                 </div>
               </div>
             </div>
+
             <div
-              class="bg-gradient-to-br from-gray-50 to-slate-50 p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-shadow"
+              class="bg-gradient-to-br from-gray-50 to-slate-50 p-4 rounded-2xl border border-gray-200 hover:shadow-lg transition-shadow"
             >
               <div class="flex items-center gap-4">
                 <div
-                  class="bg-gray-700 w-14 h-14 rounded-xl flex items-center justify-center"
+                  class="bg-gray-700 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                 >
-                  <i data-lucide="git-branch" class="w-7 h-7 text-white"></i>
+                  <i data-lucide="git-branch" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                  <h4 class="text-xl font-bold text-gray-900">
+                  <h4 class="text-lg font-bold text-gray-900">
                     GitHub Actions
                   </h4>
                   <p class="text-gray-600 text-sm">CI/CD pipeline</p>
@@ -1040,7 +1040,7 @@
     <!-- Team Section -->
     <section
       id="team"
-      class="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-white"
+      class="min-h-screen flex flex-col justify-center py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-white"
     >
       <div class="max-w-7xl mx-auto">
         <div class="text-center mb-16">
@@ -1167,127 +1167,161 @@
     </section>
 
     <!-- Roadmap / Timeline -->
-    <section id="roadmap" class="py-24 px-4 sm:px-6 lg:px-8 bg-white">
-      <div class="max-w-5xl mx-auto">
-        <div class="text-center mb-16">
+    <section
+      id="roadmap"
+      class="min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white"
+    >
+      <div class="max-w-4xl mx-auto w-full">
+        <div class="text-center mb-8">
           <div
-            class="inline-flex items-center space-x-2 bg-teal-100 text-teal-600 px-4 py-2 rounded-full text-sm font-medium mb-6"
+            class="inline-flex items-center space-x-2 bg-teal-100 text-teal-600 px-4 py-2 rounded-full text-sm font-medium mb-4"
           >
             <i data-lucide="map" class="w-4 h-4"></i>
             <span>Lộ trình phát triển</span>
           </div>
-          <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
             Lộ trình & Tiến độ
           </h2>
-          <p class="text-xl text-gray-600">
-            Kế hoạch 10 tuần để triển khai nền tảng cốt lõi và tính năng Danh
-            sách chờ thông minh
+          <p class="text-lg text-gray-600">
+            Kế hoạch 10 tuần triển khai nền tảng cốt lõi và tính năng Danh sách
+            chờ thông minh
           </p>
         </div>
+
         <div class="relative">
           <div
-            class="border-l-4 border-rose-200 absolute h-full left-8 top-0"
+            class="border-l-2 border-rose-200 absolute h-full left-6 top-0"
           ></div>
-          <div class="space-y-12">
-            <div class="relative pl-20">
+
+          <div class="space-y-6">
+            <div class="relative pl-16">
               <div
-                class="absolute left-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-400 to-pink-500 text-white flex items-center justify-center font-bold text-xl shadow-lg"
+                class="absolute left-0 w-12 h-12 rounded-xl bg-gradient-to-br from-rose-400 to-pink-500 text-white flex items-center justify-center font-bold text-lg shadow-lg"
               >
                 1
               </div>
               <div
-                class="bg-white p-6 rounded-2xl border-2 border-rose-100 shadow-md hover:shadow-lg transition-shadow"
+                class="bg-white p-4 rounded-xl border border-rose-100 shadow-sm hover:shadow-md transition-shadow"
               >
-                <div class="flex items-center gap-2 mb-2">
-                  <h3 class="font-bold text-xl text-gray-900">
+                <div
+                  class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1"
+                >
+                  <h3 class="font-bold text-lg text-gray-900">
                     Sprint 1 — Nền tảng & Thiết kế
                   </h3>
-                  <span class="text-sm text-gray-500">(6/10 - 17/10)</span>
+                  <span
+                    class="text-xs text-gray-500 font-medium bg-gray-50 px-2 py-1 rounded-md whitespace-nowrap"
+                    >(6/10 - 17/10)</span
+                  >
                 </div>
-                <p class="text-gray-600">
+                <p class="text-gray-600 text-sm">
                   Nghiên cứu thị trường, xác thực kinh doanh, thiết kế UI/UX
                   trên Figma, thiết lập môi trường kỹ thuật
                 </p>
               </div>
             </div>
-            <div class="relative pl-20">
+
+            <div class="relative pl-16">
               <div
-                class="absolute left-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-cyan-500 text-white flex items-center justify-center font-bold text-xl shadow-lg"
+                class="absolute left-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-cyan-500 text-white flex items-center justify-center font-bold text-lg shadow-lg"
               >
                 2
               </div>
               <div
-                class="bg-white p-6 rounded-2xl border-2 border-blue-100 shadow-md hover:shadow-lg transition-shadow"
+                class="bg-white p-4 rounded-xl border border-blue-100 shadow-sm hover:shadow-md transition-shadow"
               >
-                <div class="flex items-center gap-2 mb-2">
-                  <h3 class="font-bold text-xl text-gray-900">
+                <div
+                  class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1"
+                >
+                  <h3 class="font-bold text-lg text-gray-900">
                     Sprint 2 — Hệ thống cốt lõi
                   </h3>
-                  <span class="text-sm text-gray-500">(20/10 - 31/10)</span>
+                  <span
+                    class="text-xs text-gray-500 font-medium bg-gray-50 px-2 py-1 rounded-md whitespace-nowrap"
+                    >(20/10 - 31/10)</span
+                  >
                 </div>
-                <p class="text-gray-600">
+                <p class="text-gray-600 text-sm">
                   Triển khai xác thực người dùng, quản lý salon & dịch vụ
                 </p>
               </div>
             </div>
-            <div class="relative pl-20">
+
+            <div class="relative pl-16">
               <div
-                class="absolute left-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-500 text-white flex items-center justify-center font-bold text-xl shadow-lg"
+                class="absolute left-0 w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-pink-500 text-white flex items-center justify-center font-bold text-lg shadow-lg"
               >
                 3
               </div>
               <div
-                class="bg-white p-6 rounded-2xl border-2 border-purple-100 shadow-md hover:shadow-lg transition-shadow"
+                class="bg-white p-4 rounded-xl border border-purple-100 shadow-sm hover:shadow-md transition-shadow"
               >
-                <div class="flex items-center gap-2 mb-2">
-                  <h3 class="font-bold text-xl text-gray-900">
+                <div
+                  class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1"
+                >
+                  <h3 class="font-bold text-lg text-gray-900">
                     Sprint 3 — Khám phá
                   </h3>
-                  <span class="text-sm text-gray-500">(3/11 - 14/11)</span>
+                  <span
+                    class="text-xs text-gray-500 font-medium bg-gray-50 px-2 py-1 rounded-md whitespace-nowrap"
+                    >(3/11 - 14/11)</span
+                  >
                 </div>
-                <p class="text-gray-600">
+                <p class="text-gray-600 text-sm">
                   Chức năng tìm kiếm, lọc và đánh giá, trang chi tiết dịch vụ,
                   kiểm thử tích hợp
                 </p>
               </div>
             </div>
-            <div class="relative pl-20">
+
+            <div class="relative pl-16">
               <div
-                class="absolute left-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-bold text-xl shadow-lg"
+                class="absolute left-0 w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-bold text-lg shadow-lg"
               >
                 4
               </div>
               <div
-                class="bg-white p-6 rounded-2xl border-2 border-amber-100 shadow-md hover:shadow-lg transition-shadow"
+                class="bg-white p-4 rounded-xl border border-amber-100 shadow-sm hover:shadow-md transition-shadow"
               >
-                <div class="flex items-center gap-2 mb-2">
-                  <h3 class="font-bold text-xl text-gray-900">
+                <div
+                  class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1"
+                >
+                  <h3 class="font-bold text-lg text-gray-900">
                     Sprint 4 — Công cụ đặt lịch
                   </h3>
-                  <span class="text-sm text-gray-500">(17/11 - 28/11)</span>
+                  <span
+                    class="text-xs text-gray-500 font-medium bg-gray-50 px-2 py-1 rounded-md whitespace-nowrap"
+                    >(17/11 - 28/11)</span
+                  >
                 </div>
-                <p class="text-gray-600">
+                <p class="text-gray-600 text-sm">
                   Luồng đặt lịch end-to-end, quản lý khả dụng, hệ thống thông
                   báo
                 </p>
               </div>
             </div>
-            <div class="relative pl-20">
+
+            <div class="relative pl-16">
               <div
-                class="absolute left-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-500 text-white flex items-center justify-center font-bold text-xl shadow-lg"
+                class="absolute left-0 w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 text-white flex items-center justify-center font-bold text-lg shadow-lg"
               >
                 5
               </div>
               <div
-                class="bg-white p-6 rounded-2xl border-2 border-green-100 shadow-md hover:shadow-lg transition-shadow"
+                class="bg-white p-4 rounded-xl border border-green-100 shadow-sm hover:shadow-md transition-shadow"
               >
-                <div class="flex items-center gap-2 mb-2">
-                  <h3 class="font-bold text-xl text-gray-900">
+                <div
+                  class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1"
+                >
+                  <h3 class="font-bold text-lg text-gray-900">
                     Sprint 5 — Smart Waitlist & Ra mắt
                   </h3>
-                  <span class="text-sm text-gray-500">(1/12 - 12/12)</span>
+                  <span
+                    class="text-xs text-gray-500 font-medium bg-gray-50 px-2 py-1 rounded-md whitespace-nowrap"
+                    >(1/12 - 12/12)</span
+                  >
                 </div>
-                <p class="text-gray-600">
+                <p class="text-gray-600 text-sm">
                   Triển khai Smart Waitlist, hoàn thiện bảng điều khiển salon,
                   tối ưu hóa hiệu suất & ra mắt sản phẩm
                 </p>
@@ -1296,7 +1330,8 @@
           </div>
         </div>
       </div>
-      <div class="flex justify-center mt-8">
+
+      <div class="flex justify-center mt-6">
         <button onclick="scrollToSection('contact')" class="animate-bounce">
           <i data-lucide="chevron-down" class="w-8 h-8 text-rose-400"></i>
         </button>
@@ -1305,7 +1340,7 @@
 
     <!-- Stats Section -->
     <section
-      class="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-rose-400 to-pink-400"
+      class="min-h-screen flex flex-col justify-center py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-rose-400 to-pink-400"
     >
       <div class="max-w-7xl mx-auto">
         <div class="text-center mb-8">
@@ -1338,7 +1373,10 @@
     </section>
 
     <!-- Contact Section -->
-    <section id="contact" class="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+    <section
+      id="contact"
+      class="min-h-screen flex flex-col justify-center py-24 px-4 sm:px-6 lg:px-8 bg-white"
+    >
       <div class="max-w-3xl mx-auto text-center">
         <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
           Bắt đầu ngay hôm nay
