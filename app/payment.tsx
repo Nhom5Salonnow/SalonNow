@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { Menu, CreditCard } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
+import { AuthGuard } from '@/components';
 
 interface PaymentMethod {
   id: string;
@@ -16,7 +17,7 @@ const PAYMENT_METHODS: PaymentMethod[] = [
   { id: '1', type: 'mastercard', lastFour: '9035', isSelected: true },
 ];
 
-export default function PaymentScreen() {
+function PaymentContent() {
   const [selectedMethod, setSelectedMethod] = useState('1');
 
   const servicePrice = 40;
@@ -192,5 +193,13 @@ export default function PaymentScreen() {
         </TouchableOpacity>
       </View>
     </View>
+  );
+}
+
+export default function PaymentScreen() {
+  return (
+    <AuthGuard message="Please login to proceed with payment">
+      <PaymentContent />
+    </AuthGuard>
   );
 }

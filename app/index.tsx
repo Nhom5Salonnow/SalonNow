@@ -9,13 +9,11 @@ export default function SplashScreen() {
   const handleStart = async () => {
     try {
       const hasCompletedOnboarding = await getData(STORAGE_KEYS.HAS_COMPLETED_ONBOARDING);
-      const authToken = await getData(STORAGE_KEYS.AUTH_TOKEN);
 
       if (hasCompletedOnboarding !== 'true') {
         router.replace('/onboarding');
-      } else if (!authToken) {
-        router.replace('/auth/login');
       } else {
+        // Go directly to home, no login required
         router.replace('/home' as any);
       }
     } catch (error) {

@@ -1,5 +1,5 @@
 import { Colors } from "@/constants";
-import { DecorativeCircle } from "@/components";
+import { DecorativeCircle, AuthGuard } from "@/components";
 import { STORAGE_KEYS, getData, removeData } from "@/utils/asyncStorage";
 import { hp, rf, wp } from "@/utils/responsive";
 import { router } from "expo-router";
@@ -24,7 +24,8 @@ import {
 interface UserData {
   name: string;
   email: string;
-  phone: string;
+  phone?: string;
+  avatar?: string;
 }
 
 const menuItems = [
@@ -54,7 +55,7 @@ const menuItems = [
   },
 ];
 
-export default function ProfileScreen() {
+function ProfileContent() {
   const [userData, setUserData] = useState<UserData | null>(null);
 
   useEffect(() => {
@@ -75,7 +76,7 @@ export default function ProfileScreen() {
   const handleLogout = async () => {
     await removeData(STORAGE_KEYS.AUTH_TOKEN);
     await removeData(STORAGE_KEYS.USER_DATA);
-    router.replace("/auth/login");
+    router.replace("/home" as any);
   };
 
   const handleMenuPress = (route: string | null) => {
@@ -122,7 +123,7 @@ export default function ProfileScreen() {
           >
             <Image
               source={{
-                uri: "https://api.builder.io/api/v1/image/assets/TEMP/bf83f7d9f51b91c7f1126d620657aa5f1b9a54bf?width=400",
+                uri: userData?.avatar || "https://api.builder.io/api/v1/image/assets/TEMP/bf83f7d9f51b91c7f1126d620657aa5f1b9a54bf?width=400",
               }}
               className="w-full h-full"
               resizeMode="cover"
@@ -227,5 +228,13 @@ export default function ProfileScreen() {
         <View style={{ height: hp(10) }} />
       </ScrollView>
     </View>
+  );
+}
+
+export default function ProfileScreen() {
+  return (
+    <AuthGuard message="Please login to view your profile and manage your account">
+      <ProfileContent />
+    </AuthGuard>
   );
 }

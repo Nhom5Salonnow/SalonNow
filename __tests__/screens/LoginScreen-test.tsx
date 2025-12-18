@@ -21,16 +21,11 @@ jest.mock('expo-router', () => ({
   Link: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-// Mock asyncStorage utilities
-const mockStoreData = jest.fn().mockResolvedValue(undefined);
-jest.mock('@/utils/asyncStorage', () => ({
-  storeData: (...args: any[]) => mockStoreData(...args),
-  getData: jest.fn(),
-  removeData: jest.fn(),
-  STORAGE_KEYS: {
-    AUTH_TOKEN: 'auth_token',
-    USER_DATA: 'user_data',
-    HAS_COMPLETED_ONBOARDING: 'has_completed_onboarding',
+// Mock authService
+const mockLogin = jest.fn();
+jest.mock('@/api/authService', () => ({
+  authService: {
+    login: (input: any) => mockLogin(input),
   },
 }));
 
@@ -76,6 +71,10 @@ jest.mock('expo-linear-gradient', () => ({
 describe('LoginScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLogin.mockResolvedValue({
+      user: { id: '1', email: 'test@test.com', name: 'Test User' },
+      token: 'mock_token',
+    });
   });
 
   describe('Rendering', () => {
@@ -130,7 +129,7 @@ describe('LoginScreen', () => {
   });
 
   describe('Form Submission', () => {
-    it('should store auth token when login button is pressed', async () => {
+    it('should call authService.login with credentials', async () => {
       const { getByPlaceholderText, getAllByText } = render(<LoginScreen />);
 
       fireEvent.changeText(getByPlaceholderText('Email'), 'test@example.com');
@@ -141,7 +140,10 @@ describe('LoginScreen', () => {
       fireEvent.press(loginButtons[loginButtons.length - 1]);
 
       await waitFor(() => {
-        expect(mockStoreData).toHaveBeenCalledWith('auth_token', 'mock_token_123');
+        expect(mockLogin).toHaveBeenCalledWith({
+          email: 'test@example.com',
+          password: 'password123',
+        });
       });
     });
 
@@ -157,6 +159,29 @@ describe('LoginScreen', () => {
       await waitFor(() => {
         expect(mockReplace).toHaveBeenCalledWith('/home');
       });
+    });
+
+    it('should show error message on failed login', async () => {
+      mockLogin.mockRejectedValue(new Error('Invalid email or password'));
+
+      const { getByPlaceholderText, getAllByText, findByText } = render(<LoginScreen />);
+
+      fireEvent.changeText(getByPlaceholderText('Email'), 'wrong@example.com');
+      fireEvent.changeText(getByPlaceholderText('Password'), 'wrongpassword');
+
+      const loginButtons = getAllByText('Login');
+      fireEvent.press(loginButtons[loginButtons.length - 1]);
+
+      expect(await findByText('Invalid email or password')).toBeTruthy();
+    });
+
+    it('should show error when email or password is empty', async () => {
+      const { getAllByText, findByText } = render(<LoginScreen />);
+
+      const loginButtons = getAllByText('Login');
+      fireEvent.press(loginButtons[loginButtons.length - 1]);
+
+      expect(await findByText('Please enter email and password')).toBeTruthy();
     });
   });
 

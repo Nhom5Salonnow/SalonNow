@@ -2,6 +2,19 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import PaymentScreen from '@/app/payment';
 
+// Mock AsyncStorage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  setItem: jest.fn(),
+  getItem: jest.fn(() => Promise.resolve('mock_token')),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+}));
+
+// Mock AuthGuard to render children directly
+jest.mock('@/components', () => ({
+  AuthGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 // Mock expo-router
 const mockBack = jest.fn();
 const mockPush = jest.fn();
