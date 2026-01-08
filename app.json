@@ -56,17 +56,17 @@
       "reactCompiler": true
     },
     "extra": {
+      "router": {},
       "eas": {
-        "projectId": "13d44ac1-25d2-4993-9765-d97fd1502d02"
-      },
-      "router": {}
+        "projectId": "9a6a4465-56e5-4e6e-9775-22a405f62d3a"
+      }
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "owner": "volydacduy942003",
+    "owner": "vy31082004",
     "updates": {
-      "url": "https://u.expo.dev/13d44ac1-25d2-4993-9765-d97fd1502d02"
+      "url": "https://u.expo.dev/9a6a4465-56e5-4e6e-9775-22a405f62d3a"
     }
   }
 }
