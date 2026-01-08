@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Image, FlatList, RefreshControl, ActivityIndicator, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, FlatList, RefreshControl, ActivityIndicator, Alert } from "react-native";
 import { wp, hp, rf } from "@/utils/responsive";
 import { Colors } from "@/constants";
 import { DecorativeCircle } from "@/components";
-import { ChevronDown, Clock, CheckCircle, XCircle, AlertCircle, Check, X, User } from "lucide-react-native";
+import { Clock, CheckCircle, XCircle, AlertCircle, Check, X, User } from "lucide-react-native";
 import { adminService } from "@/api/adminService";
 import { Appointment } from "@/api/mockServer/types";
 

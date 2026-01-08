@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
-import { ChevronLeft, Calendar, Clock, User, CheckCircle, XCircle, AlertCircle } from 'lucide-react-native';
+import { ChevronLeft, Calendar, Clock, User } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { LinearGradient } from 'expo-linear-gradient';

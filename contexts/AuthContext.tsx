@@ -62,16 +62,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      console.log('AuthContext: Starting logout...');
       await removeData(STORAGE_KEYS.AUTH_TOKEN);
       await removeData(STORAGE_KEYS.USER_DATA);
-      console.log('AuthContext: Data removed, setting user to null...');
       setUser(null);
-      console.log('AuthContext: Navigating to home...');
       router.replace('/home' as any);
-      console.log('AuthContext: Logout complete');
     } catch (error) {
-      console.error('AuthContext: Error logging out:', error);
+      console.error('Error logging out:', error);
       throw error;
     }
   }, []);

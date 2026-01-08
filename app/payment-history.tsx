@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
-import { ChevronLeft, Receipt, CreditCard, Calendar, CheckCircle, XCircle, Clock, ArrowUpRight } from 'lucide-react-native';
+import { ChevronLeft, Receipt, Calendar, CheckCircle, XCircle, Clock, ArrowUpRight } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { AuthGuard } from '@/components';

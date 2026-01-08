@@ -26,6 +26,7 @@ import {
   RefreshControl,
   Alert,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { userService, UserStats } from "@/api/userService";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -73,20 +74,16 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, isLoggedIn, isLoading: authLoading, logout } = useAuth();
   const [stats, setStats] = useState<UserStats | null>(null);
-  const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const loadStats = useCallback(async (userId: string) => {
     try {
-      setIsLoadingStats(true);
       const res = await userService.getUserStats(userId);
       if (res.success && res.data) {
         setStats(res.data);
       }
     } catch (error) {
       console.error("Error loading stats:", error);
-    } finally {
-      setIsLoadingStats(false);
     }
   }, []);
 
@@ -107,6 +104,17 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = async () => {
+    // On web, use window.confirm instead of Alert.alert
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Are you sure you want to logout?');
+      if (confirmed) {
+        await logout();
+        setStats(null);
+      }
+      return;
+    }
+
+    // On native, use Alert.alert
     Alert.alert(
       "Logout",
       "Are you sure you want to logout?",

@@ -109,17 +109,6 @@ export default function WaitlistScreen() {
     }
   };
 
-  const handleCancel = async (entryId: string) => {
-    try {
-      const userId = user?.id || "user-1";
-
-      await waitlistService.cancelWaitlist(entryId, userId);
-      loadWaitlist();
-    } catch (error) {
-      console.error("Error cancelling waitlist:", error);
-    }
-  };
-
   const renderEmptyState = () => (
     <View className="flex-1 items-center justify-center" style={{ paddingTop: hp(10) }}>
       <View

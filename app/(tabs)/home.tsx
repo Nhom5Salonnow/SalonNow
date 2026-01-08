@@ -14,7 +14,7 @@ import { useAuth } from "@/contexts";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const { user, isLoggedIn, isLoading } = useAuth();
+  const { user, isLoggedIn } = useAuth();
 
   const isGuest = !isLoggedIn;
   const handleCategoryPress = (categoryId: string) => {

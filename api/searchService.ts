@@ -1,4 +1,4 @@
-import { SearchFilters, SearchResult, ApiResponse, Service, Staff, Salon } from './mockServer/types';
+import { SearchFilters, SearchResult, ApiResponse, Service } from './mockServer/types';
 import { mockDatabase } from './mockServer/database';
 import { withDelay } from './mockServer/delay';
 

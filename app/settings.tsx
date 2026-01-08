@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, Switch, ScrollView, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Switch, ScrollView, Alert, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { ChevronRight, ChevronLeft, User } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
@@ -48,7 +48,17 @@ export default function SettingsScreen() {
   const [darkMode, setDarkMode] = useState(false);
   const { user, isLoggedIn, logout } = useAuth();
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    // On web, use window.confirm instead of Alert.alert
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Are you sure you want to sign out?');
+      if (confirmed) {
+        await logout();
+      }
+      return;
+    }
+
+    // On native, use Alert.alert
     Alert.alert(
       "Sign Out",
       "Are you sure you want to sign out?",
@@ -58,13 +68,7 @@ export default function SettingsScreen() {
           text: "Sign Out",
           style: "destructive",
           onPress: async () => {
-            try {
-              console.log('Logging out...');
-              await logout();
-              console.log('Logged out successfully');
-            } catch (error) {
-              console.error('Logout error:', error);
-            }
+            await logout();
           },
         },
       ]

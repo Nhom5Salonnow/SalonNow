@@ -17,11 +17,9 @@ import {
   Users,
   CheckCircle,
   XCircle,
-  AlertCircle,
   Phone,
   Calendar,
   Play,
-  Filter,
 } from "lucide-react-native";
 import { waitlistService } from "@/api/waitlistService";
 import { WaitlistEntry } from "@/api/mockServer/types";

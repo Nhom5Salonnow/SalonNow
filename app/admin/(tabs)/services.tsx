@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Image, FlatList } from "react-native";
+import { View, Text, TouchableOpacity, Image, FlatList } from "react-native";
 import { wp, hp, rf } from "@/utils/responsive";
 import { Colors } from "@/constants";
 import { DecorativeCircle } from "@/components";

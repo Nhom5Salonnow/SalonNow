@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Platform } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Colors } from "@/constants";
 import { rf, hp, wp } from "@/utils/responsive";
 import { AppointmentItem } from "@/constants/mockData";
@@ -21,12 +21,13 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
         borderRadius: wp(4),
         marginBottom: hp(1.5),
         padding: wp(4),
-        boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.08)',
-        ...Platform.select({
-          android: {
-            elevation: 3,
-          },
-        }),
+        // iOS shadow
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        // Android shadow
+        elevation: 3,
       }}
     >
       {/* Service Name & Price */}

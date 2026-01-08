@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { wp, hp, rf } from "@/utils/responsive";
 import { Colors } from "@/constants";
 import { Clock, Calendar, User, ChevronRight, AlertCircle } from "lucide-react-native";

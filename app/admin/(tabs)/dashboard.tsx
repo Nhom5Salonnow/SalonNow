@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import { wp, hp, rf } from "@/utils/responsive";
 import { Colors } from "@/constants";
 import { DecorativeCircle } from "@/components";
-import { TrendingUp, TrendingDown, Calendar, DollarSign, Users, Star, Clock, ChevronRight, MessageSquare, AlertCircle } from "lucide-react-native";
+import { TrendingUp, TrendingDown, Calendar, DollarSign, Users, Star, Clock, ChevronRight, AlertCircle } from "lucide-react-native";
 import { adminService, DashboardStats, AppointmentsByDate, StaffPerformance } from "@/api/adminService";
 import { appointmentService } from "@/api/appointmentService";
 import { Appointment } from "@/api/mockServer/types";

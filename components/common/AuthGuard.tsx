@@ -80,7 +80,12 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
               style={{
                 width: wp(85),
                 padding: wp(6),
-                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
+                // iOS shadow
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.2,
+                shadowRadius: 10,
+                // Android shadow
                 elevation: 5,
               }}
             >

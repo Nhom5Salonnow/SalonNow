@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Image, Switch, TextInput } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Image, Switch } from "react-native";
 import { wp, hp, rf } from "@/utils/responsive";
 import { Colors } from "@/constants";
 import { DecorativeCircle } from "@/components";
@@ -7,8 +7,6 @@ import {
   Store,
   Clock,
   MapPin,
-  Phone,
-  Globe,
   Bell,
   Shield,
   CreditCard,
@@ -64,7 +62,7 @@ const SETTINGS_SECTIONS = [
 ];
 
 export default function AdminSettingsScreen() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const [notificationSettings, setNotificationSettings] = useState({
     push: true,
     email: true,

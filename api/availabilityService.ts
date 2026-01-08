@@ -1,5 +1,5 @@
-import { DayAvailability, TimeSlot, SlotStatus, ApiResponse } from './mockServer/types';
-import { mockDatabase, generateId, getCurrentTimestamp } from './mockServer/database';
+import { ApiResponse } from './mockServer/types';
+import { mockDatabase } from './mockServer/database';
 import { withDelay } from './mockServer/delay';
 
 // Simplified slot for UI

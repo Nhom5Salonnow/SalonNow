@@ -60,19 +60,6 @@ class NotificationService {
 
       notifications.forEach((n) => {
         const date = new Date(n.createdAt);
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-
-        let label: string;
-        if (date.toDateString() === today.toDateString()) {
-          label = 'Today';
-        } else if (date.toDateString() === yesterday.toDateString()) {
-          label = 'Yesterday';
-        } else {
-          label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        }
-
         const dateKey = date.toDateString();
 
         if (!groups.has(dateKey)) {
