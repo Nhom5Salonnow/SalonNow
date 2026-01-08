@@ -1,6 +1,6 @@
 import { Colors } from "@/constants";
 import { Tabs } from "expo-router";
-import { Calendar, Home, List, User } from "lucide-react-native";
+import { Bell, Calendar, Home, User } from "lucide-react-native";
 
 export default function TabLayout() {
   return (
@@ -10,6 +10,10 @@ export default function TabLayout() {
         tabBarInactiveTintColor: "#2A2E3B",
         headerShown: false,
         tabBarStyle: {
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
           height: 64,
           paddingBottom: 8,
           paddingTop: 8,
@@ -18,7 +22,7 @@ export default function TabLayout() {
           borderTopRightRadius: 30,
           borderTopWidth: 0,
           elevation: 0,
-          shadowOpacity: 0,
+          boxShadow: 'none',
         },
       }}
     >
@@ -45,7 +49,7 @@ export default function TabLayout() {
         options={{
           title: "",
           tabBarIcon: ({ color }) => (
-            <List size={28} color={color} strokeWidth={2} />
+            <Bell size={28} color={color} strokeWidth={2} />
           ),
         }}
       />

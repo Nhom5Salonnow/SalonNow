@@ -1,9 +1,11 @@
-// import { Stack } from 'expo-router';
-import { Slot } from 'expo-router';
+import { Stack } from 'expo-router';
 import '../global.css';
 import * as Sentry from '@sentry/react-native';
 import { useNavigationContainerRef } from 'expo-router';
 import { useEffect } from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { AuthProvider } from '@/contexts';
 
 const navigationIntegration = Sentry.reactNavigationIntegration();
 
@@ -79,11 +81,11 @@ export default Sentry.wrap(function RootLayout() {
   }, []);
 
   return (
-      // <Stack>
-      //   <Stack.Screen name="index" options={{ title: 'Home' }} />
-      //   <Stack.Screen name="(example-code)/nav" options={{ title: 'Nav' }} />
-      //   <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
-      // </Stack>
-      <Slot></Slot>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <StatusBar style="dark" />
+        <Stack screenOptions={{ headerShown: false }} />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 });

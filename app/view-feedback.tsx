@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { Menu, ChevronLeft, Star, Home, Grid, MessageSquare, User } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface RatingCategory {
   id: string;
@@ -12,6 +13,7 @@ interface RatingCategory {
 }
 
 export default function ViewFeedbackScreen() {
+  const insets = useSafeAreaInsets();
   const [ratings] = useState<RatingCategory[]>([
     { id: 'experience', label: 'Rate your Experience', rating: 5 },
     { id: 'service', label: 'Rate Service', rating: 4 },
@@ -59,7 +61,7 @@ export default function ViewFeedbackScreen() {
         {/* Header */}
         <View
           className="flex-row items-center justify-between"
-          style={{ paddingHorizontal: wp(6), paddingTop: hp(6) }}
+          style={{ paddingHorizontal: wp(6), paddingTop: insets.top + hp(1) }}
         >
           <TouchableOpacity onPress={() => router.back()}>
             <Menu size={rf(28)} color="#000" />
@@ -76,10 +78,7 @@ export default function ViewFeedbackScreen() {
         <View
           className="mx-6 mt-8 rounded-3xl bg-white p-6"
           style={{
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 8,
+            boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
             elevation: 4,
           }}
         >

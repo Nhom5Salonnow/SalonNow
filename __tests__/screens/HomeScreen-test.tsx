@@ -237,15 +237,6 @@ describe('HomeScreen', () => {
       expect(mockPush).toHaveBeenCalledWith('/profile');
     });
 
-    it('should navigate to notifications when notification button is pressed', async () => {
-      const { getByTestId, findByText } = render(<HomeScreen />);
-
-      // Wait for user data to load
-      await findByText('Hi');
-
-      fireEvent.press(getByTestId('notification-button'));
-
-      expect(mockPush).toHaveBeenCalledWith('/notifications');
-    });
+    // Notification button removed from header - now only in tab bar
   });
 });

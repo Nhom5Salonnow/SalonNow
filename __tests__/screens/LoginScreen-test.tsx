@@ -13,10 +13,12 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 // Mock expo-router
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
+const mockBack = jest.fn();
 jest.mock('expo-router', () => ({
   router: {
     replace: (path: string) => mockReplace(path),
     push: (path: string) => mockPush(path),
+    back: () => mockBack(),
   },
   Link: ({ children }: { children: React.ReactNode }) => children,
 }));
@@ -61,6 +63,7 @@ jest.mock('lucide-react-native', () => ({
   EyeOff: () => null,
   Mail: () => null,
   Lock: () => null,
+  ChevronLeft: () => null,
 }));
 
 // Mock expo-linear-gradient

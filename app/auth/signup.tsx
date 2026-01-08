@@ -1,5 +1,4 @@
 import { Colors } from "@/constants";
-import { STORAGE_KEYS, storeData } from "@/utils/asyncStorage";
 import { hp, rf, wp } from "@/utils/responsive";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -12,33 +11,71 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  SafeAreaView,
+  ActivityIndicator,
 } from "react-native";
+import { ChevronLeft } from "lucide-react-native";
+import { useAuth } from "@/contexts";
+import { authService } from "@/api/authService";
 
 export default function SignupScreen() {
+  const { login } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [activeTab, setActiveTab] = useState<"login" | "signup">("signup");
   const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSignup = async () => {
-    // TODO: Implement actual signup logic with API
-    // For now, save a mock token to simulate signup
-    await storeData(STORAGE_KEYS.AUTH_TOKEN, "mock_token_123");
-    await storeData(STORAGE_KEYS.USER_DATA, JSON.stringify({
-      name: name || "New User",
-      email: email || "user@example.com",
-      phone: phone || "+732 0000 000",
-    }));
-    router.replace("/home" as any);
+    // Validation
+    if (!name.trim()) {
+      setError("Please enter your name");
+      return;
+    }
+    if (!email.trim()) {
+      setError("Please enter your email");
+      return;
+    }
+    if (!password.trim()) {
+      setError("Please enter a password");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await authService.signup({ name, email, password, phone });
+      // Sync with AuthContext
+      await login({
+        id: response.user.id,
+        name: response.user.name,
+        email: response.user.email,
+        phone: response.user.phone,
+        avatar: response.user.avatar,
+      }, response.token);
+      router.replace("/home" as any);
+    } catch (err: any) {
+      setError(err.message || "Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleTabChange = (tab: "login" | "signup") => {
-    setActiveTab(tab);
     if (tab === "login") {
-      router.back();
+      router.replace("/auth/login" as any);
     }
   };
 
@@ -59,20 +96,61 @@ export default function SignupScreen() {
           style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
         />
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          className="flex-1"
-        >
-          <ScrollView
-            contentContainerStyle={{
-              flexGrow: 1,
-              justifyContent: "center",
-              paddingHorizontal: wp(5),
-              paddingVertical: hp(3),
+        <SafeAreaView className="flex-1">
+          {/* Back Button */}
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{
+              position: "absolute",
+              top: hp(6),
+              left: wp(5),
+              zIndex: 10,
+              padding: wp(2),
             }}
-            showsVerticalScrollIndicator={false}
           >
-            {/* Signup Card */}
+            <ChevronLeft size={rf(28)} color="#000" />
+          </TouchableOpacity>
+
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className="flex-1"
+          >
+            <ScrollView
+              contentContainerStyle={{
+                flexGrow: 1,
+                justifyContent: "center",
+                paddingHorizontal: wp(5),
+                paddingVertical: hp(3),
+              }}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* Title */}
+              <Text
+                style={{
+                  fontSize: rf(32),
+                  fontWeight: "bold",
+                  color: Colors.salon.dark,
+                  textAlign: "center",
+                  marginBottom: hp(1),
+                }}
+              >
+                Salon Now
+              </Text>
+
+              {/* Subtitle */}
+              <Text
+                style={{
+                  fontSize: rf(14),
+                  color: Colors.gray[600],
+                  textAlign: "center",
+                  marginBottom: hp(3),
+                  paddingHorizontal: wp(5),
+                }}
+              >
+                Register to unlock a seamless beauty experience tailored just for you.
+              </Text>
+
+              {/* Signup Card */}
             <View
               className="bg-white/90 rounded-3xl w-full"
               style={{
@@ -83,23 +161,27 @@ export default function SignupScreen() {
               }}
             >
               {/* Tab Switcher */}
-              <View className="flex-row mb-6">
+              <View className="flex-row items-center" style={{ marginBottom: hp(3) }}>
                 <TouchableOpacity
+                  activeOpacity={0.7}
                   onPress={() => handleTabChange("login")}
-                  className="flex-1 items-center justify-center rounded-2xl"
                   style={{
-                    backgroundColor:
-                      activeTab === "login" ? Colors.primary : "transparent",
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'transparent',
                     paddingVertical: hp(2),
-                    borderWidth: activeTab === "login" ? 0 : 1,
+                    borderRadius: 16,
+                    borderWidth: 1,
                     borderColor: Colors.primary,
+                    marginRight: wp(2),
                   }}
                 >
                   <Text
                     style={{
                       fontSize: rf(16),
                       fontWeight: "500",
-                      color: activeTab === "login" ? "#fff" : Colors.primary,
+                      color: Colors.primary,
                     }}
                   >
                     Login
@@ -107,22 +189,25 @@ export default function SignupScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
+                  activeOpacity={0.7}
                   onPress={() => handleTabChange("signup")}
-                  className="flex-1 items-center justify-center rounded-2xl"
                   style={{
-                    backgroundColor:
-                      activeTab === "signup" ? Colors.primary : "transparent",
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: Colors.primary,
                     paddingVertical: hp(2),
+                    borderRadius: 16,
                   }}
                 >
                   <Text
                     style={{
                       fontSize: rf(16),
-                      fontWeight: "500",
-                      color: activeTab === "signup" ? "#fff" : Colors.primary,
+                      fontWeight: "600",
+                      color: "#fff",
                     }}
                   >
-                    Sign-up
+                    Register
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -220,7 +305,7 @@ export default function SignupScreen() {
                 className="bg-white rounded-xl border"
                 style={{
                   borderColor: Colors.salon.coral,
-                  marginBottom: hp(3),
+                  marginBottom: hp(2),
                 }}
               >
                 <TextInput
@@ -237,24 +322,51 @@ export default function SignupScreen() {
                 />
               </View>
 
-              {/* Sign up Button */}
+              {/* Error Message */}
+              {error && (
+                <View
+                  className="rounded-xl"
+                  style={{
+                    backgroundColor: "#FEE2E2",
+                    padding: hp(1.5),
+                    marginBottom: hp(2),
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: rf(14),
+                      color: "#DC2626",
+                      textAlign: "center",
+                    }}
+                  >
+                    {error}
+                  </Text>
+                </View>
+              )}
+
+              {/* Register Button */}
               <TouchableOpacity
                 onPress={handleSignup}
+                disabled={isLoading}
                 className="rounded-2xl items-center justify-center"
                 style={{
-                  backgroundColor: Colors.primary,
+                  backgroundColor: isLoading ? Colors.gray[400] : Colors.primary,
                   paddingVertical: hp(2),
                 }}
               >
-                <Text
-                  style={{
-                    fontSize: rf(18),
-                    fontWeight: "bold",
-                    color: "#fff",
-                  }}
-                >
-                  Sign-up
-                </Text>
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text
+                    style={{
+                      fontSize: rf(18),
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                  >
+                    Register
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
 
@@ -290,7 +402,8 @@ export default function SignupScreen() {
               </Text>
             </TouchableOpacity>
           </ScrollView>
-        </KeyboardAvoidingView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
       </ImageBackground>
     </View>
   );

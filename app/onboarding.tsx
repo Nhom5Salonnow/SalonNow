@@ -19,12 +19,12 @@ export default function OnboardingScreen() {
 
   const handleDone = async () => {
     await storeData(STORAGE_KEYS.HAS_COMPLETED_ONBOARDING, "true");
-    router.replace("/auth/login");
+    router.replace("/home" as any);
   };
 
   const handleSkip = async () => {
     await storeData(STORAGE_KEYS.HAS_COMPLETED_ONBOARDING, "true");
-    router.replace("/auth/login");
+    router.replace("/home" as any);
   };
 
   const handleNext = () => {

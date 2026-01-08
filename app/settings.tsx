@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, Switch, ScrollView } from 'react-native';
+import { useState } from 'react';
+import { View, Text, TouchableOpacity, Image, Switch, ScrollView, Alert } from 'react-native';
 import { router } from 'expo-router';
-import { ChevronRight, ChevronLeft } from 'lucide-react-native';
-import { STORAGE_KEYS, getData, removeData } from '@/utils/asyncStorage';
+import { ChevronRight, ChevronLeft, User } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Colors } from '@/constants';
+import { useAuth } from '@/contexts';
+import { GuestPrompt } from '@/components';
 
 interface SettingsItemProps {
   title: string;
@@ -11,6 +14,7 @@ interface SettingsItemProps {
   showArrow?: boolean;
   rightElement?: React.ReactNode;
   textColor?: string;
+  disabled?: boolean;
 }
 
 const SettingsItem: React.FC<SettingsItemProps> = ({
@@ -19,11 +23,13 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
   showArrow = false,
   rightElement,
   textColor = '#000',
+  disabled = false,
 }) => (
   <TouchableOpacity
     onPress={onPress}
     className="flex-row items-center justify-between py-4 border-b border-gray-100"
-    disabled={!onPress && !showArrow}
+    disabled={disabled || (!onPress && !showArrow)}
+    style={{ opacity: disabled ? 0.5 : 1 }}
   >
     <Text style={{ fontSize: rf(18), color: textColor, fontWeight: '400' }}>
       {title}
@@ -38,45 +44,45 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
 );
 
 export default function SettingsScreen() {
-  const [darkMode, setDarkMode] = useState(true);
-  const [userImage, setUserImage] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
+  const [darkMode, setDarkMode] = useState(false);
+  const { user, isLoggedIn, logout } = useAuth();
 
-  useEffect(() => {
-    loadUserData();
-  }, []);
-
-  const loadUserData = async () => {
-    try {
-      const userData = await getData(STORAGE_KEYS.USER_DATA);
-      if (userData) {
-        const user = JSON.parse(userData);
-        setUserImage(user.avatar || null);
-      }
-    } catch (error) {
-      console.error('Error loading user data:', error);
-    }
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await removeData(STORAGE_KEYS.AUTH_TOKEN);
-      await removeData(STORAGE_KEYS.USER_DATA);
-      router.replace('/auth/login');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+  const handleSignOut = () => {
+    Alert.alert(
+      "Sign Out",
+      "Are you sure you want to sign out?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Sign Out",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              console.log('Logging out...');
+              await logout();
+              console.log('Logged out successfully');
+            } catch (error) {
+              console.error('Logout error:', error);
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
     <View className="flex-1 bg-white">
       {/* Decorative pink circle */}
       <View
-        className="absolute rounded-full bg-salon-pink-light"
+        className="absolute rounded-full"
         style={{
           left: -wp(50),
           top: -hp(10),
           width: wp(80),
           height: wp(80),
+          backgroundColor: Colors.salon.pinkLight,
+          opacity: 0.5,
         }}
       />
 
@@ -84,7 +90,7 @@ export default function SettingsScreen() {
         {/* Header */}
         <View
           className="flex-row items-center justify-between px-6"
-          style={{ paddingTop: hp(6), paddingBottom: hp(3) }}
+          style={{ paddingTop: insets.top + hp(1), paddingBottom: hp(3) }}
         >
           <View className="flex-row items-center">
             <TouchableOpacity onPress={() => router.back()} className="mr-4">
@@ -96,36 +102,57 @@ export default function SettingsScreen() {
           </View>
 
           {/* Profile Avatar */}
-          <View
-            className="rounded-full overflow-hidden border-2 border-white"
+          <TouchableOpacity
+            onPress={() => router.push(isLoggedIn ? '/profile' : '/auth/login' as any)}
+            className="rounded-full overflow-hidden items-center justify-center"
             style={{
-              width: wp(16),
-              height: wp(16),
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              elevation: 3,
+              width: wp(14),
+              height: wp(14),
+              borderWidth: 2,
+              borderColor: Colors.salon.pinkLight,
+              backgroundColor: isLoggedIn ? 'transparent' : Colors.gray[200],
             }}
           >
-            <Image
-              source={{
-                uri: userImage || 'https://api.builder.io/api/v1/image/assets/TEMP/bf83f7d9f51b91c7f1126d620657aa5f1b9a54bf?width=114',
-              }}
-              className="w-full h-full"
-              resizeMode="cover"
-            />
-          </View>
+            {isLoggedIn ? (
+              <Image
+                source={{
+                  uri: user?.avatar || 'https://api.builder.io/api/v1/image/assets/TEMP/bf83f7d9f51b91c7f1126d620657aa5f1b9a54bf?width=114',
+                }}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+            ) : (
+              <User size={rf(20)} color={Colors.gray[500]} />
+            )}
+          </TouchableOpacity>
         </View>
 
+        {/* Guest Login/Register Section */}
+        {!isLoggedIn && (
+          <View className="px-6" style={{ marginBottom: hp(3) }}>
+            <GuestPrompt message="Sign in to access all settings and features" />
+          </View>
+        )}
+
         {/* Settings List */}
-        <View className="px-6" style={{ marginTop: hp(4) }}>
-          {/* Account Info */}
-          <SettingsItem
-            title="Account Info"
-            showArrow
-            onPress={() => {}}
-          />
+        <View className="px-6" style={{ marginTop: isLoggedIn ? hp(4) : hp(2) }}>
+          {/* Account Info - only for logged in users */}
+          {isLoggedIn && (
+            <SettingsItem
+              title="Account Info"
+              showArrow
+              onPress={() => router.push('/edit-profile' as any)}
+            />
+          )}
+
+          {/* Change Password - only for logged in users */}
+          {isLoggedIn && (
+            <SettingsItem
+              title="Change Password"
+              showArrow
+              onPress={() => router.push('/change-password' as any)}
+            />
+          )}
 
           {/* Language */}
           <SettingsItem
@@ -137,13 +164,13 @@ export default function SettingsScreen() {
           {/* Dark Mode */}
           <View className="flex-row items-center justify-between py-4 border-b border-gray-100">
             <Text style={{ fontSize: rf(18), color: '#000', fontWeight: '400' }}>
-              Dark Mood
+              Dark Mode
             </Text>
             <Switch
               value={darkMode}
               onValueChange={setDarkMode}
-              trackColor={{ false: '#E5E7EB', true: '#9CA3AF' }}
-              thumbColor={darkMode ? '#1F2937' : '#f4f3f4'}
+              trackColor={{ false: '#E5E7EB', true: Colors.primary }}
+              thumbColor={darkMode ? '#FFF' : '#f4f3f4'}
               ios_backgroundColor="#E5E7EB"
             />
           </View>
@@ -169,15 +196,23 @@ export default function SettingsScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Sign Out */}
-          <TouchableOpacity
-            onPress={handleSignOut}
-            style={{ marginTop: hp(4) }}
-          >
-            <Text style={{ fontSize: rf(18), color: '#EF4444', fontWeight: '400' }}>
-              Sign-out
-            </Text>
-          </TouchableOpacity>
+          {/* Sign Out - only for logged in users */}
+          {isLoggedIn && (
+            <TouchableOpacity
+              activeOpacity={0.6}
+              onPress={handleSignOut}
+              className="items-center justify-center rounded-xl"
+              style={{
+                marginTop: hp(3),
+                paddingVertical: hp(1.8),
+                backgroundColor: '#FEF2F2',
+              }}
+            >
+              <Text style={{ fontSize: rf(16), color: '#EF4444', fontWeight: '600' }}>
+                Sign Out
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={{ height: hp(10) }} />
