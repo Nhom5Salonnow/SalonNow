@@ -29,9 +29,10 @@ function MyAppointmentsContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const userId = user?.id || 'user-1';
+
   const loadAppointments = useCallback(() => {
     try {
-      const userId = user?.id || 'user-1';
       const userAppointments = mockDatabase.appointments.filter(
         (a) => a.userId === userId || a.userId === 'user-1'
       );
@@ -42,7 +43,7 @@ function MyAppointmentsContent() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [user]);
+  }, [userId]);
 
   useEffect(() => {
     loadAppointments();

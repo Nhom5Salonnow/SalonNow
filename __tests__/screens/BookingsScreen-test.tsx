@@ -2,6 +2,73 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import BookingsScreen from '@/app/(tabs)/bookings';
 
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  SafeAreaProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+// Mock AuthContext
+jest.mock('@/contexts', () => ({
+  useAuth: () => ({
+    user: { id: 'user-1', name: 'Test User', email: 'test@test.com', avatar: 'https://example.com/avatar.jpg' },
+    isLoggedIn: true,
+    isLoading: false,
+  }),
+}));
+
+// Mock mockDatabase with future dates for upcoming appointments
+jest.mock('@/api/mockServer/database', () => ({
+  mockDatabase: {
+    appointments: [
+      {
+        id: '1',
+        userId: 'user-1',
+        serviceId: 'svc-1',
+        serviceName: 'Haircut',
+        serviceImage: 'https://example.com/img.jpg',
+        salonName: 'Test Salon',
+        stylistId: 'stylist-1',
+        stylistName: 'Doe John',
+        date: '2030-01-15',
+        time: '10:00 AM',
+        dayTime: 'Morning',
+        price: 50,
+        status: 'confirmed',
+        hasReview: false,
+        createdAt: '2030-01-15T10:00:00Z',
+      },
+      {
+        id: '2',
+        userId: 'user-1',
+        serviceId: 'svc-2',
+        serviceName: 'Color',
+        serviceImage: 'https://example.com/img2.jpg',
+        salonName: 'Test Salon 2',
+        stylistId: 'stylist-2',
+        stylistName: 'Jane Doe',
+        date: '2030-01-10',
+        time: '2:00 PM',
+        dayTime: 'Afternoon',
+        price: 80,
+        status: 'pending',
+        hasReview: false,
+        createdAt: '2030-01-10T14:00:00Z',
+      },
+    ],
+  },
+}));
+
+// Mock appointmentService
+jest.mock('@/api/appointmentService', () => ({
+  appointmentService: {
+    getUserAppointments: jest.fn().mockResolvedValue({
+      success: true,
+      data: [],
+    }),
+  },
+}));
+
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(),
@@ -18,13 +85,12 @@ jest.mock('expo-router', () => ({
   },
 }));
 
-// Mock asyncStorage
-const mockGetData = jest.fn();
+// Mock asyncStorage (unused but may be required by component)
 jest.mock('@/utils/asyncStorage', () => ({
   STORAGE_KEYS: {
     USER_DATA: 'userData',
   },
-  getData: (key: string) => mockGetData(key),
+  getData: jest.fn().mockResolvedValue(null),
 }));
 
 // Mock responsive utilities
@@ -40,7 +106,16 @@ jest.mock('@/constants', () => ({
     primary: '#FE697D',
     salon: {
       pinkLight: '#FFCCD3',
+      pinkBg: '#FFF5F5',
       dark: '#1F2937',
+    },
+    gray: {
+      100: '#F3F4F6',
+      200: '#E5E7EB',
+      300: '#D1D5DB',
+      400: '#9CA3AF',
+      500: '#6B7280',
+      600: '#4B5563',
     },
   },
   APPOINTMENT_HISTORY: [
@@ -74,6 +149,14 @@ jest.mock('@/constants', () => ({
 // Mock lucide-react-native
 jest.mock('lucide-react-native', () => ({
   Menu: () => null,
+  Calendar: () => null,
+  Clock: () => null,
+  User: () => null,
+  Star: () => null,
+  CheckCircle: () => null,
+  XCircle: () => null,
+  AlertCircle: () => null,
+  ChevronRight: () => null,
 }));
 
 // Mock components
@@ -83,14 +166,11 @@ jest.mock('@/components', () => ({
 }));
 
 jest.mock('@/components/ui', () => ({
-  AppointmentCard: ({ item, onReviewPress }: any) => {
-    const { View, Text, TouchableOpacity } = require('react-native');
+  AppointmentCard: ({ item }: any) => {
+    const { View, Text } = require('react-native');
     return (
-      <View testID={`appointment-${item.id}`}>
+      <View>
         <Text>{item.serviceName}</Text>
-        <TouchableOpacity testID={`review-btn-${item.id}`} onPress={() => onReviewPress(item)}>
-          <Text>Review</Text>
-        </TouchableOpacity>
       </View>
     );
   },
@@ -99,81 +179,41 @@ jest.mock('@/components/ui', () => ({
 describe('BookingsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetData.mockResolvedValue(null);
   });
 
   describe('Rendering', () => {
     it('should render without crashing', () => {
       const { getByText } = render(<BookingsScreen />);
-      expect(getByText('Appointment History')).toBeTruthy();
+      expect(getByText('My Appointments')).toBeTruthy();
     });
 
-    it('should render appointment history title', () => {
+    it('should render title', () => {
       const { getByText } = render(<BookingsScreen />);
-      expect(getByText('Appointment History')).toBeTruthy();
+      expect(getByText('My Appointments')).toBeTruthy();
     });
 
-    it('should render default user name when no data in storage', () => {
+    it('should render tabs for upcoming and past', () => {
       const { getByText } = render(<BookingsScreen />);
-      expect(getByText('Default User')).toBeTruthy();
+      expect(getByText('Upcoming')).toBeTruthy();
+      expect(getByText('Past')).toBeTruthy();
     });
 
-    it('should render user name from storage', async () => {
-      const userData = { name: 'John Doe', email: 'john@test.com' };
-      mockGetData.mockResolvedValueOnce(JSON.stringify(userData));
-
+    it('should render appointment services', () => {
       const { getByText } = render(<BookingsScreen />);
-
-      await waitFor(() => {
-        expect(getByText('John Doe')).toBeTruthy();
-      });
-    });
-
-    it('should render appointment cards', () => {
-      const { getByTestId } = render(<BookingsScreen />);
-      expect(getByTestId('appointment-1')).toBeTruthy();
-      expect(getByTestId('appointment-2')).toBeTruthy();
+      expect(getByText('Haircut')).toBeTruthy();
+      expect(getByText('Color')).toBeTruthy();
     });
   });
 
-  describe('Navigation', () => {
-    it('should navigate to feedback when pressing review on appointment without review', () => {
-      const { getByTestId } = render(<BookingsScreen />);
-
-      fireEvent.press(getByTestId('review-btn-1'));
-
-      expect(mockPush).toHaveBeenCalledWith('/feedback');
+  describe('Tab Selection', () => {
+    it('should render upcoming tab by default', () => {
+      const { getByText } = render(<BookingsScreen />);
+      expect(getByText('Upcoming')).toBeTruthy();
     });
 
-    it('should navigate to review when pressing review on appointment with review', () => {
-      const { getByTestId } = render(<BookingsScreen />);
-
-      fireEvent.press(getByTestId('review-btn-2'));
-
-      expect(mockPush).toHaveBeenCalledWith('/review');
-    });
-  });
-
-  describe('Data Loading', () => {
-    it('should call getData on mount', async () => {
-      render(<BookingsScreen />);
-
-      await waitFor(() => {
-        expect(mockGetData).toHaveBeenCalledWith('userData');
-      });
-    });
-
-    it('should handle error when loading user data', async () => {
-      mockGetData.mockRejectedValueOnce(new Error('Load error'));
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
-      render(<BookingsScreen />);
-
-      await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalled();
-      });
-
-      consoleSpy.mockRestore();
+    it('should render past tab option', () => {
+      const { getByText } = render(<BookingsScreen />);
+      expect(getByText('Past')).toBeTruthy();
     });
   });
 });

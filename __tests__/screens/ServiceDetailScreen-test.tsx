@@ -2,6 +2,12 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import ServiceDetailScreen from '@/app/service/[id]';
 
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  SafeAreaProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 // Mock expo-router
 const mockBack = jest.fn();
 const mockPush = jest.fn();
@@ -26,7 +32,16 @@ jest.mock('@/constants', () => ({
     primary: '#FE697D',
     salon: {
       pinkLight: '#FFCCD3',
+      pinkBg: '#FFF5F5',
       dark: '#1F2937',
+    },
+    gray: {
+      100: '#F3F4F6',
+      200: '#E5E7EB',
+      300: '#D1D5DB',
+      400: '#9CA3AF',
+      500: '#6B7280',
+      600: '#4B5563',
     },
   },
 }));
@@ -37,6 +52,12 @@ jest.mock('lucide-react-native', () => ({
   Search: () => null,
   Star: () => null,
   ShoppingCart: () => null,
+  Clock: () => null,
+  ChevronLeft: () => null,
+  AlertCircle: () => null,
+  CheckCircle: () => null,
+  Calendar: () => null,
+  User: () => null,
 }));
 
 // Mock components
@@ -53,8 +74,16 @@ jest.mock('@/components', () => ({
 }));
 
 describe('ServiceDetailScreen', () => {
+  const originalRandom = Math.random;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    // Mock Math.random to return 0.5 (2 slots available) so isFullyBooked is false
+    Math.random = jest.fn(() => 0.5);
+  });
+
+  afterEach(() => {
+    Math.random = originalRandom;
   });
 
   describe('Rendering', () => {
@@ -138,12 +167,12 @@ describe('ServiceDetailScreen', () => {
       expect(mockPush).toHaveBeenCalledWith('/service/choose-stylist');
     });
 
-    it('should navigate to appointment when Book Appointment is pressed', () => {
+    it('should navigate to book-appointment when Book Appointment is pressed', () => {
       const { getByText } = render(<ServiceDetailScreen />);
 
       fireEvent.press(getByText('Book Appointment'));
 
-      expect(mockPush).toHaveBeenCalledWith('/appointment');
+      expect(mockPush).toHaveBeenCalledWith('/book-appointment');
     });
 
     it('should navigate to review when review link is pressed', () => {

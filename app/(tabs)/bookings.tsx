@@ -29,11 +29,13 @@ export default function BookingsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const userId = user?.id;
+
   const loadAppointments = useCallback(() => {
     try {
-      if (isLoggedIn && user) {
+      if (isLoggedIn && userId) {
         const userAppointments = mockDatabase.appointments.filter(
-          (a) => a.userId === user.id || a.userId === 'user-1'
+          (a) => a.userId === userId || a.userId === 'user-1'
         );
         setAppointments(userAppointments);
       } else {
@@ -45,7 +47,7 @@ export default function BookingsScreen() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [isLoggedIn, user]);
+  }, [isLoggedIn, userId]);
 
   useEffect(() => {
     loadAppointments();

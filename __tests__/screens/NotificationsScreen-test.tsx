@@ -2,6 +2,12 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import NotificationsScreen from '@/app/(tabs)/notifications';
 
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  SafeAreaProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(),
@@ -16,6 +22,16 @@ jest.mock('expo-router', () => ({
   router: {
     push: (path: string) => mockPush(path),
   },
+}));
+
+// Mock AuthContext
+let mockIsLoggedIn = true;
+jest.mock('@/contexts', () => ({
+  useAuth: () => ({
+    user: mockIsLoggedIn ? { id: 'user-1', name: 'Test User', email: 'test@test.com', avatar: 'https://example.com/avatar.jpg' } : null,
+    isLoggedIn: mockIsLoggedIn,
+    isLoading: false,
+  }),
 }));
 
 // Mock asyncStorage utilities
@@ -89,6 +105,28 @@ jest.mock('@/constants', () => ({
 jest.mock('lucide-react-native', () => ({
   ChevronDown: () => null,
   User: () => null,
+  Menu: () => null,
+  Bell: () => null,
+  Check: () => null,
+  Trash2: () => null,
+}));
+
+// Mock notificationService
+jest.mock('@/api/notificationService', () => ({
+  notificationService: {
+    getUserNotifications: jest.fn().mockResolvedValue({
+      success: true,
+      data: [
+        { id: '1', title: 'Appointment Confirmed', message: 'Your appointment has been confirmed', type: 'appointment_confirm', createdAt: new Date().toISOString(), read: false },
+        { id: '2', title: 'Appointment Updated', message: 'Your appointment time has been changed', type: 'appointment_update', createdAt: new Date().toISOString(), read: false },
+        { id: '3', title: 'Leave Feedback', message: 'Please leave feedback for your recent visit', type: 'feedback', createdAt: new Date().toISOString(), read: false },
+        { id: '4', title: 'General Update', message: 'New services available', type: 'general', createdAt: new Date().toISOString(), read: true },
+      ],
+    }),
+    getUnreadCount: jest.fn().mockResolvedValue({ success: true, data: 3 }),
+    markAllAsRead: jest.fn().mockResolvedValue({ success: true }),
+    deleteAllNotifications: jest.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 // Mock components
@@ -124,19 +162,18 @@ describe('NotificationsScreen', () => {
   describe('Rendering - Logged In', () => {
     it('should render without crashing', async () => {
       const { getByText, findByText } = render(<NotificationsScreen />);
-      expect(getByText('Notification')).toBeTruthy();
+      expect(getByText(/Notifications/)).toBeTruthy();
       await findByText('Appointment Confirmed');
     });
 
     it('should render notification header', () => {
       const { getByText } = render(<NotificationsScreen />);
-      expect(getByText('Notification')).toBeTruthy();
+      expect(getByText(/Notifications/)).toBeTruthy();
     });
 
-    it('should render filter bar', () => {
-      const { getByText } = render(<NotificationsScreen />);
-      expect(getByText('Latest notification')).toBeTruthy();
-      expect(getByText('Sort By')).toBeTruthy();
+    it('should render action bar for logged in user', async () => {
+      const { findByText } = render(<NotificationsScreen />);
+      expect(await findByText('Mark all read')).toBeTruthy();
     });
 
     it('should render notification items for logged in user', async () => {
@@ -152,6 +189,11 @@ describe('NotificationsScreen', () => {
     beforeEach(() => {
       // Override to guest mode
       mockGetData.mockResolvedValue(null);
+      mockIsLoggedIn = false;
+    });
+
+    afterEach(() => {
+      mockIsLoggedIn = true;
     });
 
     it('should render welcome notification for guest', async () => {

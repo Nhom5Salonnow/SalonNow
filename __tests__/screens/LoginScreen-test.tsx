@@ -24,11 +24,22 @@ jest.mock('expo-router', () => ({
 }));
 
 // Mock authService
-const mockLogin = jest.fn();
+const mockAuthLogin = jest.fn();
 jest.mock('@/api/authService', () => ({
   authService: {
-    login: (input: any) => mockLogin(input),
+    login: (input: any) => mockAuthLogin(input),
   },
+}));
+
+// Mock AuthContext
+const mockContextLogin = jest.fn();
+jest.mock('@/contexts', () => ({
+  useAuth: () => ({
+    login: mockContextLogin,
+    user: null,
+    isLoggedIn: false,
+    isLoading: false,
+  }),
 }));
 
 // Mock responsive utilities
@@ -74,10 +85,11 @@ jest.mock('expo-linear-gradient', () => ({
 describe('LoginScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockLogin.mockResolvedValue({
-      user: { id: '1', email: 'test@test.com', name: 'Test User' },
+    mockAuthLogin.mockResolvedValue({
+      user: { id: '1', email: 'test@test.com', name: 'Test User', phone: '123456', avatar: 'https://example.com/avatar.jpg' },
       token: 'mock_token',
     });
+    mockContextLogin.mockResolvedValue(undefined);
   });
 
   describe('Rendering', () => {
@@ -104,10 +116,10 @@ describe('LoginScreen', () => {
       expect(loginTexts.length).toBeGreaterThanOrEqual(2);
     });
 
-    it('should render sign up link', () => {
+    it('should render register link', () => {
       const { getByText } = render(<LoginScreen />);
-      // The screen shows "Sign-up" tab option
-      expect(getByText('Sign-up')).toBeTruthy();
+      // The screen shows "Register" tab option
+      expect(getByText('Register')).toBeTruthy();
     });
   });
 
@@ -143,7 +155,7 @@ describe('LoginScreen', () => {
       fireEvent.press(loginButtons[loginButtons.length - 1]);
 
       await waitFor(() => {
-        expect(mockLogin).toHaveBeenCalledWith({
+        expect(mockAuthLogin).toHaveBeenCalledWith({
           email: 'test@example.com',
           password: 'password123',
         });
@@ -165,7 +177,7 @@ describe('LoginScreen', () => {
     });
 
     it('should show error message on failed login', async () => {
-      mockLogin.mockRejectedValue(new Error('Invalid email or password'));
+      mockAuthLogin.mockRejectedValue(new Error('Invalid email or password'));
 
       const { getByPlaceholderText, getAllByText, findByText } = render(<LoginScreen />);
 
@@ -189,12 +201,12 @@ describe('LoginScreen', () => {
   });
 
   describe('Tab Navigation', () => {
-    it('should navigate to signup when Sign-up tab is pressed', () => {
+    it('should navigate to signup when Register tab is pressed', () => {
       const { getByText } = render(<LoginScreen />);
 
-      fireEvent.press(getByText('Sign-up'));
+      fireEvent.press(getByText('Register'));
 
-      expect(mockPush).toHaveBeenCalledWith('/auth/signup');
+      expect(mockReplace).toHaveBeenCalledWith('/auth/signup');
     });
 
     it('should show Forget Password link', () => {
