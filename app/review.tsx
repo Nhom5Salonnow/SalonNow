@@ -4,8 +4,10 @@ import { Menu, ChevronLeft, Star } from "lucide-react-native";
 import { wp, hp, rf } from "@/utils/responsive";
 import { Colors, REVIEWS, RATING_DISTRIBUTION } from "@/constants";
 import { ReviewCard, StarRating } from "@/components/ui";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ReviewScreen() {
+  const insets = useSafeAreaInsets();
   const averageRating = 4.0;
   const totalReviews = 52;
 
@@ -28,7 +30,7 @@ export default function ReviewScreen() {
         {/* Header */}
         <View
           className="flex-row items-center justify-between px-6"
-          style={{ paddingTop: hp(6) }}
+          style={{ paddingTop: insets.top + hp(1) }}
         >
           <TouchableOpacity onPress={() => router.back()}>
             <Menu size={28} color="#000" />
@@ -45,10 +47,7 @@ export default function ReviewScreen() {
         <View
           className="mx-6 mt-6 rounded-2xl bg-white p-5"
           style={{
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.08,
-            shadowRadius: 8,
+            boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.08)',
             elevation: 3,
           }}
         >

@@ -14,6 +14,7 @@ jest.mock('@/constants', () => ({
   Colors: {
     primary: '#FE697D',
     salon: {
+      pinkLight: '#FFCCD3',
       dark: '#1F2937',
     },
     gray: {
@@ -23,6 +24,14 @@ jest.mock('@/constants', () => ({
       600: '#4B5563',
     },
   },
+}));
+
+// Mock lucide-react-native
+jest.mock('lucide-react-native', () => ({
+  Calendar: () => null,
+  Clock: () => null,
+  User: () => null,
+  Star: () => null,
 }));
 
 describe('AppointmentCard', () => {
@@ -59,12 +68,12 @@ describe('AppointmentCard', () => {
 
     it('should render stylist name', () => {
       const { getByText } = render(<AppointmentCard item={mockAppointment} />);
-      expect(getByText('Hair stylish : John Doe')).toBeTruthy();
+      expect(getByText('John Doe')).toBeTruthy();
     });
 
-    it('should render price', () => {
+    it('should render price with dollar sign', () => {
       const { getByText } = render(<AppointmentCard item={mockAppointment} />);
-      expect(getByText('Price of Service : $50')).toBeTruthy();
+      expect(getByText('$50')).toBeTruthy();
     });
 
     it('should render date', () => {
@@ -72,28 +81,23 @@ describe('AppointmentCard', () => {
       expect(getByText('Mon, 15 Jan')).toBeTruthy();
     });
 
-    it('should render time with "at" prefix', () => {
+    it('should render time', () => {
       const { getByText } = render(<AppointmentCard item={mockAppointment} />);
-      expect(getByText('at 10:00 AM')).toBeTruthy();
-    });
-
-    it('should render day time', () => {
-      const { getByText } = render(<AppointmentCard item={mockAppointment} />);
-      expect(getByText(/Morning/)).toBeTruthy();
+      expect(getByText('10:00 AM')).toBeTruthy();
     });
   });
 
   describe('Review Button', () => {
-    it('should render "Review" text when hasReview is false', () => {
+    it('should render "Add Review" text when hasReview is false', () => {
       const { getByText } = render(<AppointmentCard item={mockAppointment} />);
-      expect(getByText('Review')).toBeTruthy();
+      expect(getByText('Add Review')).toBeTruthy();
     });
 
-    it('should render "View review" text when hasReview is true', () => {
+    it('should render "View Review" text when hasReview is true', () => {
       const { getByText } = render(
         <AppointmentCard item={mockAppointmentWithReview} />
       );
-      expect(getByText('View review')).toBeTruthy();
+      expect(getByText('View Review')).toBeTruthy();
     });
 
     it('should call onReviewPress when review button is pressed', () => {
@@ -102,7 +106,7 @@ describe('AppointmentCard', () => {
         <AppointmentCard item={mockAppointment} onReviewPress={onReviewPress} />
       );
 
-      fireEvent.press(getByText('Review'));
+      fireEvent.press(getByText('Add Review'));
       expect(onReviewPress).toHaveBeenCalledWith(mockAppointment);
     });
 
@@ -115,13 +119,13 @@ describe('AppointmentCard', () => {
         />
       );
 
-      fireEvent.press(getByText('View review'));
+      fireEvent.press(getByText('View Review'));
       expect(onReviewPress).toHaveBeenCalledWith(mockAppointmentWithReview);
     });
 
     it('should not throw when onReviewPress is not provided', () => {
       const { getByText } = render(<AppointmentCard item={mockAppointment} />);
-      expect(() => fireEvent.press(getByText('Review'))).not.toThrow();
+      expect(() => fireEvent.press(getByText('Add Review'))).not.toThrow();
     });
   });
 });

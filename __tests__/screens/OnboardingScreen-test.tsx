@@ -90,7 +90,7 @@ describe('OnboardingScreen', () => {
       fireEvent.press(skipButton);
 
       await waitFor(() => {
-        expect(router.replace).toHaveBeenCalledWith('/auth/login');
+        expect(router.replace).toHaveBeenCalledWith('/home');
       });
     });
 
@@ -111,7 +111,7 @@ describe('OnboardingScreen', () => {
       fireEvent.press(getStartedButton);
 
       await waitFor(() => {
-        expect(router.replace).toHaveBeenCalledWith('/auth/login');
+        expect(router.replace).toHaveBeenCalledWith('/home');
       });
     });
 
@@ -372,7 +372,8 @@ describe('OnboardingScreen', () => {
           'hasCompletedOnboarding',
           'true'
         );
-        expect(router.replace).toHaveBeenCalledWith('/auth/login');
+        // Navigate to home for guest mode support
+        expect(router.replace).toHaveBeenCalledWith('/home');
       });
     });
 
@@ -390,7 +391,8 @@ describe('OnboardingScreen', () => {
           'hasCompletedOnboarding',
           'true'
         );
-        expect(router.replace).toHaveBeenCalledWith('/auth/login');
+        // Navigate to home for guest mode support
+        expect(router.replace).toHaveBeenCalledWith('/home');
       });
     });
   });

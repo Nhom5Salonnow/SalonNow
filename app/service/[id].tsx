@@ -1,10 +1,12 @@
-import { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, FlatList } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Image, ScrollView, FlatList, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Menu, Search, Star, ShoppingCart } from 'lucide-react-native';
+import { Menu, Search, Star, ShoppingCart, Clock, AlertCircle } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { DecorativeCircle, QuoteBanner } from '@/components';
+import { mockDatabase } from '@/api/mockServer/database';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ServiceItem {
   id: string;
@@ -43,8 +45,19 @@ const SERVICES: ServiceItem[] = [
 ];
 
 export default function ServiceDetailScreen() {
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [slotsAvailable, setSlotsAvailable] = useState<number>(0);
+  const [isFullyBooked, setIsFullyBooked] = useState(false);
+
+  // Simulate checking availability
+  useEffect(() => {
+    // Simulate some services having limited/no availability
+    const availableSlots = Math.floor(Math.random() * 5); // 0-4 slots
+    setSlotsAvailable(availableSlots);
+    setIsFullyBooked(availableSlots === 0);
+  }, []);
 
   // Get category name based on ID
   const getCategoryInfo = (id: string) => {
@@ -67,6 +80,19 @@ export default function ServiceDetailScreen() {
         ? prev.filter(id => id !== serviceId)
         : [...prev, serviceId]
     );
+  };
+
+  const handleJoinWaitlist = () => {
+    const selectedService = SERVICES.find(s => selectedServices.includes(s.id));
+    router.push({
+      pathname: '/waitlist/join',
+      params: {
+        serviceId: selectedService?.id || 'service-1',
+        serviceName: selectedService?.name || categoryName,
+        salonId: 'salon-1',
+        salonName: 'Salon Now',
+      },
+    } as any);
   };
 
   const renderServiceItem = ({ item }: { item: ServiceItem }) => (
@@ -117,7 +143,7 @@ export default function ServiceDetailScreen() {
         {/* Header */}
         <View
           className="flex-row items-center justify-between px-6"
-          style={{ paddingTop: hp(6) }}
+          style={{ paddingTop: insets.top + hp(1) }}
         >
           <TouchableOpacity onPress={() => router.back()}>
             <Menu size={28} color="#000" />
@@ -178,27 +204,85 @@ export default function ServiceDetailScreen() {
         <View style={{ height: hp(15) }} />
       </ScrollView>
 
+      {/* Availability Banner */}
+      {isFullyBooked && (
+        <View
+          className="absolute left-0 right-0 flex-row items-center justify-center"
+          style={{
+            bottom: hp(22),
+            backgroundColor: '#FFFBEB',
+            paddingVertical: hp(1.5),
+            paddingHorizontal: wp(4),
+          }}
+        >
+          <AlertCircle size={rf(18)} color="#F59E0B" />
+          <Text style={{ fontSize: rf(14), color: '#92400E', marginLeft: wp(2), fontWeight: '500' }}>
+            Fully booked today - Join the waitlist!
+          </Text>
+        </View>
+      )}
+
+      {!isFullyBooked && slotsAvailable <= 3 && slotsAvailable > 0 && (
+        <View
+          className="absolute left-0 right-0 flex-row items-center justify-center"
+          style={{
+            bottom: hp(22),
+            backgroundColor: '#ECFDF5',
+            paddingVertical: hp(1.5),
+            paddingHorizontal: wp(4),
+          }}
+        >
+          <Clock size={rf(18)} color="#10B981" />
+          <Text style={{ fontSize: rf(14), color: '#065F46', marginLeft: wp(2), fontWeight: '500' }}>
+            Only {slotsAvailable} slot{slotsAvailable > 1 ? 's' : ''} left today!
+          </Text>
+        </View>
+      )}
+
       {/* Bottom Actions */}
       <View
-        className="absolute bottom-0 left-0 right-0 flex-row items-center justify-between px-6"
+        className="absolute bottom-0 left-0 right-0 px-6"
         style={{ paddingBottom: hp(12), paddingTop: hp(2), backgroundColor: 'white' }}
       >
-        <TouchableOpacity
-          onPress={() => router.push('/appointment' as any)}
-          className="flex-1 rounded-full items-center justify-center mr-4"
-          style={{ backgroundColor: Colors.primary, paddingVertical: hp(2) }}
-        >
-          <Text style={{ fontSize: rf(16), color: '#fff', fontWeight: '600' }}>
-            Book Appointment
-          </Text>
-        </TouchableOpacity>
+        {isFullyBooked ? (
+          <View className="flex-row items-center justify-between">
+            <TouchableOpacity
+              onPress={handleJoinWaitlist}
+              className="flex-1 rounded-full items-center justify-center mr-4"
+              style={{ backgroundColor: Colors.primary, paddingVertical: hp(2) }}
+            >
+              <Text style={{ fontSize: rf(16), color: '#fff', fontWeight: '600' }}>
+                Join Waitlist
+              </Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          className="rounded-full p-3"
-          style={{ backgroundColor: Colors.salon.pinkLight }}
-        >
-          <ShoppingCart size={24} color="#000" />
-        </TouchableOpacity>
+            <TouchableOpacity
+              className="rounded-full p-3"
+              style={{ backgroundColor: Colors.salon.pinkLight }}
+            >
+              <ShoppingCart size={24} color="#000" />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View className="flex-row items-center justify-between">
+            <TouchableOpacity
+              onPress={() => router.push('/book-appointment' as any)}
+              className="flex-1 rounded-full items-center justify-center mr-4"
+              style={{ backgroundColor: Colors.primary, paddingVertical: hp(2) }}
+            >
+              <Text style={{ fontSize: rf(16), color: '#fff', fontWeight: '600' }}>
+                Book Appointment
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="rounded-full p-3"
+              style={{ backgroundColor: Colors.salon.pinkLight }}
+            >
+              <ShoppingCart size={24} color="#000" />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </View>
   );

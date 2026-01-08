@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-nativ
 import { router } from 'expo-router';
 import { Menu, ChevronLeft, Star, CheckCircle } from 'lucide-react-native';
 import { hp, rf, wp } from '@/utils/responsive';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface RatingCategory {
   id: string;
@@ -11,6 +12,7 @@ interface RatingCategory {
 }
 
 export default function FeedbackScreen() {
+  const insets = useSafeAreaInsets();
   const [ratings, setRatings] = useState<RatingCategory[]>([
     { id: 'experience', label: 'Rate your Experience', rating: 4 },
     { id: 'service', label: 'Rate Service', rating: 5 },
@@ -60,7 +62,7 @@ export default function FeedbackScreen() {
         {/* Header */}
         <View
           className="flex-row items-center justify-between px-6"
-          style={{ paddingTop: hp(6) }}
+          style={{ paddingTop: insets.top + hp(1) }}
         >
           <TouchableOpacity onPress={() => router.back()}>
             <Menu size={28} color="#000" />
@@ -77,10 +79,7 @@ export default function FeedbackScreen() {
         <View
           className="mx-6 mt-8 rounded-3xl bg-white p-6"
           style={{
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 8,
+            boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
             elevation: 4,
           }}
         >

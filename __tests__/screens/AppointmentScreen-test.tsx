@@ -1,6 +1,12 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import AppointmentScreen from '@/app/appointment';
+import AppointmentScreen from '@/app/book-appointment';
+
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  SafeAreaProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({

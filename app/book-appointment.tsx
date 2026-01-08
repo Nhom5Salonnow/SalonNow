@@ -5,8 +5,10 @@ import { ChevronLeft } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { LinearGradient } from 'expo-linear-gradient';
 import { WeekCalendar, generateWeekDays, AuthGuard } from '@/components';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function AppointmentContent() {
+  const insets = useSafeAreaInsets();
   const [selectedDate, setSelectedDate] = useState(12);
   const [selectedHour] = useState('2:00');
   const [selectedPeriod] = useState('P.M');
@@ -26,16 +28,21 @@ function AppointmentContent() {
       {/* Pink gradient header background */}
       <LinearGradient
         colors={['#FECDD3', '#FFF5F5', '#FFFFFF']}
-        locations={[0, 0.4, 0.7]}
+        locations={[0, 0.5, 1]}
         className="absolute top-0 left-0 right-0"
-        style={{ height: hp(45) }}
+        style={{ height: hp(25) }}
       />
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        bounces={false}
+      >
         {/* Header */}
         <View
           className="flex-row items-center px-6"
-          style={{ paddingTop: hp(6) }}
+          style={{ paddingTop: insets.top + hp(1) }}
         >
           <TouchableOpacity onPress={() => router.back()}>
             <ChevronLeft size={28} color="#000" />
@@ -96,10 +103,7 @@ function AppointmentContent() {
           style={{
             marginTop: hp(4),
             padding: wp(4),
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.05,
-            shadowRadius: 8,
+            boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.05)',
             elevation: 2,
           }}
         >
@@ -166,10 +170,7 @@ function AppointmentContent() {
           style={{
             backgroundColor: '#F87171',
             paddingVertical: hp(2),
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.2,
-            shadowRadius: 8,
+            boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.2)',
             elevation: 5,
           }}
         >

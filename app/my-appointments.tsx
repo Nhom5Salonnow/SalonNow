@@ -1,62 +1,199 @@
-import { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { useState, useEffect, useCallback } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
+import { ChevronLeft, Calendar, Clock, User } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import { WeekCalendar, generateWeekDays, AuthGuard } from '@/components';
+import { mockDatabase } from '@/api/mockServer/database';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '@/contexts';
 
-interface Appointment {
-  id: string;
-  time: string;
-  category: string;
-  service: string;
-  stylistName: string;
-  stylistImage: string;
-  customerName: string;
-  customerImage: string;
-  price: number;
-  status: 'confirmed' | 'pending';
-}
+type TabType = 'upcoming' | 'past';
 
-const APPOINTMENTS: Appointment[] = [
-  {
-    id: '1',
-    time: '2:00 PM',
-    category: 'Hair Design & Cut',
-    service: 'Basic Haircut',
-    stylistName: 'Lisa',
-    stylistImage: 'https://api.builder.io/api/v1/image/assets/TEMP/ab5fe51fab4ac2627711fedc485bf50f9f29dc9d?width=240',
-    customerName: 'You',
-    customerImage: 'https://api.builder.io/api/v1/image/assets/TEMP/bf83f7d9f51b91c7f1126d620657aa5f1b9a54bf?width=114',
-    price: 50,
-    status: 'confirmed',
-  },
-  {
-    id: '2',
-    time: '5:00 PM',
-    category: 'Color & Shine',
-    service: 'Hair dying',
-    stylistName: 'Lisa',
-    stylistImage: 'https://api.builder.io/api/v1/image/assets/TEMP/ab5fe51fab4ac2627711fedc485bf50f9f29dc9d?width=240',
-    customerName: 'Doe John',
-    customerImage: 'https://api.builder.io/api/v1/image/assets/TEMP/4ab931700dd594de82119a13ddc008773676e5ab?width=240',
-    price: 29,
-    status: 'pending',
-  },
-];
+const STATUS_CONFIG: Record<string, {color: string; bgColor: string; label: string}> = {
+  pending: { color: '#F59E0B', bgColor: '#FFFBEB', label: 'Pending' },
+  confirmed: { color: '#10B981', bgColor: '#ECFDF5', label: 'Confirmed' },
+  in_progress: { color: '#3B82F6', bgColor: '#EFF6FF', label: 'In Progress' },
+  completed: { color: '#6B7280', bgColor: '#F3F4F6', label: 'Completed' },
+  cancelled: { color: '#EF4444', bgColor: '#FEF2F2', label: 'Cancelled' },
+  no_show: { color: '#EF4444', bgColor: '#FEF2F2', label: 'No Show' },
+};
 
 function MyAppointmentsContent() {
-  const [selectedDate, setSelectedDate] = useState(12);
-  const currentMonth = 'April';
+  const insets = useSafeAreaInsets();
+  const { user } = useAuth();
+  const [selectedTab, setSelectedTab] = useState<TabType>('upcoming');
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Generate week days with appointments using helper
-  const weekDays = generateWeekDays(10, selectedDate, [12, 14]);
+  const userId = user?.id || 'user-1';
 
-  const getStatusColor = (status: string) => {
-    return status === 'confirmed' ? '#86EFAC' : Colors.primary;
+  const loadAppointments = useCallback(() => {
+    try {
+      const userAppointments = mockDatabase.appointments.filter(
+        (a) => a.userId === userId || a.userId === 'user-1'
+      );
+      setAppointments(userAppointments);
+    } catch (error) {
+      console.error('Error loading appointments:', error);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    loadAppointments();
+  }, [loadAppointments]);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    loadAppointments();
   };
+
+  const filteredAppointments = appointments.filter((appt) => {
+    const apptDate = new Date(appt.date);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    if (selectedTab === 'upcoming') {
+      return (
+        apptDate >= now &&
+        ['pending', 'confirmed', 'in_progress'].includes(appt.status)
+      );
+    } else {
+      return (
+        apptDate < now ||
+        ['completed', 'cancelled', 'no_show'].includes(appt.status)
+      );
+    }
+  });
+
+  const handleAppointmentPress = (appointmentId: string) => {
+    router.push(`/appointment/${appointmentId}` as any);
+  };
+
+  const renderAppointmentCard = (appointment: any) => {
+    const statusConfig = STATUS_CONFIG[appointment.status] || STATUS_CONFIG.pending;
+
+    return (
+      <TouchableOpacity
+        key={appointment.id}
+        onPress={() => handleAppointmentPress(appointment.id)}
+        className="rounded-xl"
+        style={{
+          backgroundColor: '#fff',
+          marginBottom: hp(2),
+          padding: wp(4),
+          borderWidth: 1,
+          borderColor: '#F3F4F6',
+        }}
+      >
+        {/* Header */}
+        <View className="flex-row items-start justify-between">
+          <View className="flex-1">
+            <Text style={{ fontSize: rf(17), fontWeight: '600', color: '#000' }}>
+              {appointment.serviceName}
+            </Text>
+            <Text style={{ fontSize: rf(13), color: Colors.gray[500], marginTop: hp(0.3) }}>
+              {appointment.salonName}
+            </Text>
+          </View>
+
+          {/* Status Badge */}
+          <View
+            className="rounded-full"
+            style={{
+              backgroundColor: statusConfig.bgColor,
+              paddingHorizontal: wp(3),
+              paddingVertical: hp(0.5),
+            }}
+          >
+            <Text style={{ fontSize: rf(12), color: statusConfig.color, fontWeight: '600' }}>
+              {statusConfig.label}
+            </Text>
+          </View>
+        </View>
+
+        {/* Date & Time */}
+        <View className="flex-row items-center" style={{ marginTop: hp(2) }}>
+          <View className="flex-row items-center" style={{ marginRight: wp(4) }}>
+            <Calendar size={rf(16)} color={Colors.gray[400]} />
+            <Text style={{ fontSize: rf(14), color: Colors.gray[600], marginLeft: wp(1) }}>
+              {appointment.date}
+            </Text>
+          </View>
+          <View className="flex-row items-center" style={{ marginRight: wp(4) }}>
+            <Clock size={rf(16)} color={Colors.gray[400]} />
+            <Text style={{ fontSize: rf(14), color: Colors.gray[600], marginLeft: wp(1) }}>
+              {appointment.time}
+            </Text>
+          </View>
+        </View>
+
+        {/* Staff */}
+        {appointment.staffName && (
+          <View className="flex-row items-center" style={{ marginTop: hp(1) }}>
+            <User size={rf(16)} color={Colors.gray[400]} />
+            <Text style={{ fontSize: rf(14), color: Colors.gray[600], marginLeft: wp(1) }}>
+              with {appointment.staffName}
+            </Text>
+          </View>
+        )}
+
+        {/* Price & Action */}
+        <View
+          className="flex-row items-center justify-between"
+          style={{
+            marginTop: hp(2),
+            paddingTop: hp(1.5),
+            borderTopWidth: 1,
+            borderTopColor: '#F3F4F6',
+          }}
+        >
+          <Text style={{ fontSize: rf(16), fontWeight: '600', color: Colors.primary }}>
+            ${appointment.price || appointment.total || 60}
+          </Text>
+          <Text style={{ fontSize: rf(13), color: Colors.primary }}>
+            View Details →
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderEmptyState = () => (
+    <View className="items-center justify-center" style={{ paddingTop: hp(10) }}>
+      <Calendar size={rf(60)} color={Colors.gray[300]} />
+      <Text style={{ fontSize: rf(18), fontWeight: '600', color: '#000', marginTop: hp(2) }}>
+        No {selectedTab === 'upcoming' ? 'Upcoming' : 'Past'} Appointments
+      </Text>
+      <Text style={{ fontSize: rf(14), color: Colors.gray[500], marginTop: hp(1), textAlign: 'center' }}>
+        {selectedTab === 'upcoming'
+          ? "You don't have any upcoming appointments."
+          : "You don't have any past appointments."}
+      </Text>
+      {selectedTab === 'upcoming' && (
+        <TouchableOpacity
+          onPress={() => router.push('/home' as any)}
+          className="rounded-xl"
+          style={{
+            backgroundColor: Colors.primary,
+            paddingVertical: hp(1.5),
+            paddingHorizontal: wp(6),
+            marginTop: hp(3),
+          }}
+        >
+          <Text style={{ fontSize: rf(15), fontWeight: '600', color: '#fff' }}>
+            Book Now
+          </Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
 
   return (
     <View className="flex-1 bg-white">
@@ -65,114 +202,85 @@ function MyAppointmentsContent() {
         colors={['#FECDD3', '#FFF5F5', '#FFFFFF']}
         locations={[0, 0.5, 0.8]}
         className="absolute top-0 left-0 right-0"
-        style={{ height: hp(35) }}
+        style={{ height: hp(25) }}
       />
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View
-          className="flex-row items-center px-6"
-          style={{ paddingTop: hp(6) }}
+      {/* Header */}
+      <View
+        className="flex-row items-center px-6"
+        style={{ paddingTop: insets.top + hp(1) }}
+      >
+        <TouchableOpacity onPress={() => router.back()}>
+          <ChevronLeft size={28} color="#000" />
+        </TouchableOpacity>
+        <Text
+          className="flex-1 text-center"
+          style={{ fontSize: rf(22), fontWeight: '600', color: '#000' }}
         >
-          <TouchableOpacity onPress={() => router.back()}>
-            <ChevronLeft size={28} color="#000" />
-          </TouchableOpacity>
+          My Appointments
+        </Text>
+        <View style={{ width: wp(7) }} />
+      </View>
+
+      {/* Tabs */}
+      <View
+        className="flex-row rounded-full mx-6"
+        style={{
+          marginTop: hp(3),
+          backgroundColor: '#F3F4F6',
+          padding: wp(1),
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => setSelectedTab('upcoming')}
+          className="flex-1 items-center justify-center rounded-full"
+          style={{
+            paddingVertical: hp(1.5),
+            backgroundColor: selectedTab === 'upcoming' ? Colors.primary : 'transparent',
+          }}
+        >
           <Text
-            className="flex-1 text-center"
-            style={{ fontSize: rf(22), fontWeight: '500', color: '#000' }}
+            style={{
+              fontSize: rf(14),
+              fontWeight: selectedTab === 'upcoming' ? '600' : '400',
+              color: selectedTab === 'upcoming' ? '#fff' : Colors.gray[600],
+            }}
           >
-            Appointment
+            Upcoming
           </Text>
-          <View style={{ width: wp(7) }} />
-        </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setSelectedTab('past')}
+          className="flex-1 items-center justify-center rounded-full"
+          style={{
+            paddingVertical: hp(1.5),
+            backgroundColor: selectedTab === 'past' ? Colors.primary : 'transparent',
+          }}
+        >
+          <Text
+            style={{
+              fontSize: rf(14),
+              fontWeight: selectedTab === 'past' ? '600' : '400',
+              color: selectedTab === 'past' ? '#fff' : Colors.gray[600],
+            }}
+          >
+            Past
+          </Text>
+        </TouchableOpacity>
+      </View>
 
-        {/* Week Calendar */}
-        <View style={{ marginTop: hp(2) }}>
-          <WeekCalendar
-            month={currentMonth}
-            weekDays={weekDays}
-            onSelectDate={setSelectedDate}
-            showAppointmentIndicator
-          />
-        </View>
-
-        {/* Appointments List */}
-        <View className="px-6" style={{ marginTop: hp(4) }}>
-          {APPOINTMENTS.map((appointment) => (
-            <View key={appointment.id} className="mb-6">
-              {/* Time with left border */}
-              <View className="flex-row items-center">
-                <View
-                  className="rounded-full px-4 py-2"
-                  style={{ borderWidth: 1, borderColor: Colors.primary }}
-                >
-                  <Text style={{ fontSize: rf(14), color: '#000' }}>
-                    {appointment.time}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Appointment Card */}
-              <View className="flex-row mt-3">
-                {/* Left border line */}
-                <View
-                  style={{
-                    width: wp(0.8),
-                    backgroundColor: Colors.primary,
-                    marginRight: wp(4),
-                    borderRadius: wp(0.5),
-                  }}
-                />
-
-                {/* Card content */}
-                <View
-                  className="flex-1 rounded-2xl p-4"
-                  style={{ backgroundColor: getStatusColor(appointment.status) }}
-                >
-                  <View className="flex-row justify-between">
-                    {/* Left side - Category & Stylist */}
-                    <View className="items-center">
-                      <Text style={{ fontSize: rf(14), fontWeight: '600', color: '#000' }}>
-                        {appointment.category}
-                      </Text>
-                      <Image
-                        source={{ uri: appointment.stylistImage }}
-                        className="rounded-full mt-2"
-                        style={{ width: wp(12), height: wp(12) }}
-                      />
-                      <Text style={{ fontSize: rf(14), color: '#000', marginTop: hp(0.5) }}>
-                        {appointment.stylistName}
-                      </Text>
-                    </View>
-
-                    {/* Right side - Service & Customer */}
-                    <View className="items-center">
-                      <Text style={{ fontSize: rf(14), fontWeight: '600', color: '#000' }}>
-                        {appointment.service}
-                      </Text>
-                      <Image
-                        source={{ uri: appointment.customerImage }}
-                        className="rounded-full mt-2"
-                        style={{ width: wp(12), height: wp(12) }}
-                      />
-                      <Text style={{ fontSize: rf(14), color: '#000', marginTop: hp(0.5) }}>
-                        {appointment.customerName}
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Price */}
-                  <Text
-                    className="text-center mt-3"
-                    style={{ fontSize: rf(16), fontWeight: '600', color: '#000' }}
-                  >
-                    €{appointment.price}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          ))}
-        </View>
+      {/* Appointments List */}
+      <ScrollView
+        className="flex-1 px-6"
+        style={{ marginTop: hp(3) }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+        }
+      >
+        {filteredAppointments.length > 0
+          ? filteredAppointments.map(renderAppointmentCard)
+          : !isLoading && renderEmptyState()}
 
         <View style={{ height: hp(15) }} />
       </ScrollView>
@@ -183,7 +291,7 @@ function MyAppointmentsContent() {
         style={{ paddingBottom: hp(4), backgroundColor: 'white' }}
       >
         <TouchableOpacity
-          onPress={() => router.push('/appointment' as any)}
+          onPress={() => router.push('/home' as any)}
           className="rounded-full items-center justify-center"
           style={{ backgroundColor: Colors.primary, paddingVertical: hp(2) }}
         >

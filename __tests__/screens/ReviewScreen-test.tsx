@@ -2,6 +2,12 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import ReviewScreen from '@/app/review';
 
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  SafeAreaProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 // Mock expo-router
 const mockBack = jest.fn();
 jest.mock('expo-router', () => ({

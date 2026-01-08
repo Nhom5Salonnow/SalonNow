@@ -7,3 +7,4 @@ export { StarRating } from "./StarRating";
 export { AppointmentCard } from "./AppointmentCard";
 export { ReviewCard } from "./ReviewCard";
 export { NotificationCard } from "./NotificationCard";
+export { GuestPrompt } from "./GuestPrompt";

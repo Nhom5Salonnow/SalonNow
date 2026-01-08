@@ -12,13 +12,16 @@ import {
   View,
   Alert,
   ActivityIndicator,
+  SafeAreaView,
 } from "react-native";
+import { ChevronLeft } from "lucide-react-native";
 import { authService } from "@/api/authService";
+import { useAuth } from "@/contexts";
 
 export default function LoginScreen() {
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,7 +35,15 @@ export default function LoginScreen() {
     setError(null);
 
     try {
-      await authService.login({ email, password });
+      const response = await authService.login({ email, password });
+      // Sync with AuthContext
+      await login({
+        id: response.user.id,
+        name: response.user.name,
+        email: response.user.email,
+        phone: response.user.phone,
+        avatar: response.user.avatar,
+      }, response.token);
       router.replace("/home" as any);
     } catch (err: any) {
       setError(err.message || "Login failed. Please try again.");
@@ -42,9 +53,8 @@ export default function LoginScreen() {
   };
 
   const handleTabChange = (tab: "login" | "signup") => {
-    setActiveTab(tab);
     if (tab === "signup") {
-      router.push("/auth/signup");
+      router.replace("/auth/signup" as any);
     }
   };
 
@@ -65,36 +75,82 @@ export default function LoginScreen() {
           style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
         />
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          className="flex-1 justify-center items-center"
-          style={{ paddingHorizontal: wp(5) }}
-        >
-          {/* Login Card */}
+        <SafeAreaView className="flex-1">
+          {/* Back Button */}
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{
+              position: "absolute",
+              top: hp(6),
+              left: wp(5),
+              zIndex: 10,
+              padding: wp(2),
+            }}
+          >
+            <ChevronLeft size={rf(28)} color="#000" />
+          </TouchableOpacity>
+
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className="flex-1 justify-center items-center"
+            style={{ paddingHorizontal: wp(5) }}
+          >
+            {/* Title */}
+            <Text
+              style={{
+                fontSize: rf(36),
+                fontWeight: "bold",
+                fontStyle: "italic",
+                color: Colors.salon.dark,
+                marginBottom: hp(1.5),
+              }}
+            >
+              Salon Now
+            </Text>
+
+            {/* Subtitle */}
+            <Text
+              style={{
+                fontSize: rf(14),
+                color: Colors.gray[600],
+                textAlign: "center",
+                marginBottom: hp(4),
+                paddingHorizontal: wp(8),
+                lineHeight: rf(20),
+              }}
+            >
+              Login to unlock a seamless beauty experience tailored just for you.
+            </Text>
+
+            {/* Login Card */}
           <View
             className="bg-white/90 rounded-3xl w-full"
             style={{
-              paddingHorizontal: wp(5),
-              paddingVertical: hp(4),
+              paddingHorizontal: wp(6),
+              paddingVertical: hp(3),
               maxWidth: wp(90),
             }}
           >
             {/* Tab Switcher */}
-            <View className="flex-row mb-6">
+            <View className="flex-row items-center" style={{ marginBottom: hp(2.5) }}>
               <TouchableOpacity
+                activeOpacity={0.7}
                 onPress={() => handleTabChange("login")}
-                className="flex-1 items-center justify-center rounded-2xl"
                 style={{
-                  backgroundColor:
-                    activeTab === "login" ? Colors.primary : "transparent",
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: Colors.primary,
                   paddingVertical: hp(2),
+                  borderRadius: 16,
+                  marginRight: wp(2),
                 }}
               >
                 <Text
                   style={{
                     fontSize: rf(16),
-                    fontWeight: "500",
-                    color: activeTab === "login" ? "#fff" : Colors.primary,
+                    fontWeight: "600",
+                    color: "#fff",
                   }}
                 >
                   Login
@@ -102,13 +158,16 @@ export default function LoginScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
+                activeOpacity={0.7}
                 onPress={() => handleTabChange("signup")}
-                className="flex-1 items-center justify-center rounded-2xl"
                 style={{
-                  backgroundColor:
-                    activeTab === "signup" ? Colors.primary : "transparent",
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'transparent',
                   paddingVertical: hp(2),
-                  borderWidth: activeTab === "signup" ? 0 : 1,
+                  borderRadius: 16,
+                  borderWidth: 1,
                   borderColor: Colors.primary,
                 }}
               >
@@ -116,10 +175,10 @@ export default function LoginScreen() {
                   style={{
                     fontSize: rf(16),
                     fontWeight: "500",
-                    color: activeTab === "signup" ? "#fff" : Colors.primary,
+                    color: Colors.primary,
                   }}
                 >
-                  Sign-up
+                  Register
                 </Text>
               </TouchableOpacity>
             </View>
@@ -254,6 +313,7 @@ export default function LoginScreen() {
             </View>
           </View>
         </KeyboardAvoidingView>
+        </SafeAreaView>
       </ImageBackground>
     </View>
   );

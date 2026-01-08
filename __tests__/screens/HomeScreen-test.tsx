@@ -2,6 +2,22 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import HomeScreen from '@/app/(tabs)/home';
 
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  SafeAreaProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+// Mock AuthContext
+let mockIsLoggedIn = false;
+jest.mock('@/contexts', () => ({
+  useAuth: () => ({
+    user: mockIsLoggedIn ? { id: 'user-1', name: 'Test User', email: 'test@test.com', avatar: 'https://example.com/avatar.jpg' } : null,
+    isLoggedIn: mockIsLoggedIn,
+    isLoading: false,
+  }),
+}));
+
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(),
@@ -174,12 +190,12 @@ describe('HomeScreen', () => {
       expect(mockPush).toHaveBeenCalledWith('/service/1');
     });
 
-    it('should navigate to appointment when specialist is pressed', () => {
+    it('should navigate to book-appointment when specialist is pressed', () => {
       const { getByTestId } = render(<HomeScreen />);
 
       fireEvent.press(getByTestId('specialist-Doe John'));
 
-      expect(mockPush).toHaveBeenCalledWith('/appointment');
+      expect(mockPush).toHaveBeenCalledWith('/book-appointment');
     });
 
     it('should navigate to login when profile button is pressed (guest mode)', () => {
@@ -209,6 +225,7 @@ describe('HomeScreen', () => {
 
   describe('Logged In Mode', () => {
     beforeEach(() => {
+      mockIsLoggedIn = true;
       // Setup logged in user
       mockGetData.mockImplementation((key: string) => {
         if (key === 'authToken') return Promise.resolve('mock_token');
@@ -221,31 +238,23 @@ describe('HomeScreen', () => {
       });
     });
 
-    it('should show Hi greeting for logged in user', async () => {
-      const { findByText } = render(<HomeScreen />);
-      expect(await findByText('Hi')).toBeTruthy();
+    afterEach(() => {
+      mockIsLoggedIn = false;
     });
 
-    it('should navigate to profile when profile button is pressed (logged in)', async () => {
-      const { getByTestId, findByText } = render(<HomeScreen />);
+    it('should show Hi greeting for logged in user', () => {
+      const { getByText } = render(<HomeScreen />);
+      expect(getByText('Hi')).toBeTruthy();
+    });
 
-      // Wait for user data to load
-      await findByText('Hi');
+    it('should navigate to profile when profile button is pressed (logged in)', () => {
+      const { getByTestId } = render(<HomeScreen />);
 
       fireEvent.press(getByTestId('profile-button'));
 
       expect(mockPush).toHaveBeenCalledWith('/profile');
     });
 
-    it('should navigate to notifications when notification button is pressed', async () => {
-      const { getByTestId, findByText } = render(<HomeScreen />);
-
-      // Wait for user data to load
-      await findByText('Hi');
-
-      fireEvent.press(getByTestId('notification-button'));
-
-      expect(mockPush).toHaveBeenCalledWith('/notifications');
-    });
+    // Notification button removed from header - now only in tab bar
   });
 });

@@ -2,6 +2,74 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import MyAppointmentsScreen from '@/app/my-appointments';
 
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  SafeAreaProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+// Mock AuthContext
+jest.mock('@/contexts', () => ({
+  useAuth: () => ({
+    user: { id: 'user-1', name: 'Test User', email: 'test@test.com', avatar: 'https://example.com/avatar.jpg' },
+    isLoggedIn: true,
+    isLoading: false,
+  }),
+}));
+
+// Mock mockDatabase with future dates for upcoming appointments
+jest.mock('@/api/mockServer/database', () => ({
+  mockDatabase: {
+    appointments: [
+      {
+        id: '1',
+        userId: 'user-1',
+        serviceId: 'svc-1',
+        serviceName: 'Basic Haircut',
+        serviceImage: 'https://example.com/img.jpg',
+        salonName: 'Test Salon',
+        stylistId: 'stylist-1',
+        stylistName: 'Lisa',
+        date: '2030-04-12',
+        time: '2:00 PM',
+        dayTime: 'Afternoon',
+        price: 50,
+        status: 'confirmed',
+        hasReview: false,
+        createdAt: '2030-04-12T14:00:00Z',
+      },
+      {
+        id: '2',
+        userId: 'user-1',
+        serviceId: 'svc-2',
+        serviceName: 'Hair dying',
+        serviceImage: 'https://example.com/img2.jpg',
+        salonName: 'Test Salon 2',
+        stylistId: 'stylist-1',
+        stylistName: 'Lisa',
+        date: '2030-04-12',
+        time: '5:00 PM',
+        dayTime: 'Evening',
+        price: 29,
+        status: 'pending',
+        hasReview: false,
+        createdAt: '2030-04-12T17:00:00Z',
+      },
+    ],
+  },
+}));
+
+// Mock appointmentService
+jest.mock('@/api/appointmentService', () => ({
+  appointmentService: {
+    getUserAppointments: jest.fn().mockResolvedValue({
+      success: true,
+      data: [],
+    }),
+    cancelAppointment: jest.fn().mockResolvedValue({ success: true }),
+  },
+}));
+
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(),
@@ -33,7 +101,16 @@ jest.mock('@/constants', () => ({
     primary: '#FE697D',
     salon: {
       pinkLight: '#FFCCD3',
+      pinkBg: '#FFF5F5',
       dark: '#1F2937',
+    },
+    gray: {
+      100: '#F3F4F6',
+      200: '#E5E7EB',
+      300: '#D1D5DB',
+      400: '#9CA3AF',
+      500: '#6B7280',
+      600: '#4B5563',
     },
   },
 }));
@@ -41,6 +118,12 @@ jest.mock('@/constants', () => ({
 // Mock lucide-react-native
 jest.mock('lucide-react-native', () => ({
   ChevronLeft: () => null,
+  Clock: () => null,
+  Calendar: () => null,
+  User: () => null,
+  XCircle: () => null,
+  CheckCircle: () => null,
+  AlertCircle: () => null,
 }));
 
 // Mock expo-linear-gradient
@@ -50,36 +133,8 @@ jest.mock('expo-linear-gradient', () => ({
 
 // Mock components
 jest.mock('@/components', () => ({
-  WeekCalendar: ({ month, weekDays, onSelectDate, showAppointmentIndicator }: any) => {
-    const { View, Text, TouchableOpacity } = require('react-native');
-    return (
-      <View testID="week-calendar">
-        <Text>{month}</Text>
-        <Text testID="show-indicator">{showAppointmentIndicator ? 'true' : 'false'}</Text>
-        {weekDays.map((day: any, index: number) => (
-          <TouchableOpacity
-            key={index}
-            testID={`day-${day.day}`}
-            onPress={() => onSelectDate(day.day)}
-          >
-            <Text>{day.day}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    );
-  },
-  generateWeekDays: (startDay: number, selectedDay: number, appointmentDays?: number[]) => {
-    const days = [];
-    for (let i = 0; i < 7; i++) {
-      days.push({
-        day: startDay + i,
-        dayName: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i],
-        isSelected: startDay + i === selectedDay,
-        hasAppointment: appointmentDays?.includes(startDay + i) || false,
-      });
-    }
-    return days;
-  },
+  WeekCalendar: () => null,
+  generateWeekDays: () => [],
   AuthGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
@@ -91,52 +146,24 @@ describe('MyAppointmentsScreen', () => {
   describe('Rendering', () => {
     it('should render without crashing', () => {
       const { getByText } = render(<MyAppointmentsScreen />);
-      expect(getByText('Appointment')).toBeTruthy();
+      expect(getByText('My Appointments')).toBeTruthy();
     });
 
     it('should render header with title', () => {
       const { getByText } = render(<MyAppointmentsScreen />);
-      expect(getByText('Appointment')).toBeTruthy();
+      expect(getByText('My Appointments')).toBeTruthy();
     });
 
-    it('should render week calendar with appointment indicator', () => {
-      const { getByTestId } = render(<MyAppointmentsScreen />);
-      expect(getByTestId('week-calendar')).toBeTruthy();
-      expect(getByTestId('show-indicator').children[0]).toBe('true');
-    });
-
-    it('should render current month (April)', () => {
+    it('should render tabs for upcoming and past', () => {
       const { getByText } = render(<MyAppointmentsScreen />);
-      expect(getByText('April')).toBeTruthy();
-    });
-
-    it('should render appointment times', () => {
-      const { getByText } = render(<MyAppointmentsScreen />);
-      expect(getByText('2:00 PM')).toBeTruthy();
-      expect(getByText('5:00 PM')).toBeTruthy();
-    });
-
-    it('should render appointment categories', () => {
-      const { getByText } = render(<MyAppointmentsScreen />);
-      expect(getByText('Hair Design & Cut')).toBeTruthy();
-      expect(getByText('Color & Shine')).toBeTruthy();
+      expect(getByText('Upcoming')).toBeTruthy();
+      expect(getByText('Past')).toBeTruthy();
     });
 
     it('should render appointment services', () => {
       const { getByText } = render(<MyAppointmentsScreen />);
       expect(getByText('Basic Haircut')).toBeTruthy();
       expect(getByText('Hair dying')).toBeTruthy();
-    });
-
-    it('should render appointment prices', () => {
-      const { getByText } = render(<MyAppointmentsScreen />);
-      expect(getByText('€50')).toBeTruthy();
-      expect(getByText('€29')).toBeTruthy();
-    });
-
-    it('should render stylist names', () => {
-      const { getAllByText } = render(<MyAppointmentsScreen />);
-      expect(getAllByText('Lisa').length).toBe(2);
     });
 
     it('should render book appointment button', () => {
@@ -158,35 +185,35 @@ describe('MyAppointmentsScreen', () => {
       }
     });
 
-    it('should navigate to appointment screen when Book Appointment is pressed', () => {
+    it('should navigate to home screen when Book Appointment is pressed', () => {
       const { getByText } = render(<MyAppointmentsScreen />);
 
       fireEvent.press(getByText('Book Appointment'));
 
-      expect(mockPush).toHaveBeenCalledWith('/appointment');
+      expect(mockPush).toHaveBeenCalledWith('/home');
     });
   });
 
-  describe('Date Selection', () => {
-    it('should update selected date when calendar day is pressed', () => {
-      const { getByTestId } = render(<MyAppointmentsScreen />);
-
-      fireEvent.press(getByTestId('day-14'));
-
-      // Date selection is internal state
-    });
-  });
-
-  describe('Appointment Status', () => {
-    it('should render confirmed appointment with green background', () => {
+  describe('Tab Selection', () => {
+    it('should render upcoming tab as selected by default', () => {
       const { getByText } = render(<MyAppointmentsScreen />);
-      // The first appointment (Basic Haircut) should be confirmed
+      expect(getByText('Upcoming')).toBeTruthy();
+    });
+
+    it('should render past tab option', () => {
+      const { getByText } = render(<MyAppointmentsScreen />);
+      expect(getByText('Past')).toBeTruthy();
+    });
+  });
+
+  describe('Appointment List', () => {
+    it('should render confirmed appointment', () => {
+      const { getByText } = render(<MyAppointmentsScreen />);
       expect(getByText('Basic Haircut')).toBeTruthy();
     });
 
-    it('should render pending appointment with pink background', () => {
+    it('should render pending appointment', () => {
       const { getByText } = render(<MyAppointmentsScreen />);
-      // The second appointment (Hair dying) should be pending
       expect(getByText('Hair dying')).toBeTruthy();
     });
   });

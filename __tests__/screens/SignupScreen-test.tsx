@@ -36,6 +36,25 @@ jest.mock('@/utils/asyncStorage', () => ({
   },
 }));
 
+// Mock AuthContext
+const mockContextLogin = jest.fn();
+jest.mock('@/contexts', () => ({
+  useAuth: () => ({
+    login: mockContextLogin,
+    user: null,
+    isLoggedIn: false,
+    isLoading: false,
+  }),
+}));
+
+// Mock authService
+const mockSignup = jest.fn();
+jest.mock('@/api/authService', () => ({
+  authService: {
+    signup: (input: any) => mockSignup(input),
+  },
+}));
+
 // Mock responsive utilities
 jest.mock('@/utils/responsive', () => ({
   wp: (value: number) => value * 4,
@@ -80,13 +99,18 @@ jest.mock('expo-linear-gradient', () => ({
 describe('SignupScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSignup.mockResolvedValue({
+      user: { id: '1', email: 'test@example.com', name: 'John Doe', phone: '+1234567890', avatar: 'https://example.com/avatar.jpg' },
+      token: 'mock_token',
+    });
+    mockContextLogin.mockResolvedValue(undefined);
   });
 
   describe('Rendering', () => {
     it('should render without crashing', () => {
       const { getAllByText } = render(<SignupScreen />);
-      // Sign-up appears in tab and button
-      expect(getAllByText('Sign-up').length).toBeGreaterThan(0);
+      // Register appears in tab and button
+      expect(getAllByText('Register').length).toBeGreaterThan(0);
     });
 
     it('should render name input', () => {
@@ -114,11 +138,11 @@ describe('SignupScreen', () => {
       expect(getByPlaceholderText('Confirm Password')).toBeTruthy();
     });
 
-    it('should render sign up button', () => {
+    it('should render register button', () => {
       const { getAllByText } = render(<SignupScreen />);
-      // Get all "Sign-up" texts - there are tab and button
-      const signupTexts = getAllByText('Sign-up');
-      expect(signupTexts.length).toBeGreaterThan(0);
+      // Get all "Register" texts - there are tab and button
+      const registerTexts = getAllByText('Register');
+      expect(registerTexts.length).toBeGreaterThan(0);
     });
 
     it('should render login tab', () => {
@@ -180,7 +204,7 @@ describe('SignupScreen', () => {
   });
 
   describe('Form Submission', () => {
-    it('should store auth token when form is submitted', async () => {
+    it('should call authService.signup when form is submitted', async () => {
       const { getByPlaceholderText, getAllByText } = render(<SignupScreen />);
 
       fireEvent.changeText(getByPlaceholderText('Full Name'), 'John Doe');
@@ -189,12 +213,17 @@ describe('SignupScreen', () => {
       fireEvent.changeText(getByPlaceholderText('Password'), 'password123');
       fireEvent.changeText(getByPlaceholderText('Confirm Password'), 'password123');
 
-      // Get the button (there might be multiple "Sign-up" texts)
-      const buttons = getAllByText('Sign-up');
+      // Get the button (there might be multiple "Register" texts)
+      const buttons = getAllByText('Register');
       fireEvent.press(buttons[buttons.length - 1]); // Press the button one
 
       await waitFor(() => {
-        expect(mockStoreData).toHaveBeenCalledWith('auth_token', 'mock_token_123');
+        expect(mockSignup).toHaveBeenCalledWith({
+          name: 'John Doe',
+          email: 'test@example.com',
+          password: 'password123',
+          phone: '+1234567890',
+        });
       });
     });
 
@@ -207,7 +236,7 @@ describe('SignupScreen', () => {
       fireEvent.changeText(getByPlaceholderText('Password'), 'password123');
       fireEvent.changeText(getByPlaceholderText('Confirm Password'), 'password123');
 
-      const buttons = getAllByText('Sign-up');
+      const buttons = getAllByText('Register');
       fireEvent.press(buttons[buttons.length - 1]);
 
       await waitFor(() => {
@@ -217,12 +246,12 @@ describe('SignupScreen', () => {
   });
 
   describe('Tab Navigation', () => {
-    it('should go back when Login tab is pressed', () => {
+    it('should navigate to login when Login tab is pressed', () => {
       const { getByText } = render(<SignupScreen />);
 
       fireEvent.press(getByText('Login'));
 
-      expect(mockBack).toHaveBeenCalled();
+      expect(mockReplace).toHaveBeenCalledWith('/auth/login');
     });
   });
 });
