@@ -6,7 +6,7 @@ import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { AuthGuard } from '@/components';
 import { useAuth } from '@/contexts';
-import { paymentService } from '@/api/paymentService';
+import { paymentApi } from '@/api';
 
 function AddCardContent() {
   const { user } = useAuth();
@@ -130,19 +130,18 @@ function AddCardContent() {
     setIsLoading(true);
 
     try {
-      const userId = user?.id || 'user-1';
-
       const expiryParts = expiryDate.split('/');
       const cleanedNumber = cardNumber.replace(/\D/g, '');
 
-      const res = await paymentService.addCard({
-        userId,
+      // Call real API
+      const res = await paymentApi.addPaymentMethod({
+        type: 'card',
         cardNumber: cleanedNumber,
         expiryMonth: parseInt(expiryParts[0], 10),
         expiryYear: parseInt('20' + expiryParts[1], 10),
         cvv,
-        holderName,
-        setAsDefault,
+        cardHolderName: holderName,
+        isDefault: setAsDefault,
       });
 
       if (res.success) {
@@ -150,7 +149,8 @@ function AddCardContent() {
           { text: 'OK', onPress: () => router.back() }
         ]);
       } else {
-        Alert.alert('Error', res.error || 'Failed to add card');
+        // API failed - show error
+        Alert.alert('Error', res.message || 'Failed to add card');
       }
     } catch (error) {
       Alert.alert('Error', 'An unexpected error occurred');

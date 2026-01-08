@@ -6,8 +6,18 @@ import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { AuthGuard } from '@/components';
 import { useAuth } from '@/contexts';
-import { paymentService } from '@/api/paymentService';
-import { Payment } from '@/api/mockServer/types';
+import { paymentApi } from '@/api';
+
+interface Payment {
+  id: string;
+  receiptNumber?: string;
+  status: string;
+  total: number;
+  subtotal: number;
+  tax: number;
+  discount: number;
+  createdAt: string;
+}
 
 function PaymentHistoryContent() {
   const { user } = useAuth();
@@ -19,14 +29,30 @@ function PaymentHistoryContent() {
 
   const loadPayments = useCallback(async () => {
     try {
-      const res = await paymentService.getPaymentHistory(userId);
+      // Call real API
+      const res = await paymentApi.getMyPayments();
       if (res.success && res.data) {
-        setPayments(res.data);
+        // Map API response to local format
+        const mapped = res.data.map((p: any) => ({
+          id: p.id,
+          receiptNumber: p.transactionId || p.receiptNumber || `#${p.id.slice(-6)}`,
+          status: p.status || 'completed',
+          total: p.amount || p.total || 0,
+          subtotal: p.subtotal || p.amount || 0,
+          tax: p.tax || 0,
+          discount: p.discount || 0,
+          createdAt: p.createdAt || new Date().toISOString(),
+        }));
+        setPayments(mapped);
+      } else {
+        // API returned no data - show empty
+        setPayments([]);
       }
     } catch (error) {
       console.error('Error loading payments:', error);
+      setPayments([]);
     }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     const init = async () => {

@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { STORAGE_KEYS, getData, storeData, removeData } from '@/utils/asyncStorage';
 import { authApi } from '@/api/authApi';
 import { userApi } from '@/api/userApi';
+import { setOnAuthInvalidated } from '@/api';
 
 interface User {
   id?: string;
@@ -88,6 +89,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshAuth();
   }, [refreshAuth]);
 
+  // Handle session invalidation (401 from API)
+  useEffect(() => {
+    const handleSessionInvalidated = () => {
+      setUser(null);
+      // Optionally navigate to login
+      // router.replace('/auth/login');
+    };
+
+    setOnAuthInvalidated(handleSessionInvalidated);
+
+    return () => {
+      setOnAuthInvalidated(null);
+    };
+  }, []);
+
   /**
    * Login with email and password via API
    */
@@ -142,14 +158,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     phone?: string
   ): Promise<{ success: boolean; message?: string }> => {
     try {
-      const response = await authApi.register({ name, email, password, phone });
+      // Split name into firstName and lastName for API
+      const nameParts = name.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      console.log('Register request:', { email, firstName, lastName, phoneNumber: phone });
+
+      const response = await authApi.register({
+        email,
+        password,
+        firstName,
+        lastName,
+        phoneNumber: phone,
+      });
+
+      console.log('Register response:', response);
 
       if (response.success && response.data) {
         const { access_token, user: apiUser } = response.data;
 
+        console.log('Register success, token:', access_token ? 'received' : 'missing', 'user:', apiUser);
+
         // Store token if provided
         if (access_token) {
           await storeData(STORAGE_KEYS.AUTH_TOKEN, access_token);
+        } else {
+          console.warn('Registration succeeded but no access_token received');
         }
 
         // Map API user to local User interface

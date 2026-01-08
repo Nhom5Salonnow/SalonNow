@@ -6,8 +6,17 @@ import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { AuthGuard } from '@/components';
 import { useAuth } from '@/contexts';
-import { paymentService } from '@/api/paymentService';
-import { PaymentMethod } from '@/api/mockServer/types';
+import { paymentApi } from '@/api';
+
+interface PaymentMethod {
+  id: string;
+  cardBrand?: string;
+  lastFourDigits: string;
+  holderName?: string;
+  expiryMonth: number;
+  expiryYear: number;
+  isDefault: boolean;
+}
 
 function PaymentMethodsContent() {
   const { user } = useAuth();
@@ -17,14 +26,29 @@ function PaymentMethodsContent() {
 
   const userId = user?.id || 'user-1';
 
-  const loadPaymentMethods = useCallback(async (uid: string) => {
+  const loadPaymentMethods = useCallback(async (_uid: string) => {
     try {
-      const res = await paymentService.getPaymentMethods(uid);
+      // Call real API
+      const res = await paymentApi.getPaymentMethods();
       if (res.success && res.data) {
-        setPaymentMethods(res.data);
+        // Map API response to local format
+        const mapped = res.data.map((m: any) => ({
+          id: m.id,
+          cardBrand: m.brand || m.cardBrand || 'visa',
+          lastFourDigits: m.last4 || m.lastFourDigits || '****',
+          holderName: m.holderName || '',
+          expiryMonth: m.expiryMonth || 12,
+          expiryYear: m.expiryYear || 25,
+          isDefault: m.isDefault || false,
+        }));
+        setPaymentMethods(mapped);
+      } else {
+        // API returned no data - show empty
+        setPaymentMethods([]);
       }
     } catch (error) {
       console.error('Error loading payment methods:', error);
+      setPaymentMethods([]);
     }
   }, []);
 
@@ -43,9 +67,12 @@ function PaymentMethodsContent() {
   };
 
   const handleSetDefault = async (methodId: string) => {
-    const res = await paymentService.setDefaultPaymentMethod(methodId, userId);
+    // Call real API
+    const res = await paymentApi.setDefaultPaymentMethod(methodId);
     if (res.success) {
       await loadPaymentMethods(userId);
+    } else {
+      Alert.alert('Error', res.message || 'Failed to set default card');
     }
   };
 
@@ -69,9 +96,12 @@ function PaymentMethodsContent() {
           text: 'Remove',
           style: 'destructive',
           onPress: async () => {
-            const res = await paymentService.removePaymentMethod(methodId, userId);
+            // Call real API
+            const res = await paymentApi.deletePaymentMethod(methodId);
             if (res.success) {
               await loadPaymentMethods(userId);
+            } else {
+              Alert.alert('Error', res.message || 'Failed to remove card');
             }
           },
         },

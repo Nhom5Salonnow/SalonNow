@@ -1,3 +1,8 @@
+/**
+ * @deprecated This service is deprecated and should not be used in new code.
+ * Use `authApi` from `@/api` instead which connects to the real backend.
+ * This file is kept for backwards compatibility with existing tests.
+ */
 import { STORAGE_KEYS, MOCK_USERS } from '@/constants';
 import { LoginInput, SignupInput, AuthResponse, User } from '@/types';
 import { storeData, removeData, getData } from '@/utils/asyncStorage';

@@ -1,11 +1,10 @@
-import { Colors, NotificationItem } from "@/constants";
+import { Colors, NotificationItem, DEFAULT_AVATAR } from "@/constants";
 import { hp, rf, wp } from "@/utils/responsive";
 import { NotificationCard } from "@/components/ui";
 import { Menu, User, Bell, Check, Trash2 } from "lucide-react-native";
 import { FlatList, Image, Text, TouchableOpacity, View, RefreshControl, Alert } from "react-native";
 import { router } from "expo-router";
 import { useState, useCallback, useEffect } from "react";
-import { notificationService, SimpleNotification } from "@/api/notificationService";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/contexts";
 import { notificationApi } from "@/api";
@@ -21,19 +20,6 @@ const GUEST_NOTIFICATIONS: NotificationItem[] = [
     read: false,
   },
 ];
-
-// Convert SimpleNotification to NotificationItem for UI
-const convertToNotificationItem = (n: SimpleNotification): NotificationItem => {
-  const timeAgo = getTimeAgo(n.createdAt);
-  return {
-    id: n.id,
-    type: n.type as NotificationItem['type'],
-    title: n.title,
-    description: n.message,
-    time: timeAgo,
-    read: n.read,
-  };
-};
 
 const getTimeAgo = (dateStr: string): string => {
   const date = new Date(dateStr);
@@ -58,15 +44,15 @@ export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const loadNotifications = useCallback(async (userId: string) => {
+  const loadNotifications = useCallback(async (_userId: string) => {
     try {
-      // Try real API first
+      // Call real API
       const [apiNotifRes, apiCountRes] = await Promise.all([
         notificationApi.getNotifications(),
         notificationApi.getUnreadCount(),
       ]);
 
-      if (apiNotifRes.success && apiNotifRes.data && apiNotifRes.data.length > 0) {
+      if (apiNotifRes.success && apiNotifRes.data) {
         // Use API data
         setNotifications(apiNotifRes.data.map((n: any) => ({
           id: n.id || n._id,
@@ -77,38 +63,16 @@ export default function NotificationsScreen() {
           read: n.read || n.is_read || false,
         })));
         setUnreadCount(apiCountRes.data?.count || 0);
-        return;
-      }
-
-      // Fallback to mock service
-      const [notifRes, countRes] = await Promise.all([
-        notificationService.getUserNotifications(userId),
-        notificationService.getUnreadCount(userId),
-      ]);
-
-      if (notifRes.success) {
-        setNotifications(notifRes.data.map(convertToNotificationItem));
-      }
-      if (countRes.success) {
-        setUnreadCount(countRes.data);
+      } else {
+        // API returned no data - show empty
+        setNotifications([]);
+        setUnreadCount(0);
       }
     } catch (error) {
       console.error("Error loading notifications:", error);
-      // Fallback to mock service on error
-      try {
-        const [notifRes, countRes] = await Promise.all([
-          notificationService.getUserNotifications(userId),
-          notificationService.getUnreadCount(userId),
-        ]);
-        if (notifRes.success) {
-          setNotifications(notifRes.data.map(convertToNotificationItem));
-        }
-        if (countRes.success) {
-          setUnreadCount(countRes.data);
-        }
-      } catch (fallbackError) {
-        console.error("Error loading mock notifications:", fallbackError);
-      }
+      // On error - show empty
+      setNotifications([]);
+      setUnreadCount(0);
     }
   }, []);
 
@@ -135,18 +99,13 @@ export default function NotificationsScreen() {
 
   const handleMarkAllRead = async () => {
     if (!user) return;
-    // Try real API first
+    // Call real API
     const apiRes = await notificationApi.markAllAsRead();
     if (apiRes.success) {
       setNotifications(notifications.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
-      return;
-    }
-    // Fallback to mock service
-    const res = await notificationService.markAllAsRead(user.id || 'user-1');
-    if (res.success) {
-      setNotifications(notifications.map(n => ({ ...n, read: true })));
-      setUnreadCount(0);
+    } else {
+      Alert.alert('Error', apiRes.message || 'Failed to mark notifications as read');
     }
   };
 
@@ -161,10 +120,13 @@ export default function NotificationsScreen() {
           text: "Clear All",
           style: "destructive",
           onPress: async () => {
-            const res = await notificationService.deleteAllNotifications(user.id || 'user-1');
+            // Call real API
+            const res = await notificationApi.deleteAllNotifications();
             if (res.success) {
               setNotifications([]);
               setUnreadCount(0);
+            } else {
+              Alert.alert('Error', res.message || 'Failed to clear notifications');
             }
           },
         },
@@ -254,7 +216,7 @@ export default function NotificationsScreen() {
             <User size={rf(18)} color={Colors.gray[500]} />
           ) : (
             <Image
-              source={{ uri: user?.avatar }}
+              source={{ uri: user?.avatar || DEFAULT_AVATAR }}
               className="w-full h-full"
               resizeMode="cover"
             />

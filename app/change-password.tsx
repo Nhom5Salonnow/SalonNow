@@ -6,7 +6,7 @@ import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { AuthGuard } from '@/components';
 import { useAuth } from '@/contexts';
-import { userService } from '@/api/userService';
+import { authApi } from '@/api';
 
 function ChangePasswordContent() {
   const { user } = useAuth();
@@ -73,9 +73,8 @@ function ChangePasswordContent() {
     setIsLoading(true);
 
     try {
-      const userId = user?.id || 'user-1';
-
-      const res = await userService.changePassword(userId, {
+      // Call real API
+      const res = await authApi.changePassword({
         currentPassword,
         newPassword,
       });
@@ -85,7 +84,8 @@ function ChangePasswordContent() {
           { text: 'OK', onPress: () => router.back() }
         ]);
       } else {
-        Alert.alert('Error', res.error || 'Failed to change password');
+        // API failed - show error
+        Alert.alert('Error', res.message || 'Failed to change password');
       }
     } catch (error) {
       Alert.alert('Error', 'An unexpected error occurred');

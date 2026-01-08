@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { ChevronRight, ChevronLeft, User } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '@/constants';
+import { Colors, DEFAULT_AVATAR } from '@/constants';
 import { useAuth } from '@/contexts';
 import { GuestPrompt } from '@/components';
 
@@ -119,9 +119,7 @@ export default function SettingsScreen() {
           >
             {isLoggedIn ? (
               <Image
-                source={{
-                  uri: user?.avatar || 'https://api.builder.io/api/v1/image/assets/TEMP/bf83f7d9f51b91c7f1126d620657aa5f1b9a54bf?width=114',
-                }}
+                source={{ uri: user?.avatar || DEFAULT_AVATAR }}
                 className="w-full h-full"
                 resizeMode="cover"
               />

@@ -6,7 +6,7 @@ import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import { WeekCalendar, generateWeekDays, AuthGuard } from '@/components';
-import { mockDatabase } from '@/api/mockServer/database';
+import { bookingApi } from '@/api/bookingApi';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts';
 
@@ -31,14 +31,35 @@ function MyAppointmentsContent() {
 
   const userId = user?.id || 'user-1';
 
-  const loadAppointments = useCallback(() => {
+  const loadAppointments = useCallback(async () => {
     try {
-      const userAppointments = mockDatabase.appointments.filter(
-        (a) => a.userId === userId || a.userId === 'user-1'
-      );
-      setAppointments(userAppointments);
+      // Try real API first
+      const response = await bookingApi.getMyBookings();
+
+      if (response.success && response.data) {
+        // Map API response to display format
+        const mappedAppointments = response.data.map((booking) => ({
+          id: booking.id,
+          userId: booking.userId,
+          serviceName: booking.serviceName || booking.service?.name || 'Service',
+          salonName: booking.salonName || booking.salon?.name || 'Salon',
+          staffName: booking.stylistName || (booking.stylist ? `${booking.stylist.firstName} ${booking.stylist.lastName}` : undefined),
+          date: booking.date || (booking.startTime ? new Date(booking.startTime).toLocaleDateString() : ''),
+          time: booking.time || (booking.startTime ? new Date(booking.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''),
+          status: booking.status,
+          price: booking.price || booking.totalPrice || booking.service?.price || 0,
+          total: booking.total || booking.totalPrice || booking.price || 0,
+        }));
+        setAppointments(mappedAppointments);
+      } else {
+        // API returned no data - show empty state
+        console.log('API returned no data');
+        setAppointments([]);
+      }
     } catch (error) {
       console.error('Error loading appointments:', error);
+      // On error - show empty state (don't crash)
+      setAppointments([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);

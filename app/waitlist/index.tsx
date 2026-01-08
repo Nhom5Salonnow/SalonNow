@@ -1,14 +1,25 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, FlatList, TouchableOpacity, RefreshControl } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, RefreshControl, Alert } from "react-native";
 import { router } from "expo-router";
 import { wp, hp, rf } from "@/utils/responsive";
 import { Colors } from "@/constants";
 import { DecorativeCircle } from "@/components";
 import { WaitlistCard, SlotAvailableModal } from "@/components/waitlist";
 import { ChevronLeft, Clock, Plus } from "lucide-react-native";
-import { waitlistService } from "@/api/waitlistService";
-import { WaitlistEntry } from "@/api/mockServer/types";
 import { useAuth } from "@/contexts";
+import { waitlistApi } from "@/api";
+
+interface WaitlistEntry {
+  id: string;
+  salonName: string;
+  serviceName: string;
+  preferredDate: string;
+  preferredTimeSlots: string[];
+  position: number;
+  status: 'waiting' | 'slot_available' | 'confirmed' | 'expired' | 'cancelled';
+  availableSlot?: { date: string; time: string };
+  expiresAt?: string;
+}
 
 type FilterType = "all" | "waiting" | "slot_available" | "confirmed" | "expired";
 
@@ -39,13 +50,29 @@ export default function WaitlistScreen() {
         return;
       }
 
-      const response = await waitlistService.getUserWaitlist(user.id || "user-1");
+      // Call real API
+      const response = await waitlistApi.getMyWaitlist();
 
-      if (response.success) {
-        setWaitlistEntries(response.data);
+      if (response.success && response.data) {
+        // Map API response to local format
+        setWaitlistEntries(response.data.map((w: any) => ({
+          id: w.id,
+          salonName: w.salonName || w.salon?.name || 'Salon',
+          serviceName: w.serviceName || w.service?.name || 'Service',
+          preferredDate: w.preferredDate,
+          preferredTimeSlots: w.preferredTimeSlots || [],
+          position: w.position || 1,
+          status: w.status || 'waiting',
+          availableSlot: w.availableSlot,
+          expiresAt: w.expiresAt,
+        })));
+      } else {
+        // API returned no data - show empty
+        setWaitlistEntries([]);
       }
     } catch (error) {
       console.error("Error loading waitlist:", error);
+      setWaitlistEntries([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -82,16 +109,18 @@ export default function WaitlistScreen() {
     if (!selectedEntry) return;
 
     try {
-      const userId = user?.id || "user-1";
+      // Call real API
+      const response = await waitlistApi.confirmSlot(selectedEntry.id);
 
-      const response = await waitlistService.confirmSlot(selectedEntry.id, userId);
-
-      if (response.success && response.data.appointmentId) {
+      if (response.success) {
         setShowSlotModal(false);
         router.push("/payment");
+      } else {
+        Alert.alert("Error", response.message || "Failed to confirm slot");
       }
     } catch (error) {
       console.error("Error confirming slot:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
     }
   };
 
@@ -99,13 +128,17 @@ export default function WaitlistScreen() {
     if (!selectedEntry) return;
 
     try {
-      const userId = user?.id || "user-1";
-
-      await waitlistService.skipSlot(selectedEntry.id, userId);
-      setShowSlotModal(false);
-      loadWaitlist();
+      // Call real API
+      const response = await waitlistApi.skipSlot(selectedEntry.id);
+      if (response.success) {
+        setShowSlotModal(false);
+        loadWaitlist();
+      } else {
+        Alert.alert("Error", response.message || "Failed to skip slot");
+      }
     } catch (error) {
       console.error("Error skipping slot:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
     }
   };
 

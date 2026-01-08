@@ -3,16 +3,29 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { wp, hp, rf } from "@/utils/responsive";
 import { Colors } from "@/constants";
 import { Clock, Calendar, User, ChevronRight, AlertCircle } from "lucide-react-native";
-import { WaitlistEntry } from "@/api/mockServer/types";
+
+// Local interface for WaitlistCard props (compatible with both screen and API types)
+interface WaitlistEntryData {
+  id: string;
+  salonName?: string;
+  serviceName?: string;
+  staffName?: string;
+  preferredDate: string;
+  preferredTimeSlots?: string[];
+  status: 'waiting' | 'slot_available' | 'confirmed' | 'expired' | 'cancelled' | 'notified' | 'booked';
+  position?: number;
+  availableSlot?: { date: string; time: string; notifiedAt?: string; expiresAt?: string };
+  expiresAt?: string;
+}
 
 interface WaitlistCardProps {
-  entry: WaitlistEntry;
+  entry: WaitlistEntryData;
   onPress: () => void;
   onConfirm?: () => void;
   onSkip?: () => void;
 }
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: Record<WaitlistEntryData['status'], { color: string; bgColor: string; label: string }> = {
   waiting: {
     color: "#F59E0B",
     bgColor: "#FFFBEB",
@@ -37,6 +50,16 @@ const STATUS_CONFIG = {
     color: "#EF4444",
     bgColor: "#FEF2F2",
     label: "Cancelled",
+  },
+  notified: {
+    color: "#8B5CF6",
+    bgColor: "#F5F3FF",
+    label: "Notified",
+  },
+  booked: {
+    color: "#059669",
+    bgColor: "#D1FAE5",
+    label: "Booked",
   },
 };
 
@@ -113,7 +136,7 @@ export const WaitlistCard: React.FC<WaitlistCardProps> = ({
         <View className="flex-row items-center" style={{ marginRight: wp(4) }}>
           <Clock size={rf(14)} color={Colors.gray[400]} />
           <Text style={{ fontSize: rf(13), color: Colors.gray[600], marginLeft: wp(1) }}>
-            {entry.preferredTimeSlots.join(", ")}
+            {(entry.preferredTimeSlots || []).join(", ")}
           </Text>
         </View>
         {entry.staffName && (

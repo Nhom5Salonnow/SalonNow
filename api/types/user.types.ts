@@ -25,6 +25,7 @@ export interface User {
 }
 
 export interface UpdateUserRequest {
+  email?: string;
   name?: string;
   firstName?: string;
   lastName?: string;

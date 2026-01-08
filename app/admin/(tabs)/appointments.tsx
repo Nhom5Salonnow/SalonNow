@@ -4,8 +4,19 @@ import { wp, hp, rf } from "@/utils/responsive";
 import { Colors } from "@/constants";
 import { DecorativeCircle } from "@/components";
 import { Clock, CheckCircle, XCircle, AlertCircle, Check, X, User } from "lucide-react-native";
-import { adminService } from "@/api/adminService";
-import { Appointment } from "@/api/mockServer/types";
+import { adminApi } from "@/api";
+
+interface Appointment {
+  id: string;
+  serviceName: string;
+  staffName?: string;
+  date: string;
+  time: string;
+  status: string;
+  totalPrice?: number;
+  userName?: string;
+  userPhone?: string;
+}
 
 type FilterStatus = "all" | "confirmed" | "pending" | "completed" | "cancelled";
 
@@ -35,13 +46,29 @@ export default function AdminAppointmentsScreen() {
 
   const loadAppointments = useCallback(async () => {
     try {
-      const filters = selectedFilter !== "all" ? { status: [selectedFilter] } : undefined;
-      const res = await adminService.getAppointments(SALON_ID, filters);
+      // Call real API
+      const filters = selectedFilter !== "all" ? { status: selectedFilter } : {};
+      const res = await adminApi.getAllBookings(filters);
       if (res.success && res.data) {
-        setAppointments(res.data);
+        // Map API response to local format
+        setAppointments(res.data.map((apt: any) => ({
+          id: apt.id || apt._id,
+          serviceName: apt.serviceName || apt.service?.name || 'Service',
+          staffName: apt.staffName || apt.stylist?.name,
+          date: apt.date,
+          time: apt.time || apt.startTime,
+          status: apt.status,
+          totalPrice: apt.totalPrice || apt.price,
+          userName: apt.userName || apt.user?.name,
+          userPhone: apt.userPhone || apt.user?.phone,
+        })));
+      } else {
+        // API returned no data - show empty
+        setAppointments([]);
       }
     } catch (error) {
       console.error("Error loading appointments:", error);
+      setAppointments([]);
     }
   }, [selectedFilter]);
 
@@ -79,9 +106,12 @@ export default function AdminAppointmentsScreen() {
           text: statusLabels[newStatus],
           style: newStatus === "cancelled" || newStatus === "no_show" ? "destructive" : "default",
           onPress: async () => {
-            const res = await adminService.updateAppointmentStatus(appointmentId, newStatus);
+            // Call real API
+            const res = await adminApi.updateBookingStatus(appointmentId, newStatus);
             if (res.success) {
               await loadAppointments();
+            } else {
+              Alert.alert("Error", res.message || "Failed to update appointment status");
             }
           },
         },

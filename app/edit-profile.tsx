@@ -5,8 +5,8 @@ import { ChevronLeft, Camera, User, Mail, Phone, Check } from 'lucide-react-nati
 import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { AuthGuard } from '@/components';
-import { userService } from '@/api/userService';
 import { useAuth } from '@/contexts';
+import { userApi } from '@/api';
 
 function EditProfileContent() {
   const { user, updateUser, isLoading: authLoading } = useAuth();
@@ -72,8 +72,8 @@ function EditProfileContent() {
     setIsSaving(true);
 
     try {
-      const userId = user?.id || 'user-1';
-      const res = await userService.updateProfile(userId, {
+      // Call real API
+      const res = await userApi.updateProfile({
         name: name.trim(),
         email: email.trim(),
         phone: phone.trim() || undefined,
@@ -93,7 +93,8 @@ function EditProfileContent() {
           { text: 'OK', onPress: () => router.back() }
         ]);
       } else {
-        Alert.alert('Error', res.error || 'Failed to update profile');
+        // API failed - show error
+        Alert.alert('Error', res.message || 'Failed to update profile');
       }
     } catch (error) {
       Alert.alert('Error', 'An unexpected error occurred');

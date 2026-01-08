@@ -21,8 +21,24 @@ import {
   Calendar,
   Play,
 } from "lucide-react-native";
-import { waitlistService } from "@/api/waitlistService";
-import { WaitlistEntry } from "@/api/mockServer/types";
+import { waitlistApi } from "@/api";
+
+interface WaitlistEntry {
+  id: string;
+  userId: string;
+  salonName: string;
+  serviceName: string;
+  staffName?: string;
+  preferredDate: string;
+  preferredTimeSlots: string[];
+  position: number;
+  status: 'waiting' | 'slot_available' | 'confirmed' | 'expired' | 'cancelled' | 'notified' | 'booked';
+  availableSlot?: { date: string; time: string; notifiedAt?: string; expiresAt?: string };
+  expiresAt?: string;
+  createdAt: string;
+  userName?: string;
+  userPhone?: string;
+}
 
 type FilterType = "all" | "waiting" | "slot_available" | "confirmed" | "expired";
 
@@ -34,7 +50,7 @@ const FILTERS: { value: FilterType; label: string }[] = [
   { value: "expired", label: "Expired" },
 ];
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: Record<WaitlistEntry['status'], { color: string; bgColor: string; icon: typeof Clock }> = {
   waiting: {
     color: "#F59E0B",
     bgColor: "#FFFBEB",
@@ -60,6 +76,16 @@ const STATUS_CONFIG = {
     bgColor: "#FEF2F2",
     icon: XCircle,
   },
+  notified: {
+    color: "#8B5CF6",
+    bgColor: "#F5F3FF",
+    icon: Clock,
+  },
+  booked: {
+    color: "#059669",
+    bgColor: "#D1FAE5",
+    icon: CheckCircle,
+  },
 };
 
 export default function AdminWaitlistScreen() {
@@ -77,20 +103,49 @@ export default function AdminWaitlistScreen() {
 
   const loadWaitlist = useCallback(async () => {
     try {
-      const [entriesRes, statsRes] = await Promise.all([
-        waitlistService.getAdminWaitlist("salon-1"),
-        waitlistService.getWaitlistStats("salon-1", new Date().toISOString().split("T")[0]),
-      ]);
+      // Call real API
+      const entriesRes = await waitlistApi.getAdminWaitlist();
 
-      if (entriesRes.success) {
-        setEntries(entriesRes.data);
-      }
+      if (entriesRes.success && entriesRes.data) {
+        // Map API response to local format
+        setEntries(entriesRes.data.map((w: any) => ({
+          id: w.id,
+          userId: w.userId,
+          salonName: w.salonName || w.salon?.name || 'Salon',
+          serviceName: w.serviceName || w.service?.name || 'Service',
+          staffName: w.staffName || w.staff?.name,
+          preferredDate: w.preferredDate,
+          preferredTimeSlots: w.preferredTimeSlots || [],
+          position: w.position || 1,
+          status: w.status || 'waiting',
+          availableSlot: w.availableSlot,
+          expiresAt: w.expiresAt,
+          createdAt: w.createdAt || new Date().toISOString(),
+          userName: w.userName || w.user?.name,
+          userPhone: w.userPhone || w.user?.phone,
+        })));
 
-      if (statsRes.success) {
-        setStats(statsRes.data);
+        // Calculate stats locally
+        const waiting = entriesRes.data.filter((e: any) => e.status === 'waiting').length;
+        setStats({
+          totalWaiting: waiting,
+          avgWaitTime: 0,
+          conversionRate: 0,
+          byService: [],
+        });
+      } else {
+        // API returned no data - show empty
+        setEntries([]);
+        setStats({
+          totalWaiting: 0,
+          avgWaitTime: 0,
+          conversionRate: 0,
+          byService: [],
+        });
       }
     } catch (error) {
       console.error("Error loading waitlist:", error);
+      setEntries([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -128,9 +183,14 @@ export default function AdminWaitlistScreen() {
               const slotDate = today.toISOString().split("T")[0];
               const slotTime = entry.preferredTimeSlots[0] || "10:00 AM";
 
-              await waitlistService.simulateSlotAvailable(entry.id, slotDate, slotTime);
-              Alert.alert("Success", "Slot available notification sent!");
-              loadWaitlist();
+              // Call real API
+              const response = await waitlistApi.triggerSlotAvailable(entry.id, slotDate, slotTime);
+              if (response.success) {
+                Alert.alert("Success", "Slot available notification sent!");
+                loadWaitlist();
+              } else {
+                Alert.alert("Error", response.message || "Failed to send notification");
+              }
             } catch (error) {
               console.error("Error triggering slot:", error);
               Alert.alert("Error", "Failed to send notification");
@@ -241,13 +301,13 @@ export default function AdminWaitlistScreen() {
             <View>
               <Text style={{ fontSize: rf(11), color: Colors.gray[500] }}>Wait Time</Text>
               <Text style={{ fontSize: rf(14), fontWeight: "600", color: "#000" }}>
-                {Math.floor((Date.now() - new Date(item.joinedAt).getTime()) / 60000)} min
+                {Math.floor((Date.now() - new Date(item.createdAt).getTime()) / 60000)} min
               </Text>
             </View>
             <View>
               <Text style={{ fontSize: rf(11), color: Colors.gray[500] }}>Joined</Text>
               <Text style={{ fontSize: rf(14), fontWeight: "600", color: "#000" }}>
-                {new Date(item.joinedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {new Date(item.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </Text>
             </View>
           </View>
@@ -291,9 +351,11 @@ export default function AdminWaitlistScreen() {
             <Text style={{ fontSize: rf(12), color: "#065F46" }}>
               Slot offered: {item.availableSlot.date} at {item.availableSlot.time}
             </Text>
-            <Text style={{ fontSize: rf(11), color: "#065F46", marginTop: hp(0.5) }}>
-              Expires: {new Date(item.availableSlot.expiresAt).toLocaleTimeString()}
-            </Text>
+            {item.availableSlot.expiresAt && (
+              <Text style={{ fontSize: rf(11), color: "#065F46", marginTop: hp(0.5) }}>
+                Expires: {new Date(item.availableSlot.expiresAt).toLocaleTimeString()}
+              </Text>
+            )}
           </View>
         )}
       </View>

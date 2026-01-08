@@ -100,4 +100,14 @@ export const bookingApi = {
       []
     );
   },
+
+  /**
+   * Reschedule booking - MAY NOT BE AVAILABLE
+   */
+  rescheduleBooking: async (bookingId: string, data: { newDate: string; newTime: string; reason?: string }): Promise<ApiResponse<Booking>> => {
+    return safeApiCallOptional(
+      () => apiClient.patch(`/bookings/${bookingId}/reschedule`, data),
+      {} as Booking
+    );
+  },
 };

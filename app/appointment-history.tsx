@@ -1,4 +1,4 @@
-import { Colors, APPOINTMENT_HISTORY, DEFAULT_USER } from "@/constants";
+import { Colors, APPOINTMENT_HISTORY, DEFAULT_AVATAR } from "@/constants";
 import { DecorativeCircle, AuthGuard } from "@/components";
 import { hp, rf, wp } from "@/utils/responsive";
 import { AppointmentCard } from "@/components/ui";
@@ -66,7 +66,7 @@ function AppointmentHistoryContent() {
           }}
         >
           <Image
-            source={{ uri: user?.avatar || DEFAULT_USER.avatar }}
+            source={{ uri: user?.avatar || DEFAULT_AVATAR }}
             className="w-full h-full"
             resizeMode="cover"
           />
@@ -79,7 +79,7 @@ function AppointmentHistoryContent() {
             marginTop: hp(1),
           }}
         >
-          {user?.name || DEFAULT_USER.name}
+          {user?.name || "User"}
         </Text>
       </View>
 

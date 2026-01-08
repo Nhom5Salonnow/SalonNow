@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Menu, Search, Users, User } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
-import { Colors } from '@/constants';
+import { Colors, SPECIALISTS } from '@/constants';
 import { DecorativeCircle, QuoteBanner } from '@/components';
+import { stylistApi } from '@/api';
 
 interface Stylist {
   id: string;
@@ -14,34 +15,58 @@ interface Stylist {
   isTopRated: boolean;
 }
 
-const STYLISTS: Stylist[] = [
-  {
-    id: '1',
-    name: 'Praveen',
-    role: 'Hair Specialist',
-    image: 'https://api.builder.io/api/v1/image/assets/TEMP/4ab931700dd594de82119a13ddc008773676e5ab?width=240',
-    isTopRated: true,
-  },
-  {
-    id: '2',
-    name: 'Thinu',
-    role: 'Hair Dresser',
-    image: 'https://api.builder.io/api/v1/image/assets/TEMP/ab5fe51fab4ac2627711fedc485bf50f9f29dc9d?width=240',
-    isTopRated: true,
-  },
-  {
-    id: '3',
-    name: 'Lisa',
-    role: 'Hair Stylist',
-    image: 'https://api.builder.io/api/v1/image/assets/TEMP/c13a64eddbdb7480b9b4c7efde1b809bfdd47ab0?width=240',
-    isTopRated: false,
-  },
-];
+// Hardcoded stylists for fallback/merge
+const HARDCODED_STYLISTS: Stylist[] = SPECIALISTS.map(s => ({
+  id: s.id,
+  name: s.name,
+  role: s.role || 'Hair Stylist',
+  image: s.imageUrl,
+  isTopRated: s.isTopRated || false,
+}));
+
+// Merge API data with hardcoded (API takes priority)
+const mergeStylists = (apiData: Stylist[], hardcodedData: Stylist[]): Stylist[] => {
+  const merged = new Map<string, Stylist>();
+  hardcodedData.forEach(item => merged.set(item.id, item));
+  apiData.forEach(item => merged.set(item.id, item));
+  return Array.from(merged.values());
+};
 
 type StylistOption = 'any' | 'multiple' | string;
 
 export default function ChooseStylistScreen() {
+  const params = useLocalSearchParams<{ salonId?: string; serviceId?: string }>();
   const [selectedOption, setSelectedOption] = useState<StylistOption>('any');
+  // Initialize with hardcoded data
+  const [stylists, setStylists] = useState<Stylist[]>(HARDCODED_STYLISTS);
+
+  useEffect(() => {
+    const fetchStylists = async () => {
+      try {
+        // Fetch stylists from API
+        const response = params.salonId
+          ? await stylistApi.getStylistsBySalon(params.salonId)
+          : await stylistApi.getStylists();
+
+        if (response.success && response.data && response.data.length > 0) {
+          const apiStylists = response.data.map((sty: any) => ({
+            id: sty.id || sty._id,
+            name: sty.name,
+            role: sty.specialty || sty.role || 'Hair Stylist',
+            image: sty.avatar || sty.imageUrl || HARDCODED_STYLISTS[0]?.image,
+            isTopRated: sty.rating >= 4.5 || sty.isTopRated || false,
+          }));
+          // Merge API data with hardcoded
+          setStylists(mergeStylists(apiStylists, HARDCODED_STYLISTS));
+        }
+        // If API fails/empty, keep hardcoded (already set as initial state)
+      } catch (error) {
+        console.error('Error fetching stylists:', error);
+        // Keep hardcoded on error
+      }
+    };
+    fetchStylists();
+  }, [params.salonId]);
 
   const handleDone = () => {
     router.back();
@@ -145,7 +170,7 @@ export default function ChooseStylistScreen() {
           </TouchableOpacity>
 
           {/* Individual Stylists */}
-          {STYLISTS.map((stylist) => (
+          {stylists.map((stylist) => (
             <TouchableOpacity
               key={stylist.id}
               onPress={() => setSelectedOption(stylist.id)}

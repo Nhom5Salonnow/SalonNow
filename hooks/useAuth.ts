@@ -1,80 +1,16 @@
-import { useState, useEffect } from 'react';
-import { User, LoginInput, SignupInput } from '@/types';
-import { authService } from '@/api';
-import { getData, STORAGE_KEYS } from '@/utils/asyncStorage';
+/**
+ * @deprecated This hook is deprecated and no longer used.
+ * Use the `useAuth` hook from `@/contexts/AuthContext` instead.
+ * This file will be removed in a future version.
+ *
+ * Migration guide:
+ * - Import from '@/contexts' instead: import { useAuth } from '@/contexts';
+ * - The new useAuth hook uses AuthContext which connects to the real backend API
+ */
 
-export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      const userData = await getData(STORAGE_KEYS.USER_DATA);
-      const token = await getData(STORAGE_KEYS.AUTH_TOKEN);
-
-      if (userData && token) {
-        setUser(JSON.parse(userData));
-        setIsAuthenticated(true);
-      }
-    } catch (error) {
-      console.error('Error checking auth status:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const login = async (input: LoginInput) => {
-    try {
-      setIsLoading(true);
-      const response = await authService.login(input);
-      setUser(response.user);
-      setIsAuthenticated(true);
-      return response;
-    } catch (error) {
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const signup = async (input: SignupInput) => {
-    try {
-      setIsLoading(true);
-      const response = await authService.signup(input);
-      setUser(response.user);
-      setIsAuthenticated(true);
-      return response;
-    } catch (error) {
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const logout = async () => {
-    try {
-      setIsLoading(true);
-      await authService.logout();
-      setUser(null);
-      setIsAuthenticated(false);
-    } catch (error) {
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return {
-    user,
-    isLoading,
-    isAuthenticated,
-    login,
-    signup,
-    logout,
-  };
+// This hook is deprecated - throw an error if used
+export function useAuth(): never {
+  throw new Error(
+    'useAuth from @/hooks is deprecated. Use useAuth from @/contexts instead.'
+  );
 }

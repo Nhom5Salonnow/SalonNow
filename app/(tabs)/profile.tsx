@@ -1,4 +1,4 @@
-import { Colors } from "@/constants";
+import { Colors, DEFAULT_AVATAR } from "@/constants";
 import { DecorativeCircle, GuestPrompt } from "@/components";
 import { hp, rf, wp } from "@/utils/responsive";
 import { router } from "expo-router";
@@ -28,10 +28,21 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
-import { userService, UserStats } from "@/api/userService";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/contexts";
 import { userApi } from "@/api";
+
+interface UserStats {
+  totalAppointments: number;
+  completedAppointments: number;
+  cancelledAppointments: number;
+  totalSpent: number;
+  loyaltyPoints: number;
+  reviewsGiven: number;
+  averageRating: number;
+  favoriteServices: Array<{ serviceId: string; serviceName: string; count: number }>;
+  memberSince: string;
+}
 
 const menuItems = [
   {
@@ -79,7 +90,7 @@ export default function ProfileScreen() {
 
   const loadStats = useCallback(async (userId: string) => {
     try {
-      // Try real API first
+      // Call real API
       const apiRes = await userApi.getUserById(userId);
       if (apiRes.success && apiRes.data && apiRes.data.id) {
         // Map API response to stats format
@@ -98,22 +109,12 @@ export default function ProfileScreen() {
         return;
       }
 
-      // Fallback to mock service
-      const res = await userService.getUserStats(userId);
-      if (res.success && res.data) {
-        setStats(res.data);
-      }
+      // API returned no data - show empty stats
+      console.log('API returned no user stats');
+      setStats(null);
     } catch (error) {
       console.error("Error loading stats:", error);
-      // Fallback to mock service on error
-      try {
-        const res = await userService.getUserStats(userId);
-        if (res.success && res.data) {
-          setStats(res.data);
-        }
-      } catch (fallbackError) {
-        console.error("Error loading mock stats:", fallbackError);
-      }
+      setStats(null);
     }
   }, []);
 
@@ -248,9 +249,7 @@ export default function ProfileScreen() {
           >
             {isLoggedIn ? (
               <Image
-                source={{
-                  uri: user?.avatar || "https://api.builder.io/api/v1/image/assets/TEMP/bf83f7d9f51b91c7f1126d620657aa5f1b9a54bf?width=400",
-                }}
+                source={{ uri: user?.avatar || DEFAULT_AVATAR }}
                 className="w-full h-full"
                 resizeMode="cover"
               />

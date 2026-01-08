@@ -15,7 +15,6 @@ import {
   SafeAreaView,
 } from "react-native";
 import { ChevronLeft } from "lucide-react-native";
-import { authService } from "@/api/authService";
 import { useAuth } from "@/contexts";
 
 export default function LoginScreen() {
@@ -35,7 +34,7 @@ export default function LoginScreen() {
     setError(null);
 
     try {
-      // Try real API first
+      // Call real API
       const result = await loginWithCredentials(email, password);
 
       if (result.success) {
@@ -43,21 +42,8 @@ export default function LoginScreen() {
         return;
       }
 
-      // Fallback to mock service if API fails
-      try {
-        const response = await authService.login({ email, password });
-        await login({
-          id: response.user.id,
-          name: response.user.name,
-          email: response.user.email,
-          phone: response.user.phone,
-          avatar: response.user.avatar,
-        }, response.token);
-        router.replace("/home" as any);
-      } catch (mockErr: any) {
-        // If both fail, show the API error message
-        setError(result.message || "Login failed. Please try again.");
-      }
+      // API failed - show error
+      setError(result.message || "Login failed. Please try again.");
     } catch (err: any) {
       setError(err.message || "Login failed. Please try again.");
     } finally {

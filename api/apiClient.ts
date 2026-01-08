@@ -4,6 +4,17 @@ import { STORAGE_KEYS } from '@/constants/api';
 
 const API_BASE_URL = 'http://35.240.204.147:3000';
 
+// Callback to notify when auth is invalidated (401)
+let onAuthInvalidated: (() => void) | null = null;
+
+/**
+ * Set callback to be called when 401 is received
+ * Used by AuthContext to handle session expiration
+ */
+export const setOnAuthInvalidated = (callback: (() => void) | null) => {
+  onAuthInvalidated = callback;
+};
+
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -43,9 +54,13 @@ apiClient.interceptors.response.use(
           STORAGE_KEYS.REFRESH_TOKEN,
           STORAGE_KEYS.USER_DATA,
         ]);
+        // Notify AuthContext about session expiration
+        if (onAuthInvalidated) {
+          onAuthInvalidated();
+        }
       } catch (storageError) {
         // Silently fail
-        console.log('Failed to clear tokens:', storageError);
+        console.error('Failed to clear tokens:', storageError);
       }
     }
 

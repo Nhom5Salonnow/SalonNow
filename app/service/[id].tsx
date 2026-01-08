@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, FlatList, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, FlatList } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Menu, Search, Star, ShoppingCart, Clock, AlertCircle } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
-import { Colors } from '@/constants';
+import { Colors, SERVICES_MENU, CATEGORY_INFO } from '@/constants';
 import { DecorativeCircle, QuoteBanner } from '@/components';
-import { mockDatabase } from '@/api/mockServer/database';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { serviceApi } from '@/api';
 
@@ -18,32 +17,23 @@ interface ServiceItem {
   reviews: number;
 }
 
-const MOCK_SERVICES: ServiceItem[] = [
-  {
-    id: '1',
-    name: 'Basic Haircut',
-    image: 'https://api.builder.io/api/v1/image/assets/TEMP/4ab931700dd594de82119a13ddc008773676e5ab?width=240',
-    rating: 3,
-    price: 60,
-    reviews: 24,
-  },
-  {
-    id: '2',
-    name: 'Layered Haircut',
-    image: 'https://api.builder.io/api/v1/image/assets/TEMP/ab5fe51fab4ac2627711fedc485bf50f9f29dc9d?width=240',
-    rating: 2,
-    price: 65,
-    reviews: 18,
-  },
-  {
-    id: '3',
-    name: 'Bob Haircut',
-    image: 'https://api.builder.io/api/v1/image/assets/TEMP/c13a64eddbdb7480b9b4c7efde1b809bfdd47ab0?width=240',
-    rating: 3,
-    price: 65,
-    reviews: 31,
-  },
-];
+// Hardcoded services for fallback/merge
+const HARDCODED_SERVICES: ServiceItem[] = SERVICES_MENU.map(s => ({
+  id: s.id,
+  name: s.name,
+  image: s.image,
+  rating: s.rating,
+  price: s.price,
+  reviews: s.reviews,
+}));
+
+// Merge API data with hardcoded (API takes priority)
+const mergeServices = (apiData: ServiceItem[], hardcodedData: ServiceItem[]): ServiceItem[] => {
+  const merged = new Map<string, ServiceItem>();
+  hardcodedData.forEach(item => merged.set(item.id, item));
+  apiData.forEach(item => merged.set(item.id, item));
+  return Array.from(merged.values());
+};
 
 export default function ServiceDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -51,52 +41,45 @@ export default function ServiceDetailScreen() {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [slotsAvailable, setSlotsAvailable] = useState<number>(0);
   const [isFullyBooked, setIsFullyBooked] = useState(false);
-  const [services, setServices] = useState<ServiceItem[]>(MOCK_SERVICES);
-  const [isLoading, setIsLoading] = useState(false);
+  // Initialize with hardcoded services
+  const [services, setServices] = useState<ServiceItem[]>(HARDCODED_SERVICES);
 
-  // Fetch services and check availability
+  // Get category info from constants
+  const categoryInfo = CATEGORY_INFO[params.id as string] || { name: 'Services', quote: '"Beauty Awaits."' };
+  const { name: categoryName, quote: categoryQuote } = categoryInfo;
+
+  // Fetch services and merge with hardcoded
   useEffect(() => {
     const fetchServices = async () => {
-      setIsLoading(true);
-
-      // Try to fetch services from API by category
-      const response = await serviceApi.getServices({ categoryId: params.id as string });
-      if (response.success && response.data && response.data.length > 0) {
-        setServices(response.data.map((svc: any) => ({
-          id: svc.id || svc._id,
-          name: svc.name,
-          image: svc.image || MOCK_SERVICES[0]?.image,
-          rating: svc.rating || 3,
-          price: svc.price || 50,
-          reviews: svc.reviewCount || 0,
-        })));
+      try {
+        // Call real API
+        const response = await serviceApi.getServices({ categoryId: params.id as string });
+        if (response.success && response.data && response.data.length > 0) {
+          const apiServices = response.data.map((svc: any) => ({
+            id: svc.id || svc._id,
+            name: svc.name,
+            image: svc.image || HARDCODED_SERVICES[0]?.image,
+            rating: svc.rating || 3,
+            price: svc.price || 50,
+            reviews: svc.reviewCount || 0,
+          }));
+          // Merge API data with hardcoded
+          setServices(mergeServices(apiServices, HARDCODED_SERVICES));
+        }
+        // If API fails/empty, keep hardcoded (already set as initial state)
+      } catch (error) {
+        console.error('Error fetching services:', error);
+        // Keep hardcoded on error
       }
 
       // Simulate some services having limited/no availability
       const availableSlots = Math.floor(Math.random() * 5); // 0-4 slots
       setSlotsAvailable(availableSlots);
       setIsFullyBooked(availableSlots === 0);
-
-      setIsLoading(false);
     };
 
     fetchServices();
   }, [params.id]);
-
-  // Get category name based on ID
-  const getCategoryInfo = (id: string) => {
-    const categories: Record<string, { name: string; quote: string }> = {
-      'hair-design': { name: 'Hair Design & Cut', quote: '"Crafting Confidence,\nOne Cut at a Time."' },
-      'color-shine': { name: 'Color & Shine', quote: '"Shine Bright,\nColor Your World."' },
-      'texture-volume': { name: 'Texture & Volume', quote: '"Volume That Speaks,\nTexture That Inspires."' },
-      'scalp-spa': { name: 'Scalp & Head Spa', quote: '"Relax & Rejuvenate,\nFrom Root to Soul."' },
-      'facial-neck': { name: 'Facial & Neck Care', quote: '"Glow From Within,\nCare That Shows."' },
-      'bridal-vip': { name: 'Bridal & VIP Styling', quote: '"Your Special Day,\nPerfectly Styled."' },
-    };
-    return categories[id] || { name: 'Services', quote: '"Beauty Awaits."' };
-  };
-
-  const { name: categoryName, quote: categoryQuote } = getCategoryInfo(params.id as string);
 
   const toggleService = (serviceId: string) => {
     setSelectedServices(prev =>

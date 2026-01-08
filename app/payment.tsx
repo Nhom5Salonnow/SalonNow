@@ -6,9 +6,26 @@ import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { AuthGuard } from '@/components';
 import { useAuth } from '@/contexts';
-import { paymentService, PaymentSummary } from '@/api/paymentService';
-import { PaymentMethod } from '@/api/mockServer/types';
+import { paymentApi } from '@/api/paymentApi';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// Local types
+interface PaymentMethod {
+  id: string;
+  cardBrand: string;
+  lastFourDigits: string;
+  expiryMonth: string;
+  expiryYear: string;
+  isDefault: boolean;
+}
+
+interface PaymentSummary {
+  subtotal: number;
+  discount: number;
+  tax: number;
+  tip: number;
+  total: number;
+}
 
 interface PaymentParams {
   appointmentId?: string;
@@ -47,34 +64,55 @@ function PaymentContent() {
   const serviceName = params.serviceName || 'Hair Spa';
   const servicePrice = parseFloat(params.servicePrice || '40');
 
-  const loadPaymentMethods = useCallback(async (uid: string) => {
+  const loadPaymentMethods = useCallback(async (_uid: string) => {
     try {
-      const res = await paymentService.getPaymentMethods(uid);
-      if (res.success && res.data) {
-        setPaymentMethods(res.data);
+      // Try real API
+      const apiRes = await paymentApi.getPaymentMethods();
+
+      if (apiRes.success && apiRes.data && apiRes.data.length > 0) {
+        // Map API response to local format
+        const mappedMethods = apiRes.data.map((method) => ({
+          id: method.id,
+          cardBrand: method.brand || 'visa',
+          lastFourDigits: method.last4 || '****',
+          expiryMonth: method.expiryMonth?.toString().padStart(2, '0') || '12',
+          expiryYear: method.expiryYear?.toString().slice(-2) || '25',
+          isDefault: method.isDefault || false,
+        }));
+        setPaymentMethods(mappedMethods);
         // Select default method
-        const defaultMethod = res.data.find(m => m.isDefault);
+        const defaultMethod = mappedMethods.find(m => m.isDefault);
         if (defaultMethod) {
           setSelectedMethodId(defaultMethod.id);
-        } else if (res.data.length > 0) {
-          setSelectedMethodId(res.data[0].id);
+        } else if (mappedMethods.length > 0) {
+          setSelectedMethodId(mappedMethods[0].id);
         }
+      } else {
+        // API returned no data - show empty state
+        console.log('API returned no payment methods');
+        setPaymentMethods([]);
       }
     } catch (error) {
       console.error('Error loading payment methods:', error);
+      // On error - show empty state (don't crash)
+      setPaymentMethods([]);
     }
   }, []);
 
-  const calculateSummary = useCallback(async () => {
-    try {
-      const discount = promoDiscount > 0 ? (servicePrice * promoDiscount / 100) : 0;
-      const res = await paymentService.calculateSummary(servicePrice, discount, selectedTip);
-      if (res.success && res.data) {
-        setSummary(res.data);
-      }
-    } catch (error) {
-      console.error('Error calculating summary:', error);
-    }
+  const calculateSummary = useCallback(() => {
+    // Calculate locally
+    const discount = promoDiscount > 0 ? (servicePrice * promoDiscount / 100) : 0;
+    const subtotal = servicePrice - discount;
+    const tax = subtotal * 0.1; // 10% tax
+    const total = subtotal + tax + selectedTip;
+
+    setSummary({
+      subtotal: servicePrice,
+      discount,
+      tax,
+      tip: selectedTip,
+      total,
+    });
   }, [servicePrice, promoDiscount, selectedTip]);
 
   useEffect(() => {
@@ -95,21 +133,24 @@ function PaymentContent() {
     setIsValidatingPromo(true);
     setPromoError('');
 
-    try {
-      const res = await paymentService.validatePromoCode(promoCode);
-      if (res.success && res.data.valid) {
-        setPromoDiscount(res.data.discount);
-        setPromoDescription(res.data.description);
-      } else {
-        setPromoError('Invalid promo code');
-        setPromoDiscount(0);
-        setPromoDescription('');
-      }
-    } catch (error) {
-      setPromoError('Error validating code');
-    } finally {
-      setIsValidatingPromo(false);
+    // Simple local promo validation (in production, this would call an API)
+    // For now, just show "feature not available" or accept some test codes
+    const testCodes: Record<string, { discount: number; description: string }> = {
+      'SAVE10': { discount: 10, description: '10% off your booking' },
+      'SAVE20': { discount: 20, description: '20% off your booking' },
+    };
+
+    const code = promoCode.toUpperCase();
+    if (testCodes[code]) {
+      setPromoDiscount(testCodes[code].discount);
+      setPromoDescription(testCodes[code].description);
+    } else {
+      setPromoError('Invalid promo code');
+      setPromoDiscount(0);
+      setPromoDescription('');
     }
+
+    setIsValidatingPromo(false);
   };
 
   const handleRemovePromo = () => {
@@ -129,9 +170,11 @@ function PaymentContent() {
           text: 'Remove',
           style: 'destructive',
           onPress: async () => {
-            const res = await paymentService.removePaymentMethod(methodId, userId);
+            const res = await paymentApi.deletePaymentMethod(methodId);
             if (res.success) {
               await loadPaymentMethods(userId);
+            } else {
+              Alert.alert('Error', 'Failed to remove card');
             }
           },
         },
@@ -140,9 +183,11 @@ function PaymentContent() {
   };
 
   const handleSetDefault = async (methodId: string) => {
-    const res = await paymentService.setDefaultPaymentMethod(methodId, userId);
+    const res = await paymentApi.setDefaultPaymentMethod(methodId);
     if (res.success) {
       await loadPaymentMethods(userId);
+    } else {
+      Alert.alert('Error', 'Failed to set default card');
     }
   };
 
@@ -155,27 +200,29 @@ function PaymentContent() {
     setIsProcessing(true);
 
     try {
-      const res = await paymentService.processPayment({
-        appointmentId: params.appointmentId || 'apt-temp',
-        userId,
+      // Try real API first
+      const apiRes = await paymentApi.createPayment({
+        bookingId: params.appointmentId || 'apt-temp',
         paymentMethodId: selectedMethodId,
-        amount: servicePrice,
-        tip: selectedTip,
+        amount: (summary?.total || servicePrice) + selectedTip,
+        method: 'card',
       });
 
-      if (res.success) {
+      if (apiRes.success && apiRes.data && apiRes.data.id) {
         // Navigate to feedback with payment details
         router.push({
           pathname: '/feedback',
           params: {
-            paymentId: res.data.id,
-            receiptNumber: res.data.receiptNumber,
-            total: res.data.total.toString(),
+            paymentId: apiRes.data.id,
+            receiptNumber: apiRes.data.transactionId || apiRes.data.id,
+            total: (apiRes.data.amount || summary?.total || 0).toString(),
           },
         } as any);
-      } else {
-        Alert.alert('Payment Failed', res.error || 'Please try again.');
+        return;
       }
+
+      // API failed - show error
+      Alert.alert('Payment Failed', apiRes.message || 'Please try again.');
     } catch (error) {
       Alert.alert('Payment Error', 'An unexpected error occurred. Please try again.');
     } finally {

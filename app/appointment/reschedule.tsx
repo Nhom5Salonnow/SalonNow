@@ -18,9 +18,8 @@ import {
   Scissors,
   CheckCircle,
 } from "lucide-react-native";
-import { appointmentService } from "@/api/appointmentService";
-import { mockDatabase } from "@/api/mockServer/database";
 import { useAuth } from "@/contexts";
+import { bookingApi } from "@/api";
 
 const TIME_SLOTS = [
   "9:00 AM",
@@ -64,32 +63,35 @@ export default function RescheduleScreen() {
   const days = getNextDays();
 
   useEffect(() => {
-    if (params.appointmentId) {
-      const appt = mockDatabase.appointments.find((a) => a.id === params.appointmentId);
-      if (appt) {
-        setAppointment(appt);
+    const loadAppointment = async () => {
+      if (params.appointmentId) {
+        // Call real API
+        const res = await bookingApi.getBookingById(params.appointmentId);
+        if (res.success && res.data) {
+          setAppointment({
+            id: res.data.id,
+            serviceName: res.data.serviceName || res.data.service?.name || 'Service',
+            salonId: res.data.salonId || res.data.salon?.id,
+            date: res.data.date || (res.data.startTime ? new Date(res.data.startTime).toLocaleDateString() : ''),
+            time: res.data.time || (res.data.startTime ? new Date(res.data.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''),
+          });
+        } else {
+          // API returned no data - show not found
+          setAppointment(null);
+        }
       }
-    }
+    };
+    loadAppointment();
   }, [params.appointmentId]);
 
   useEffect(() => {
-    // Simulate checking available slots for selected date
+    // For now, show all time slots as available
+    // TODO: Fetch real availability from API when endpoint is available
     if (selectedDate && appointment) {
-      const bookedSlots = mockDatabase.appointments
-        .filter(
-          (a) =>
-            a.id !== appointment.id &&
-            a.salonId === appointment.salonId &&
-            a.date === selectedDate &&
-            ["pending", "confirmed"].includes(a.status)
-        )
-        .map((a) => a.time);
-
-      const available = TIME_SLOTS.filter((slot) => !bookedSlots.includes(slot));
-      setAvailableSlots(available);
+      setAvailableSlots(TIME_SLOTS);
 
       // Clear selected time if not available in new date
-      if (!available.includes(selectedTime)) {
+      if (!TIME_SLOTS.includes(selectedTime)) {
         setSelectedTime("");
       }
     }
@@ -109,11 +111,8 @@ export default function RescheduleScreen() {
     setIsSubmitting(true);
 
     try {
-      const userId = user?.id || "user-1";
-
-      const response = await appointmentService.rescheduleAppointment({
-        appointmentId: appointment.id,
-        userId: userId,
+      // Call real API
+      const response = await bookingApi.rescheduleBooking(appointment.id, {
         newDate: selectedDate,
         newTime: selectedTime,
         reason: reason || undefined,
@@ -135,7 +134,8 @@ export default function RescheduleScreen() {
           ]
         );
       } else {
-        Alert.alert("Error", response.error || "Failed to reschedule appointment");
+        // API failed - show error
+        Alert.alert("Error", response.message || "Failed to reschedule appointment");
       }
     } catch (error) {
       console.error("Error rescheduling:", error);

@@ -3,9 +3,8 @@ import { View, Text, TouchableOpacity, ScrollView, RefreshControl } from 'react-
 import { router } from 'expo-router';
 import { Menu, Calendar, Clock, User, LogIn } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
-import { Colors } from '@/constants';
+import { Colors, DEFAULT_AVATAR } from '@/constants';
 import { DecorativeCircle } from '@/components';
-import { mockDatabase } from '@/api/mockServer/database';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image, Platform } from 'react-native';
 import { useAuth } from '@/contexts';
@@ -35,7 +34,7 @@ export default function BookingsScreen() {
   const loadAppointments = useCallback(async () => {
     try {
       if (isLoggedIn && userId) {
-        // Try to fetch from API first
+        // Call real API
         const response = await bookingApi.getMyBookings();
         if (response.success && response.data && response.data.length > 0) {
           // Map API response to app format
@@ -52,24 +51,16 @@ export default function BookingsScreen() {
             total: booking.total || booking.totalAmount,
           })));
         } else {
-          // Fallback to mock data
-          const userAppointments = mockDatabase.appointments.filter(
-            (a) => a.userId === userId || a.userId === 'user-1'
-          );
-          setAppointments(userAppointments);
+          // API returned no data - show empty
+          setAppointments([]);
         }
       } else {
         setAppointments([]);
       }
     } catch (error) {
       console.error('Error loading appointments:', error);
-      // Fallback to mock data on error
-      if (isLoggedIn && userId) {
-        const userAppointments = mockDatabase.appointments.filter(
-          (a) => a.userId === userId || a.userId === 'user-1'
-        );
-        setAppointments(userAppointments);
-      }
+      // On error - show empty
+      setAppointments([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -322,7 +313,7 @@ export default function BookingsScreen() {
         >
           {isLoggedIn ? (
             <Image
-              source={{ uri: user?.avatar || 'https://api.builder.io/api/v1/image/assets/TEMP/bf83f7d9f51b91c7f1126d620657aa5f1b9a54bf?width=114' }}
+              source={{ uri: user?.avatar || DEFAULT_AVATAR }}
               className="w-full h-full"
               resizeMode="cover"
             />

@@ -16,7 +16,6 @@ import {
 } from "react-native";
 import { ChevronLeft } from "lucide-react-native";
 import { useAuth } from "@/contexts";
-import { authService } from "@/api/authService";
 
 export default function SignupScreen() {
   const { login, register } = useAuth();
@@ -56,7 +55,7 @@ export default function SignupScreen() {
     setError(null);
 
     try {
-      // Try real API first
+      // Call real API
       const result = await register(name, email, password, phone);
 
       if (result.success) {
@@ -64,21 +63,8 @@ export default function SignupScreen() {
         return;
       }
 
-      // Fallback to mock service if API fails
-      try {
-        const response = await authService.signup({ name, email, password, phone });
-        await login({
-          id: response.user.id,
-          name: response.user.name,
-          email: response.user.email,
-          phone: response.user.phone,
-          avatar: response.user.avatar,
-        }, response.token);
-        router.replace("/home" as any);
-      } catch (mockErr: any) {
-        // If both fail, show API error message
-        setError(result.message || "Registration failed. Please try again.");
-      }
+      // API failed - show error
+      setError(result.message || "Registration failed. Please try again.");
     } catch (err: any) {
       setError(err.message || "Registration failed. Please try again.");
     } finally {

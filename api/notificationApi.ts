@@ -57,4 +57,14 @@ export const notificationApi = {
       null
     );
   },
+
+  /**
+   * Delete all notifications - MAY NOT BE AVAILABLE
+   */
+  deleteAllNotifications: async (): Promise<ApiResponse<null>> => {
+    return safeApiCallOptional(
+      () => apiClient.delete('/notifications'),
+      null
+    );
+  },
 };

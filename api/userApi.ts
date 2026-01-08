@@ -67,4 +67,14 @@ export const userApi = {
       []
     );
   },
+
+  /**
+   * Update current user's profile
+   */
+  updateProfile: async (data: UpdateUserRequest): Promise<ApiResponse<User>> => {
+    return safeApiCall(
+      () => apiClient.patch('/users/profile', data),
+      {} as User
+    );
+  },
 };

@@ -3,11 +3,20 @@ import { View, Text, TouchableOpacity, Modal } from "react-native";
 import { wp, hp, rf } from "@/utils/responsive";
 import { Colors } from "@/constants";
 import { Clock, Calendar, Scissors, X, CheckCircle } from "lucide-react-native";
-import { WaitlistEntry } from "@/api/mockServer/types";
+
+// Local interface for modal props (compatible with screen types)
+interface WaitlistEntryForModal {
+  id: string;
+  salonName?: string;
+  serviceName?: string;
+  staffName?: string;
+  availableSlot?: { date: string; time: string; notifiedAt?: string; expiresAt?: string };
+  expiresAt?: string;
+}
 
 interface SlotAvailableModalProps {
   visible: boolean;
-  entry: WaitlistEntry | null;
+  entry: WaitlistEntryForModal | null;
   onConfirm: () => void;
   onSkip: () => void;
   onClose: () => void;
@@ -26,8 +35,9 @@ export const SlotAvailableModal: React.FC<SlotAvailableModalProps> = ({
   useEffect(() => {
     if (!visible || !entry?.availableSlot?.expiresAt) return;
 
+    const expiresAtStr = entry.availableSlot.expiresAt;
     const interval = setInterval(() => {
-      const expiresAt = new Date(entry.availableSlot!.expiresAt);
+      const expiresAt = new Date(expiresAtStr);
       const now = new Date();
       const diffMs = expiresAt.getTime() - now.getTime();
 

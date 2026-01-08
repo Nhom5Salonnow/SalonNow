@@ -3,13 +3,8 @@
  * Export all API services and types for easy importing
  */
 
-// Legacy exports (will be deprecated)
-export * from './api';
-export * from './salonService';
-export * from './authService';
-
 // Core
-export { default as apiClient } from './apiClient';
+export { default as apiClient, setOnAuthInvalidated } from './apiClient';
 export { safeApiCall, safeApiCallOptional } from './apiHelper';
 export { handleApiError, isNetworkError, isAuthError, createSafeErrorResponse } from '../utils/apiErrorHandler';
 

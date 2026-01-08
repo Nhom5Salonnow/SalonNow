@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, Image, FlatList } from "react-native";
 import { wp, hp, rf } from "@/utils/responsive";
-import { Colors } from "@/constants";
+import { Colors, HOME_CATEGORIES, SERVICES_MENU } from "@/constants";
 import { DecorativeCircle } from "@/components";
 import { Plus, Edit2, Trash2, Clock, DollarSign, ChevronRight } from "lucide-react-native";
+import { categoryApi, serviceApi } from "@/api";
 
 interface Service {
   id: string;
@@ -12,6 +13,7 @@ interface Service {
   duration: string;
   price: string;
   category: string;
+  categoryId: string;
   image: string;
   isActive: boolean;
 }
@@ -23,81 +25,115 @@ interface Category {
   servicesCount: number;
 }
 
-const CATEGORIES: Category[] = [
-  { id: "1", name: "Hair Cut", image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200", servicesCount: 8 },
-  { id: "2", name: "Hair Color", image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200", servicesCount: 6 },
-  { id: "3", name: "Styling", image: "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=200", servicesCount: 5 },
-  { id: "4", name: "Nail Care", image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=200", servicesCount: 10 },
-  { id: "5", name: "Massage", image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=200", servicesCount: 7 },
-];
+// Hardcoded categories for fallback/merge
+const HARDCODED_CATEGORIES: Category[] = HOME_CATEGORIES.map((cat, idx) => ({
+  id: cat.id,
+  name: cat.name,
+  image: cat.imageUrl,
+  servicesCount: idx === 0 ? 8 : idx === 1 ? 6 : 5,
+}));
 
-const SERVICES: Service[] = [
-  {
-    id: "1",
-    name: "Women's Haircut",
-    description: "Professional haircut with wash and styling",
-    duration: "45 min",
-    price: "$45",
-    category: "Hair Cut",
-    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200",
-    isActive: true
-  },
-  {
-    id: "2",
-    name: "Men's Haircut",
-    description: "Classic or modern cut with styling",
-    duration: "30 min",
-    price: "$30",
-    category: "Hair Cut",
-    image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=200",
-    isActive: true
-  },
-  {
-    id: "3",
-    name: "Full Color",
-    description: "Complete hair coloring service",
-    duration: "120 min",
-    price: "$150",
-    category: "Hair Color",
-    image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200",
-    isActive: true
-  },
-  {
-    id: "4",
-    name: "Highlights",
-    description: "Partial or full highlights",
-    duration: "90 min",
-    price: "$100",
-    category: "Hair Color",
-    image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200",
-    isActive: false
-  },
-  {
-    id: "5",
-    name: "Manicure",
-    description: "Classic manicure with polish",
-    duration: "30 min",
-    price: "$25",
-    category: "Nail Care",
-    image: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=200",
-    isActive: true
-  },
-];
+// Hardcoded services for fallback/merge
+const HARDCODED_SERVICES: Service[] = SERVICES_MENU.map(svc => ({
+  id: svc.id,
+  name: svc.name,
+  description: `Professional ${svc.name.toLowerCase()} service`,
+  duration: '45 min',
+  price: `$${svc.price}`,
+  category: 'Hair Cut',
+  categoryId: 'hair-design',
+  image: svc.image,
+  isActive: true,
+}));
+
+// Merge helpers
+const mergeCategories = (apiData: Category[], hardcodedData: Category[]): Category[] => {
+  const merged = new Map<string, Category>();
+  hardcodedData.forEach(item => merged.set(item.id, item));
+  apiData.forEach(item => merged.set(item.id, item));
+  return Array.from(merged.values());
+};
+
+const mergeServices = (apiData: Service[], hardcodedData: Service[]): Service[] => {
+  const merged = new Map<string, Service>();
+  hardcodedData.forEach(item => merged.set(item.id, item));
+  apiData.forEach(item => merged.set(item.id, item));
+  return Array.from(merged.values());
+};
 
 type ViewMode = "categories" | "services";
 
 export default function AdminServicesScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>("categories");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  // Initialize with hardcoded data
+  const [categories, setCategories] = useState<Category[]>(HARDCODED_CATEGORIES);
+  const [services, setServices] = useState<Service[]>(HARDCODED_SERVICES);
 
-  const filteredServices = selectedCategory
-    ? SERVICES.filter((s) => s.category === selectedCategory)
-    : SERVICES;
+  // Fetch categories on mount and merge with hardcoded
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await categoryApi.getCategories();
+        if (response.success && response.data && response.data.length > 0) {
+          const apiCategories = response.data.map((cat: any) => ({
+            id: cat.id || cat._id,
+            name: cat.name,
+            image: cat.image || cat.imageUrl || HARDCODED_CATEGORIES[0]?.image,
+            servicesCount: cat.servicesCount || 0,
+          }));
+          // Merge API data with hardcoded
+          setCategories(mergeCategories(apiCategories, HARDCODED_CATEGORIES));
+        }
+        // If API fails/empty, keep hardcoded (already set as initial state)
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        // Keep hardcoded on error
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Fetch services when category is selected and merge with hardcoded
+  useEffect(() => {
+    const fetchServices = async () => {
+      if (!selectedCategoryId) return;
+      try {
+        const response = await serviceApi.getServices({ categoryId: selectedCategoryId });
+        if (response.success && response.data && response.data.length > 0) {
+          const apiServices = response.data.map((svc: any) => ({
+            id: svc.id || svc._id,
+            name: svc.name,
+            description: svc.description || '',
+            duration: svc.duration ? `${svc.duration} min` : '30 min',
+            price: `$${svc.price || 0}`,
+            category: selectedCategory || '',
+            categoryId: selectedCategoryId,
+            image: svc.image || svc.imageUrl || HARDCODED_SERVICES[0]?.image,
+            isActive: svc.isActive !== false,
+          }));
+          // Merge API data with hardcoded
+          setServices(mergeServices(apiServices, HARDCODED_SERVICES));
+        }
+        // If API fails/empty, keep hardcoded (already set as initial state)
+      } catch (error) {
+        console.error("Error fetching services:", error);
+        // Keep hardcoded on error
+      }
+    };
+    if (viewMode === "services") {
+      fetchServices();
+    }
+  }, [selectedCategoryId, viewMode, selectedCategory]);
+
+  const filteredServices = services;
 
   const renderCategory = ({ item }: { item: Category }) => (
     <TouchableOpacity
       onPress={() => {
         setSelectedCategory(item.name);
+        setSelectedCategoryId(item.id);
         setViewMode("services");
       }}
       className="flex-row items-center rounded-xl"
@@ -214,6 +250,7 @@ export default function AdminServicesScreen() {
                 onPress={() => {
                   setViewMode("categories");
                   setSelectedCategory(null);
+                  setSelectedCategoryId(null);
                 }}
               >
                 <Text style={{ fontSize: rf(14), color: Colors.primary }}>
@@ -239,7 +276,7 @@ export default function AdminServicesScreen() {
 
       {/* List */}
       <FlatList
-        data={(viewMode === "categories" ? CATEGORIES : filteredServices) as any}
+        data={(viewMode === "categories" ? categories : filteredServices) as any}
         renderItem={viewMode === "categories" ? renderCategory : renderService as any}
         keyExtractor={(item: any) => item.id}
         contentContainerStyle={{ paddingHorizontal: wp(6), paddingTop: hp(3), paddingBottom: hp(4) }}

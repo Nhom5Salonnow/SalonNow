@@ -1,26 +1,114 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
-import { router } from 'expo-router';
+import { View, Text, TouchableOpacity, Image, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
+import { Colors } from '@/constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import { WeekCalendar, generateWeekDays, AuthGuard } from '@/components';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '@/contexts';
+import { bookingApi } from '@/api/bookingApi';
+
+interface BookingParams {
+  salonId?: string;
+  salonName?: string;
+  serviceId?: string;
+  serviceName?: string;
+  servicePrice?: string;
+  stylistId?: string;
+  stylistName?: string;
+  stylistImage?: string;
+}
 
 function AppointmentContent() {
   const insets = useSafeAreaInsets();
-  const [selectedDate, setSelectedDate] = useState(12);
-  const [selectedHour] = useState('2:00');
-  const [selectedPeriod] = useState('P.M');
-  const currentMonth = 'April';
+  const params = useLocalSearchParams() as BookingParams;
+  const { user } = useAuth();
+
+  // Get current date info
+  const today = new Date();
+  const currentDay = today.getDate();
+
+  const [selectedDate, setSelectedDate] = useState(currentDay);
+  const [selectedHour, setSelectedHour] = useState('14:00');
+  const [isBooking, setIsBooking] = useState(false);
+
+  // Get month name
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+  const currentMonth = monthNames[today.getMonth()];
 
   // Generate week days using helper
-  const weekDays = generateWeekDays(10, selectedDate);
+  const weekDays = generateWeekDays(currentDay - 2, selectedDate);
 
-  const handleBook = () => {
-    // Handle booking logic
-    console.log('Booking:', { selectedDate, selectedHour, selectedPeriod });
-    router.back();
+  // Available time slots
+  const timeSlots = [
+    '09:00', '10:00', '11:00', '12:00',
+    '14:00', '15:00', '16:00', '17:00', '18:00'
+  ];
+
+  // Extract service info from params or use defaults
+  const serviceName = params.serviceName || 'Hair Design & Cut';
+  const servicePrice = params.servicePrice || '50';
+  const salonName = params.salonName || 'Salon';
+  const stylistName = params.stylistName || 'Doe John';
+  const stylistImage = params.stylistImage || 'https://api.builder.io/api/v1/image/assets/TEMP/4ab931700dd594de82119a13ddc008773676e5ab?width=240';
+
+  const handleBook = async () => {
+    if (!user) {
+      Alert.alert('Login Required', 'Please login to book an appointment.');
+      return;
+    }
+
+    if (!params.salonId || !params.serviceId) {
+      Alert.alert('Missing Information', 'Please select a salon and service first.');
+      return;
+    }
+
+    setIsBooking(true);
+
+    try {
+      // Build start time from selected date and hour
+      const bookingDate = new Date(today.getFullYear(), today.getMonth(), selectedDate);
+      const [hours, minutes] = selectedHour.split(':').map(Number);
+      bookingDate.setHours(hours, minutes, 0, 0);
+      const startTime = bookingDate.toISOString();
+
+      // Call real API
+      const apiResponse = await bookingApi.createBooking({
+        salonId: params.salonId,
+        serviceId: params.serviceId,
+        stylistId: params.stylistId,
+        startTime: startTime,
+        notes: '',
+      });
+
+      if (apiResponse.success && apiResponse.data && apiResponse.data.id) {
+        Alert.alert(
+          'Booking Confirmed',
+          `Your appointment for ${serviceName} has been booked for ${selectedHour}.`,
+          [
+            {
+              text: 'View My Appointments',
+              onPress: () => router.replace('/my-appointments' as any),
+            },
+            {
+              text: 'OK',
+              onPress: () => router.back(),
+            },
+          ]
+        );
+      } else {
+        // API failed - show error
+        Alert.alert('Booking Failed', apiResponse.message || 'Please try again.');
+      }
+    } catch (error) {
+      console.error('Booking error:', error);
+      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+    } finally {
+      setIsBooking(false);
+    }
   };
 
   return (
@@ -65,35 +153,36 @@ function AppointmentContent() {
           />
         </View>
 
-        {/* Time Picker */}
-        <View
-          className="flex-row justify-center items-center"
-          style={{ marginTop: hp(4), gap: wp(4) }}
-        >
-          {/* Hour Picker */}
-          <View
-            className="rounded-full border border-gray-300 px-6 py-3"
-            style={{ minWidth: wp(25) }}
-          >
-            <Text
-              className="text-center"
-              style={{ fontSize: rf(16), color: '#000' }}
-            >
-              {selectedHour}
-            </Text>
-          </View>
-
-          {/* Period Picker */}
-          <View
-            className="rounded-full border border-gray-300 px-6 py-3"
-            style={{ minWidth: wp(20) }}
-          >
-            <Text
-              className="text-center"
-              style={{ fontSize: rf(16), color: '#000' }}
-            >
-              {selectedPeriod}
-            </Text>
+        {/* Time Slots */}
+        <View style={{ marginTop: hp(3), paddingHorizontal: wp(6) }}>
+          <Text style={{ fontSize: rf(16), fontWeight: '600', color: '#000', marginBottom: hp(1.5) }}>
+            Select Time
+          </Text>
+          <View className="flex-row flex-wrap" style={{ gap: wp(2) }}>
+            {timeSlots.map((time) => (
+              <TouchableOpacity
+                key={time}
+                onPress={() => setSelectedHour(time)}
+                className="rounded-full items-center justify-center"
+                style={{
+                  paddingVertical: hp(1.2),
+                  paddingHorizontal: wp(4),
+                  backgroundColor: selectedHour === time ? Colors.primary : '#F3F4F6',
+                  borderWidth: selectedHour === time ? 0 : 1,
+                  borderColor: '#E5E7EB',
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: rf(14),
+                    fontWeight: selectedHour === time ? '600' : '400',
+                    color: selectedHour === time ? '#FFF' : '#374151',
+                  }}
+                >
+                  {time}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
@@ -103,7 +192,10 @@ function AppointmentContent() {
           style={{
             marginTop: hp(4),
             padding: wp(4),
-            boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.05)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.05,
+            shadowRadius: 8,
             elevation: 2,
           }}
         >
@@ -115,15 +207,13 @@ function AppointmentContent() {
               marginBottom: hp(2),
             }}
           >
-            Hair Design & Cut
+            {serviceName}
           </Text>
 
           {/* Stylist Info */}
           <View className="flex-row items-center">
             <Image
-              source={{
-                uri: 'https://api.builder.io/api/v1/image/assets/TEMP/4ab931700dd594de82119a13ddc008773676e5ab?width=240',
-              }}
+              source={{ uri: stylistImage }}
               className="rounded-full"
               style={{ width: wp(15), height: wp(15) }}
               resizeMode="cover"
@@ -136,7 +226,10 @@ function AppointmentContent() {
                   color: '#000',
                 }}
               >
-                Doe John
+                {stylistName}
+              </Text>
+              <Text style={{ fontSize: rf(13), color: Colors.gray[500] }}>
+                {salonName}
               </Text>
             </View>
           </View>
@@ -147,10 +240,10 @@ function AppointmentContent() {
             style={{ marginTop: hp(2) }}
           >
             <Text style={{ fontSize: rf(14), color: '#6B7280' }}>
-              Basic Haircut
+              {serviceName}
             </Text>
-            <Text style={{ fontSize: rf(16), fontWeight: '500', color: '#000' }}>
-              €50
+            <Text style={{ fontSize: rf(16), fontWeight: '500', color: Colors.primary }}>
+              ${servicePrice}
             </Text>
           </View>
         </View>
@@ -166,20 +259,28 @@ function AppointmentContent() {
       >
         <TouchableOpacity
           onPress={handleBook}
+          disabled={isBooking}
           className="items-center justify-center rounded-full"
           style={{
-            backgroundColor: '#F87171',
+            backgroundColor: isBooking ? Colors.gray[300] : Colors.primary,
             paddingVertical: hp(2),
-            boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.2)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.2,
+            shadowRadius: 8,
             elevation: 5,
           }}
         >
-          <Text
-            className="text-white font-medium"
-            style={{ fontSize: rf(18) }}
-          >
-            Book
-          </Text>
+          {isBooking ? (
+            <ActivityIndicator size="small" color="#FFF" />
+          ) : (
+            <Text
+              className="text-white font-medium"
+              style={{ fontSize: rf(18) }}
+            >
+              Book
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>

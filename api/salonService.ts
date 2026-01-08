@@ -1,3 +1,8 @@
+/**
+ * @deprecated This service is deprecated and should not be used in new code.
+ * Use `salonApi` from `@/api` instead which connects to the real backend.
+ * This file is kept for backwards compatibility with existing tests.
+ */
 import { api } from './api';
 import { API_CONFIG } from '@/constants';
 import { Salon } from '@/types';

@@ -33,7 +33,12 @@ export async function safeApiCall<T>(
     const message = handleApiError(axiosError);
 
     // Log error for debugging but don't crash
-    console.log('API Error:', message, axiosError?.response?.status);
+    console.log('API Error:', {
+      status: axiosError?.response?.status,
+      message,
+      responseData: axiosError?.response?.data,
+      url: axiosError?.config?.url,
+    });
 
     return {
       success: false,

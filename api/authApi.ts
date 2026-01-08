@@ -26,11 +26,10 @@ export const authApi = {
   },
 
   /**
-   * Register - MAY NOT BE AVAILABLE YET
-   * Will gracefully fail if endpoint doesn't exist
+   * Register - AVAILABLE
    */
   register: async (data: RegisterRequest): Promise<ApiResponse<AuthResponse>> => {
-    return safeApiCallOptional(
+    return safeApiCall(
       () => apiClient.post('/auth/register', data),
       { access_token: '', user: {} as AuthUser }
     );

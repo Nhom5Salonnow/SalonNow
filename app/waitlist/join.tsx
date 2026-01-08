@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { wp, hp, rf } from "@/utils/responsive";
-import { Colors } from "@/constants";
+import { Colors, SPECIALISTS } from "@/constants";
 import { DecorativeCircle } from "@/components";
 import {
   ChevronLeft,
@@ -21,9 +21,27 @@ import {
   CheckCircle,
   Info,
 } from "lucide-react-native";
-import { waitlistService, JoinWaitlistInput } from "@/api/waitlistService";
 import { useAuth } from "@/contexts";
-import { mockDatabase } from "@/api/mockServer/database";
+import { waitlistApi, stylistApi } from "@/api";
+
+interface Staff {
+  id: string;
+  name: string;
+}
+
+// Hardcoded staff for fallback/merge
+const HARDCODED_STAFF: Staff[] = SPECIALISTS.map(s => ({
+  id: s.id,
+  name: s.name,
+}));
+
+// Merge API data with hardcoded (API takes priority)
+const mergeStaff = (apiData: Staff[], hardcodedData: Staff[]): Staff[] => {
+  const merged = new Map<string, Staff>();
+  hardcodedData.forEach(item => merged.set(item.id, item));
+  apiData.forEach(item => merged.set(item.id, item));
+  return Array.from(merged.values());
+};
 
 const TIME_SLOTS = [
   "9:00 AM",
@@ -55,7 +73,8 @@ export default function JoinWaitlistScreen() {
   const [flexibleDates, setFlexibleDates] = useState(false);
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [availableStaff, setAvailableStaff] = useState<typeof mockDatabase.staff>([]);
+  // Initialize with hardcoded staff
+  const [availableStaff, setAvailableStaff] = useState<Staff[]>(HARDCODED_STAFF);
 
   // Generate next 7 days
   const getNextDays = () => {
@@ -76,14 +95,29 @@ export default function JoinWaitlistScreen() {
 
   const days = getNextDays();
 
+  // Fetch staff and merge with hardcoded
   useEffect(() => {
-    // Load staff for the salon
-    if (params.salonId) {
-      const salonStaff = mockDatabase.staff.filter(
-        (s) => s.salonId === params.salonId
-      );
-      setAvailableStaff(salonStaff);
-    }
+    const loadStaff = async () => {
+      if (params.salonId) {
+        try {
+          // Call real API
+          const response = await stylistApi.getStylistsBySalon(params.salonId);
+          if (response.success && response.data && response.data.length > 0) {
+            const apiStaff = response.data.map((s: any) => ({
+              id: s.id || s._id,
+              name: s.name || `${s.firstName} ${s.lastName}`,
+            }));
+            // Merge API data with hardcoded
+            setAvailableStaff(mergeStaff(apiStaff, HARDCODED_STAFF));
+          }
+          // If API fails/empty, keep hardcoded (already set as initial state)
+        } catch (error) {
+          console.error('Error loading staff:', error);
+          // Keep hardcoded on error
+        }
+      }
+    };
+    loadStaff();
   }, [params.salonId]);
 
   const toggleTimeSlot = (slot: string) => {
@@ -107,24 +141,20 @@ export default function JoinWaitlistScreen() {
     setIsSubmitting(true);
 
     try {
-      const userId = user?.id || "user-1";
-
-      const input: JoinWaitlistInput = {
-        userId: userId,
+      // Call real API
+      const response = await waitlistApi.joinWaitlist({
         salonId: params.salonId || "salon-1",
         serviceId: params.serviceId || "service-1",
         staffId: selectedStaff || undefined,
         preferredDate: selectedDate,
         preferredTimeSlots: selectedTimeSlots,
         notifyVia: ["push"],
-      };
+      });
 
-      const response = await waitlistService.joinWaitlist(input);
-
-      if (response.success) {
+      if (response.success && response.data) {
         Alert.alert(
           "Joined Waitlist!",
-          `You are now #${response.data.position} in the queue. We'll notify you when a slot opens up!`,
+          `You are now #${response.data.position || 1} in the queue. We'll notify you when a slot opens up!`,
           [
             {
               text: "View Waitlist",
@@ -137,7 +167,8 @@ export default function JoinWaitlistScreen() {
           ]
         );
       } else {
-        Alert.alert("Error", response.error || "Failed to join waitlist");
+        // API failed - show error
+        Alert.alert("Error", response.message || "Failed to join waitlist");
       }
     } catch (error) {
       console.error("Error joining waitlist:", error);

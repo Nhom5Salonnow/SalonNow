@@ -25,9 +25,22 @@ import {
   AlertCircle,
   MoreVertical,
 } from "lucide-react-native";
-import { waitlistService } from "@/api/waitlistService";
-import { WaitlistEntry } from "@/api/mockServer/types";
 import { useAuth } from "@/contexts";
+import { waitlistApi } from "@/api";
+
+interface WaitlistEntry {
+  id: string;
+  salonName: string;
+  serviceName: string;
+  staffName?: string;
+  preferredDate: string;
+  preferredTimeSlots: string[];
+  position: number;
+  status: 'waiting' | 'slot_available' | 'confirmed' | 'expired' | 'cancelled' | 'notified' | 'booked';
+  availableSlot?: { date: string; time: string; notifiedAt?: string; expiresAt?: string };
+  expiresAt?: string;
+  createdAt: string;
+}
 
 export default function WaitlistDetailScreen() {
   const { user } = useAuth();
@@ -40,12 +53,31 @@ export default function WaitlistDetailScreen() {
     if (!id) return;
 
     try {
-      const response = await waitlistService.getWaitlistEntry(id);
+      // Call real API
+      const response = await waitlistApi.getWaitlistEntry(id);
       if (response.success && response.data) {
-        setEntry(response.data);
+        // Map API response to local format
+        const w = response.data;
+        setEntry({
+          id: w.id,
+          salonName: w.salonName || w.salon?.name || 'Salon',
+          serviceName: w.serviceName || w.service?.name || 'Service',
+          staffName: w.staffName || w.staff?.name,
+          preferredDate: w.preferredDate,
+          preferredTimeSlots: w.preferredTimeSlots || [],
+          position: w.position || 1,
+          status: w.status || 'waiting',
+          availableSlot: w.availableSlot,
+          expiresAt: w.expiresAt,
+          createdAt: w.createdAt || new Date().toISOString(),
+        });
+      } else {
+        // API returned no data - show not found
+        setEntry(null);
       }
     } catch (error) {
       console.error("Error loading waitlist entry:", error);
+      setEntry(null);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -72,13 +104,14 @@ export default function WaitlistDetailScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              const userId = user?.id || "user-1";
-
-              const response = await waitlistService.cancelWaitlist(id!, userId);
+              // Call real API
+              const response = await waitlistApi.cancelWaitlist(id!);
               if (response.success) {
                 Alert.alert("Left Waitlist", "You've been removed from the waitlist.", [
                   { text: "OK", onPress: () => router.back() },
                 ]);
+              } else {
+                Alert.alert("Error", response.message || "Failed to leave waitlist");
               }
             } catch (error) {
               console.error("Error cancelling:", error);
@@ -94,10 +127,9 @@ export default function WaitlistDetailScreen() {
     if (!entry?.availableSlot) return;
 
     try {
-      const userId = user?.id || "user-1";
-
-      const response = await waitlistService.confirmSlot(entry.id, userId);
-      if (response.success && response.data.appointmentId) {
+      // Call real API
+      const response = await waitlistApi.confirmSlot(entry.id);
+      if (response.success) {
         Alert.alert(
           "Slot Confirmed!",
           "Your appointment has been booked. Proceed to payment.",
@@ -120,12 +152,16 @@ export default function WaitlistDetailScreen() {
           text: "Skip",
           onPress: async () => {
             try {
-              const userId = user?.id || "user-1";
-
-              await waitlistService.skipSlot(entry!.id, userId);
-              loadEntry();
+              // Call real API
+              const response = await waitlistApi.skipSlot(entry!.id);
+              if (response.success) {
+                loadEntry();
+              } else {
+                Alert.alert("Error", response.message || "Failed to skip slot");
+              }
             } catch (error) {
               console.error("Error skipping slot:", error);
+              Alert.alert("Error", "Something went wrong. Please try again.");
             }
           },
         },
@@ -493,7 +529,7 @@ export default function WaitlistDetailScreen() {
                 Joined Waitlist
               </Text>
               <Text style={{ fontSize: rf(12), color: Colors.gray[500], marginTop: hp(0.3) }}>
-                {new Date(entry.joinedAt).toLocaleString()}
+                {new Date(entry.createdAt).toLocaleString()}
               </Text>
             </View>
           </View>

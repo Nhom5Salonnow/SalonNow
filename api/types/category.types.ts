@@ -5,6 +5,7 @@ export interface Category {
   name: string;
   slug: string;
   description?: string;
+  quote?: string;
   icon?: string;
   image?: string;
   displayOrder: number;

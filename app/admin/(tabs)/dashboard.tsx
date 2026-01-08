@@ -5,11 +5,18 @@ import { wp, hp, rf } from "@/utils/responsive";
 import { Colors } from "@/constants";
 import { DecorativeCircle } from "@/components";
 import { TrendingUp, TrendingDown, Calendar, DollarSign, Users, Star, Clock, ChevronRight, AlertCircle } from "lucide-react-native";
-import { adminService, DashboardStats, AppointmentsByDate, StaffPerformance } from "@/api/adminService";
-import { appointmentService } from "@/api/appointmentService";
-import { Appointment } from "@/api/mockServer/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { adminApi, bookingApi } from "@/api";
+import { adminApi } from "@/api";
+
+interface StaffPerformance {
+  staffId: string;
+  staffName: string;
+  staffAvatar?: string;
+  completedAppointments: number;
+  revenue: number;
+  rating: number;
+  reviewCount: number;
+}
 
 type ReportPeriod = "Daily" | "Weekly" | "Monthly";
 
@@ -59,10 +66,9 @@ export default function AdminDashboardScreen() {
 
   const loadData = useCallback(async () => {
     try {
-      // Try real API first
+      // Call real API for dashboard stats
       const apiDashboardRes = await adminApi.getDashboardStats();
-      if (apiDashboardRes.success && apiDashboardRes.data && apiDashboardRes.data.totalBookings !== undefined) {
-        // Map API response to app format
+      if (apiDashboardRes.success && apiDashboardRes.data) {
         const apiStats = apiDashboardRes.data;
         setStats({
           todayRevenue: apiStats.totalRevenue || 0,
@@ -73,27 +79,32 @@ export default function AdminDashboardScreen() {
           totalReviews: apiStats.totalServices || 0,
         });
       } else {
-        // Fallback to mock service
-        const statsRes = await adminService.getDashboardStats(SALON_ID);
-        if (statsRes.success) setStats(statsRes.data);
+        // API returned no data - show empty stats
+        setStats({
+          todayRevenue: 0,
+          todayAppointments: 0,
+          pendingAppointments: 0,
+          waitlistCount: 0,
+          averageRating: 0,
+          totalReviews: 0,
+        });
       }
 
-      // Try real API for revenue
+      // Call real API for revenue
       const apiRevenueRes = await adminApi.getRevenueReport();
-      if (apiRevenueRes.success && apiRevenueRes.data && apiRevenueRes.data.length > 0) {
+      if (apiRevenueRes.success && apiRevenueRes.data) {
         setRevenueData(apiRevenueRes.data.map((item: any) => ({
           date: item.date,
           revenue: item.revenue,
           appointments: item.appointments || 0,
         })));
       } else {
-        const revenueRes = await adminService.getAppointmentsByDate(SALON_ID, 7);
-        if (revenueRes.success) setRevenueData(revenueRes.data);
+        setRevenueData([]);
       }
 
-      // Try real API for appointments
+      // Call real API for appointments
       const apiBookingsRes = await adminApi.getAllBookings({ status: 'pending' });
-      if (apiBookingsRes.success && apiBookingsRes.data && apiBookingsRes.data.length > 0) {
+      if (apiBookingsRes.success && apiBookingsRes.data) {
         const today = new Date().toISOString().split('T')[0];
         const upcoming = apiBookingsRes.data
           .filter((apt: any) => apt.date >= today)
@@ -108,19 +119,12 @@ export default function AdminDashboardScreen() {
           }));
         setUpcomingAppointments(upcoming);
       } else {
-        const appointmentsRes = await appointmentService.getSalonAppointments(SALON_ID);
-        if (appointmentsRes.success) {
-          const today = new Date().toISOString().split('T')[0];
-          const upcoming = appointmentsRes.data
-            .filter(apt => apt.date >= today && ['pending', 'confirmed'].includes(apt.status))
-            .slice(0, 5);
-          setUpcomingAppointments(upcoming);
-        }
+        setUpcomingAppointments([]);
       }
 
-      // Try real API for staff performance
+      // Call real API for staff performance
       const apiStaffRes = await adminApi.getTopStylists(3);
-      if (apiStaffRes.success && apiStaffRes.data && apiStaffRes.data.length > 0) {
+      if (apiStaffRes.success && apiStaffRes.data) {
         setStaffPerformance(apiStaffRes.data.map((s: any) => ({
           staffId: s.stylistId,
           staffName: s.stylistName,
@@ -131,41 +135,22 @@ export default function AdminDashboardScreen() {
           reviewCount: 0,
         })));
       } else {
-        const staffRes = await adminService.getStaffPerformance(SALON_ID);
-        if (staffRes.success) setStaffPerformance(staffRes.data.slice(0, 3));
+        setStaffPerformance([]);
       }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
-      // Fallback to mock services on error
-      try {
-        const [statsRes, revenueRes, appointmentsRes, staffRes] = await Promise.all([
-          adminService.getDashboardStats(SALON_ID),
-          adminService.getAppointmentsByDate(SALON_ID, 7),
-          appointmentService.getSalonAppointments(SALON_ID),
-          adminService.getStaffPerformance(SALON_ID),
-        ]);
-
-        if (statsRes.success) setStats(statsRes.data as LocalStats);
-        if (revenueRes.success) setRevenueData(revenueRes.data as LocalRevenueData[]);
-        if (appointmentsRes.success) {
-          const today = new Date().toISOString().split('T')[0];
-          const upcoming = appointmentsRes.data
-            .filter(apt => apt.date >= today && ['pending', 'confirmed'].includes(apt.status))
-            .slice(0, 5)
-            .map(apt => ({
-              id: apt.id,
-              serviceName: apt.serviceName,
-              staffName: apt.staffName,
-              date: apt.date,
-              time: apt.time,
-              status: apt.status,
-            }));
-          setUpcomingAppointments(upcoming);
-        }
-        if (staffRes.success) setStaffPerformance(staffRes.data.slice(0, 3));
-      } catch (fallbackError) {
-        console.error('Error loading mock dashboard data:', fallbackError);
-      }
+      // On error - show empty data
+      setStats({
+        todayRevenue: 0,
+        todayAppointments: 0,
+        pendingAppointments: 0,
+        waitlistCount: 0,
+        averageRating: 0,
+        totalReviews: 0,
+      });
+      setRevenueData([]);
+      setUpcomingAppointments([]);
+      setStaffPerformance([]);
     }
   }, []);
 

@@ -29,7 +29,9 @@ export const handleApiError = (error: AxiosError<ApiErrorResponse> | any): strin
       case 400:
         return message || 'Du lieu khong hop le';
       case 401:
-        return 'Phien dang nhap het han. Vui long dang nhap lai';
+        // For 401, prefer API message if available (e.g., "Invalid credentials")
+        // Only use default "session expired" if no message from API
+        return message || 'Email hoac mat khau khong dung';
       case 403:
         return 'Ban khong co quyen thuc hien thao tac nay';
       case 404:
