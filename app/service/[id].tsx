@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, FlatList, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, FlatList, Alert, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Menu, Search, Star, ShoppingCart, Clock, AlertCircle } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
@@ -7,6 +7,7 @@ import { Colors } from '@/constants';
 import { DecorativeCircle, QuoteBanner } from '@/components';
 import { mockDatabase } from '@/api/mockServer/database';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { serviceApi } from '@/api';
 
 interface ServiceItem {
   id: string;
@@ -17,7 +18,7 @@ interface ServiceItem {
   reviews: number;
 }
 
-const SERVICES: ServiceItem[] = [
+const MOCK_SERVICES: ServiceItem[] = [
   {
     id: '1',
     name: 'Basic Haircut',
@@ -50,14 +51,37 @@ export default function ServiceDetailScreen() {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [slotsAvailable, setSlotsAvailable] = useState<number>(0);
   const [isFullyBooked, setIsFullyBooked] = useState(false);
+  const [services, setServices] = useState<ServiceItem[]>(MOCK_SERVICES);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Simulate checking availability
+  // Fetch services and check availability
   useEffect(() => {
-    // Simulate some services having limited/no availability
-    const availableSlots = Math.floor(Math.random() * 5); // 0-4 slots
-    setSlotsAvailable(availableSlots);
-    setIsFullyBooked(availableSlots === 0);
-  }, []);
+    const fetchServices = async () => {
+      setIsLoading(true);
+
+      // Try to fetch services from API by category
+      const response = await serviceApi.getServices({ categoryId: params.id as string });
+      if (response.success && response.data && response.data.length > 0) {
+        setServices(response.data.map((svc: any) => ({
+          id: svc.id || svc._id,
+          name: svc.name,
+          image: svc.image || MOCK_SERVICES[0]?.image,
+          rating: svc.rating || 3,
+          price: svc.price || 50,
+          reviews: svc.reviewCount || 0,
+        })));
+      }
+
+      // Simulate some services having limited/no availability
+      const availableSlots = Math.floor(Math.random() * 5); // 0-4 slots
+      setSlotsAvailable(availableSlots);
+      setIsFullyBooked(availableSlots === 0);
+
+      setIsLoading(false);
+    };
+
+    fetchServices();
+  }, [params.id]);
 
   // Get category name based on ID
   const getCategoryInfo = (id: string) => {
@@ -83,7 +107,7 @@ export default function ServiceDetailScreen() {
   };
 
   const handleJoinWaitlist = () => {
-    const selectedService = SERVICES.find(s => selectedServices.includes(s.id));
+    const selectedService = services.find(s => selectedServices.includes(s.id));
     router.push({
       pathname: '/waitlist/join',
       params: {
@@ -174,7 +198,7 @@ export default function ServiceDetailScreen() {
           </Text>
 
           <FlatList
-            data={SERVICES}
+            data={services}
             renderItem={renderServiceItem}
             keyExtractor={(item) => item.id}
             scrollEnabled={false}

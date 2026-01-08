@@ -31,6 +31,7 @@ import {
 import { userService, UserStats } from "@/api/userService";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/contexts";
+import { userApi } from "@/api";
 
 const menuItems = [
   {
@@ -78,12 +79,41 @@ export default function ProfileScreen() {
 
   const loadStats = useCallback(async (userId: string) => {
     try {
+      // Try real API first
+      const apiRes = await userApi.getUserById(userId);
+      if (apiRes.success && apiRes.data && apiRes.data.id) {
+        // Map API response to stats format
+        const userData = apiRes.data;
+        setStats({
+          totalAppointments: userData.totalAppointments || 0,
+          completedAppointments: userData.completedAppointments || 0,
+          cancelledAppointments: userData.cancelledAppointments || 0,
+          totalSpent: userData.totalSpent || 0,
+          loyaltyPoints: userData.loyaltyPoints || 0,
+          reviewsGiven: userData.reviewsGiven || 0,
+          averageRating: userData.averageRating || 0,
+          favoriteServices: userData.favoriteServices || [],
+          memberSince: userData.createdAt || userData.memberSince || new Date().toISOString(),
+        });
+        return;
+      }
+
+      // Fallback to mock service
       const res = await userService.getUserStats(userId);
       if (res.success && res.data) {
         setStats(res.data);
       }
     } catch (error) {
       console.error("Error loading stats:", error);
+      // Fallback to mock service on error
+      try {
+        const res = await userService.getUserStats(userId);
+        if (res.success && res.data) {
+          setStats(res.data);
+        }
+      } catch (fallbackError) {
+        console.error("Error loading mock stats:", fallbackError);
+      }
     }
   }, []);
 

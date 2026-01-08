@@ -8,6 +8,7 @@ import { useState, useCallback, useEffect } from "react";
 import { notificationService, SimpleNotification } from "@/api/notificationService";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/contexts";
+import { notificationApi } from "@/api";
 
 // Guest welcome notification
 const GUEST_NOTIFICATIONS: NotificationItem[] = [
@@ -59,6 +60,27 @@ export default function NotificationsScreen() {
 
   const loadNotifications = useCallback(async (userId: string) => {
     try {
+      // Try real API first
+      const [apiNotifRes, apiCountRes] = await Promise.all([
+        notificationApi.getNotifications(),
+        notificationApi.getUnreadCount(),
+      ]);
+
+      if (apiNotifRes.success && apiNotifRes.data && apiNotifRes.data.length > 0) {
+        // Use API data
+        setNotifications(apiNotifRes.data.map((n: any) => ({
+          id: n.id || n._id,
+          type: n.type as NotificationItem['type'],
+          title: n.title,
+          description: n.message || n.body,
+          time: getTimeAgo(n.createdAt || n.created_at || new Date().toISOString()),
+          read: n.read || n.is_read || false,
+        })));
+        setUnreadCount(apiCountRes.data?.count || 0);
+        return;
+      }
+
+      // Fallback to mock service
       const [notifRes, countRes] = await Promise.all([
         notificationService.getUserNotifications(userId),
         notificationService.getUnreadCount(userId),
@@ -72,6 +94,21 @@ export default function NotificationsScreen() {
       }
     } catch (error) {
       console.error("Error loading notifications:", error);
+      // Fallback to mock service on error
+      try {
+        const [notifRes, countRes] = await Promise.all([
+          notificationService.getUserNotifications(userId),
+          notificationService.getUnreadCount(userId),
+        ]);
+        if (notifRes.success) {
+          setNotifications(notifRes.data.map(convertToNotificationItem));
+        }
+        if (countRes.success) {
+          setUnreadCount(countRes.data);
+        }
+      } catch (fallbackError) {
+        console.error("Error loading mock notifications:", fallbackError);
+      }
     }
   }, []);
 
@@ -98,6 +135,14 @@ export default function NotificationsScreen() {
 
   const handleMarkAllRead = async () => {
     if (!user) return;
+    // Try real API first
+    const apiRes = await notificationApi.markAllAsRead();
+    if (apiRes.success) {
+      setNotifications(notifications.map(n => ({ ...n, read: true })));
+      setUnreadCount(0);
+      return;
+    }
+    // Fallback to mock service
     const res = await notificationService.markAllAsRead(user.id || 'user-1');
     if (res.success) {
       setNotifications(notifications.map(n => ({ ...n, read: true })));

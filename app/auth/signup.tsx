@@ -19,7 +19,7 @@ import { useAuth } from "@/contexts";
 import { authService } from "@/api/authService";
 
 export default function SignupScreen() {
-  const { login } = useAuth();
+  const { login, register } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -56,16 +56,29 @@ export default function SignupScreen() {
     setError(null);
 
     try {
-      const response = await authService.signup({ name, email, password, phone });
-      // Sync with AuthContext
-      await login({
-        id: response.user.id,
-        name: response.user.name,
-        email: response.user.email,
-        phone: response.user.phone,
-        avatar: response.user.avatar,
-      }, response.token);
-      router.replace("/home" as any);
+      // Try real API first
+      const result = await register(name, email, password, phone);
+
+      if (result.success) {
+        router.replace("/home" as any);
+        return;
+      }
+
+      // Fallback to mock service if API fails
+      try {
+        const response = await authService.signup({ name, email, password, phone });
+        await login({
+          id: response.user.id,
+          name: response.user.name,
+          email: response.user.email,
+          phone: response.user.phone,
+          avatar: response.user.avatar,
+        }, response.token);
+        router.replace("/home" as any);
+      } catch (mockErr: any) {
+        // If both fail, show API error message
+        setError(result.message || "Registration failed. Please try again.");
+      }
     } catch (err: any) {
       setError(err.message || "Registration failed. Please try again.");
     } finally {

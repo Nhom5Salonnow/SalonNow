@@ -9,45 +9,163 @@ import { adminService, DashboardStats, AppointmentsByDate, StaffPerformance } fr
 import { appointmentService } from "@/api/appointmentService";
 import { Appointment } from "@/api/mockServer/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { adminApi, bookingApi } from "@/api";
 
 type ReportPeriod = "Daily" | "Weekly" | "Monthly";
 
 const SALON_ID = 'salon-1';
+
+// Local flexible interface for stats
+interface LocalStats {
+  todayRevenue: number;
+  todayAppointments: number;
+  pendingAppointments: number;
+  waitlistCount: number;
+  averageRating: number;
+  totalReviews: number;
+  totalAppointments?: number;
+  completedToday?: number;
+  totalRevenue?: number;
+  activeStaff?: number;
+}
+
+interface LocalRevenueData {
+  date: string;
+  revenue: number;
+  appointments?: number;
+  count?: number;
+}
+
+interface LocalAppointment {
+  id: string;
+  serviceName: string;
+  staffName?: string;
+  date: string;
+  time: string;
+  status: string;
+}
 
 export default function AdminDashboardScreen() {
   const insets = useSafeAreaInsets();
   const [selectedPeriod, setSelectedPeriod] = useState<ReportPeriod>("Weekly");
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [revenueData, setRevenueData] = useState<AppointmentsByDate[]>([]);
-  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [stats, setStats] = useState<LocalStats | null>(null);
+  const [revenueData, setRevenueData] = useState<LocalRevenueData[]>([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState<LocalAppointment[]>([]);
   const [staffPerformance, setStaffPerformance] = useState<StaffPerformance[]>([]);
 
   const periods: ReportPeriod[] = ["Daily", "Weekly", "Monthly"];
 
   const loadData = useCallback(async () => {
     try {
-      const [statsRes, revenueRes, appointmentsRes, staffRes] = await Promise.all([
-        adminService.getDashboardStats(SALON_ID),
-        adminService.getAppointmentsByDate(SALON_ID, 7),
-        appointmentService.getSalonAppointments(SALON_ID),
-        adminService.getStaffPerformance(SALON_ID),
-      ]);
-
-      if (statsRes.success) setStats(statsRes.data);
-      if (revenueRes.success) setRevenueData(revenueRes.data);
-      if (appointmentsRes.success) {
-        // Get upcoming appointments (today and future, pending or confirmed)
-        const today = new Date().toISOString().split('T')[0];
-        const upcoming = appointmentsRes.data
-          .filter(apt => apt.date >= today && ['pending', 'confirmed'].includes(apt.status))
-          .slice(0, 5);
-        setUpcomingAppointments(upcoming);
+      // Try real API first
+      const apiDashboardRes = await adminApi.getDashboardStats();
+      if (apiDashboardRes.success && apiDashboardRes.data && apiDashboardRes.data.totalBookings !== undefined) {
+        // Map API response to app format
+        const apiStats = apiDashboardRes.data;
+        setStats({
+          todayRevenue: apiStats.totalRevenue || 0,
+          todayAppointments: apiStats.totalBookings || 0,
+          pendingAppointments: apiStats.pendingBookings || 0,
+          waitlistCount: 0,
+          averageRating: apiStats.averageRating || 0,
+          totalReviews: apiStats.totalServices || 0,
+        });
+      } else {
+        // Fallback to mock service
+        const statsRes = await adminService.getDashboardStats(SALON_ID);
+        if (statsRes.success) setStats(statsRes.data);
       }
-      if (staffRes.success) setStaffPerformance(staffRes.data.slice(0, 3));
+
+      // Try real API for revenue
+      const apiRevenueRes = await adminApi.getRevenueReport();
+      if (apiRevenueRes.success && apiRevenueRes.data && apiRevenueRes.data.length > 0) {
+        setRevenueData(apiRevenueRes.data.map((item: any) => ({
+          date: item.date,
+          revenue: item.revenue,
+          appointments: item.appointments || 0,
+        })));
+      } else {
+        const revenueRes = await adminService.getAppointmentsByDate(SALON_ID, 7);
+        if (revenueRes.success) setRevenueData(revenueRes.data);
+      }
+
+      // Try real API for appointments
+      const apiBookingsRes = await adminApi.getAllBookings({ status: 'pending' });
+      if (apiBookingsRes.success && apiBookingsRes.data && apiBookingsRes.data.length > 0) {
+        const today = new Date().toISOString().split('T')[0];
+        const upcoming = apiBookingsRes.data
+          .filter((apt: any) => apt.date >= today)
+          .slice(0, 5)
+          .map((apt: any) => ({
+            id: apt.id || apt._id,
+            serviceName: apt.serviceName || apt.service?.name || 'Service',
+            staffName: apt.staffName || apt.stylist?.name,
+            date: apt.date,
+            time: apt.time || apt.startTime,
+            status: apt.status,
+          }));
+        setUpcomingAppointments(upcoming);
+      } else {
+        const appointmentsRes = await appointmentService.getSalonAppointments(SALON_ID);
+        if (appointmentsRes.success) {
+          const today = new Date().toISOString().split('T')[0];
+          const upcoming = appointmentsRes.data
+            .filter(apt => apt.date >= today && ['pending', 'confirmed'].includes(apt.status))
+            .slice(0, 5);
+          setUpcomingAppointments(upcoming);
+        }
+      }
+
+      // Try real API for staff performance
+      const apiStaffRes = await adminApi.getTopStylists(3);
+      if (apiStaffRes.success && apiStaffRes.data && apiStaffRes.data.length > 0) {
+        setStaffPerformance(apiStaffRes.data.map((s: any) => ({
+          staffId: s.stylistId,
+          staffName: s.stylistName,
+          staffAvatar: '',
+          completedAppointments: s.bookingCount,
+          revenue: s.revenue || 0,
+          rating: s.averageRating,
+          reviewCount: 0,
+        })));
+      } else {
+        const staffRes = await adminService.getStaffPerformance(SALON_ID);
+        if (staffRes.success) setStaffPerformance(staffRes.data.slice(0, 3));
+      }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      // Fallback to mock services on error
+      try {
+        const [statsRes, revenueRes, appointmentsRes, staffRes] = await Promise.all([
+          adminService.getDashboardStats(SALON_ID),
+          adminService.getAppointmentsByDate(SALON_ID, 7),
+          appointmentService.getSalonAppointments(SALON_ID),
+          adminService.getStaffPerformance(SALON_ID),
+        ]);
+
+        if (statsRes.success) setStats(statsRes.data as LocalStats);
+        if (revenueRes.success) setRevenueData(revenueRes.data as LocalRevenueData[]);
+        if (appointmentsRes.success) {
+          const today = new Date().toISOString().split('T')[0];
+          const upcoming = appointmentsRes.data
+            .filter(apt => apt.date >= today && ['pending', 'confirmed'].includes(apt.status))
+            .slice(0, 5)
+            .map(apt => ({
+              id: apt.id,
+              serviceName: apt.serviceName,
+              staffName: apt.staffName,
+              date: apt.date,
+              time: apt.time,
+              status: apt.status,
+            }));
+          setUpcomingAppointments(upcoming);
+        }
+        if (staffRes.success) setStaffPerformance(staffRes.data.slice(0, 3));
+      } catch (fallbackError) {
+        console.error('Error loading mock dashboard data:', fallbackError);
+      }
     }
   }, []);
 

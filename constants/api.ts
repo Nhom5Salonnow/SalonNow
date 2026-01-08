@@ -39,6 +39,7 @@ export const API_CONFIG = {
 // Storage Keys
 export const STORAGE_KEYS = {
   AUTH_TOKEN: 'authToken',
+  REFRESH_TOKEN: 'refreshToken',
   USER_DATA: 'userData',
   HAS_COMPLETED_ONBOARDING: 'hasCompletedOnboarding',
   FAVORITES: 'favorites',

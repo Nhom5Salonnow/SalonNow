@@ -9,6 +9,7 @@ import { mockDatabase } from '@/api/mockServer/database';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image, Platform } from 'react-native';
 import { useAuth } from '@/contexts';
+import { bookingApi } from '@/api';
 
 type TabType = 'upcoming' | 'past';
 
@@ -31,18 +32,44 @@ export default function BookingsScreen() {
 
   const userId = user?.id;
 
-  const loadAppointments = useCallback(() => {
+  const loadAppointments = useCallback(async () => {
     try {
       if (isLoggedIn && userId) {
-        const userAppointments = mockDatabase.appointments.filter(
-          (a) => a.userId === userId || a.userId === 'user-1'
-        );
-        setAppointments(userAppointments);
+        // Try to fetch from API first
+        const response = await bookingApi.getMyBookings();
+        if (response.success && response.data && response.data.length > 0) {
+          // Map API response to app format
+          setAppointments(response.data.map((booking: any) => ({
+            id: booking.id || booking._id,
+            userId: booking.userId,
+            serviceName: booking.serviceName || booking.service?.name || 'Service',
+            salonName: booking.salonName || booking.salon?.name || 'Salon Now',
+            date: booking.date,
+            time: booking.time || booking.startTime,
+            status: booking.status || 'pending',
+            staffName: booking.staffName || booking.stylist?.name,
+            price: booking.price || booking.totalAmount,
+            total: booking.total || booking.totalAmount,
+          })));
+        } else {
+          // Fallback to mock data
+          const userAppointments = mockDatabase.appointments.filter(
+            (a) => a.userId === userId || a.userId === 'user-1'
+          );
+          setAppointments(userAppointments);
+        }
       } else {
         setAppointments([]);
       }
     } catch (error) {
       console.error('Error loading appointments:', error);
+      // Fallback to mock data on error
+      if (isLoggedIn && userId) {
+        const userAppointments = mockDatabase.appointments.filter(
+          (a) => a.userId === userId || a.userId === 'user-1'
+        );
+        setAppointments(userAppointments);
+      }
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
