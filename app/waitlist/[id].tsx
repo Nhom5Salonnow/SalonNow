@@ -25,9 +25,22 @@ import {
   AlertCircle,
   MoreVertical,
 } from "lucide-react-native";
-import { waitlistService } from "@/api/waitlistService";
-import { WaitlistEntry } from "@/api/mockServer/types";
 import { useAuth } from "@/contexts";
+import { waitlistApi } from "@/api";
+
+interface WaitlistEntry {
+  id: string;
+  salonName: string;
+  serviceName: string;
+  staffName?: string;
+  preferredDate: string;
+  preferredTimeSlots: string[];
+  position: number;
+  status: 'waiting' | 'slot_available' | 'confirmed' | 'expired' | 'cancelled' | 'notified' | 'booked';
+  availableSlot?: { date: string; time: string; notifiedAt?: string; expiresAt?: string };
+  expiresAt?: string;
+  createdAt: string;
+}
 
 export default function WaitlistDetailScreen() {
   const { user } = useAuth();
@@ -40,12 +53,28 @@ export default function WaitlistDetailScreen() {
     if (!id) return;
 
     try {
-      const response = await waitlistService.getWaitlistEntry(id);
+      const response = await waitlistApi.getWaitlistEntry(id);
       if (response.success && response.data) {
-        setEntry(response.data);
+        const w = response.data;
+        setEntry({
+          id: w.id,
+          salonName: w.salonName || w.salon?.name || 'Salon',
+          serviceName: w.serviceName || w.service?.name || 'Service',
+          staffName: w.staffName || w.staff?.name,
+          preferredDate: w.preferredDate,
+          preferredTimeSlots: w.preferredTimeSlots || [],
+          position: w.position || 1,
+          status: w.status || 'waiting',
+          availableSlot: w.availableSlot,
+          expiresAt: w.expiresAt,
+          createdAt: w.createdAt || new Date().toISOString(),
+        });
+      } else {
+        setEntry(null);
       }
     } catch (error) {
       console.error("Error loading waitlist entry:", error);
+      setEntry(null);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -72,13 +101,13 @@ export default function WaitlistDetailScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              const userId = user?.id || "user-1";
-
-              const response = await waitlistService.cancelWaitlist(id!, userId);
+              const response = await waitlistApi.cancelWaitlist(id!);
               if (response.success) {
                 Alert.alert("Left Waitlist", "You've been removed from the waitlist.", [
                   { text: "OK", onPress: () => router.back() },
                 ]);
+              } else {
+                Alert.alert("Error", response.message || "Failed to leave waitlist");
               }
             } catch (error) {
               console.error("Error cancelling:", error);
@@ -94,10 +123,8 @@ export default function WaitlistDetailScreen() {
     if (!entry?.availableSlot) return;
 
     try {
-      const userId = user?.id || "user-1";
-
-      const response = await waitlistService.confirmSlot(entry.id, userId);
-      if (response.success && response.data.appointmentId) {
+      const response = await waitlistApi.confirmSlot(entry.id);
+      if (response.success) {
         Alert.alert(
           "Slot Confirmed!",
           "Your appointment has been booked. Proceed to payment.",
@@ -120,12 +147,15 @@ export default function WaitlistDetailScreen() {
           text: "Skip",
           onPress: async () => {
             try {
-              const userId = user?.id || "user-1";
-
-              await waitlistService.skipSlot(entry!.id, userId);
-              loadEntry();
+              const response = await waitlistApi.skipSlot(entry!.id);
+              if (response.success) {
+                loadEntry();
+              } else {
+                Alert.alert("Error", response.message || "Failed to skip slot");
+              }
             } catch (error) {
               console.error("Error skipping slot:", error);
+              Alert.alert("Error", "Something went wrong. Please try again.");
             }
           },
         },
@@ -203,7 +233,6 @@ export default function WaitlistDetailScreen() {
     <View className="flex-1 bg-white">
       <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
 
-      {/* Header */}
       <View
         className="flex-row items-center justify-between"
         style={{ paddingTop: hp(6), paddingHorizontal: wp(4), paddingBottom: hp(2) }}
@@ -231,7 +260,6 @@ export default function WaitlistDetailScreen() {
           <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
         }
       >
-        {/* Status Banner */}
         <View
           className="flex-row items-center rounded-xl"
           style={{
@@ -257,7 +285,6 @@ export default function WaitlistDetailScreen() {
           </View>
         </View>
 
-        {/* Position Display (only for waiting status) */}
         {entry.status === "waiting" && (
           <View style={{ marginBottom: hp(3) }}>
             <WaitlistPosition
@@ -268,7 +295,6 @@ export default function WaitlistDetailScreen() {
           </View>
         )}
 
-        {/* Available Slot Card */}
         {entry.status === "slot_available" && entry.availableSlot && (
           <View
             className="rounded-xl"
@@ -296,7 +322,6 @@ export default function WaitlistDetailScreen() {
               {entry.availableSlot.time}
             </Text>
 
-            {/* Timer */}
             <View
               className="rounded-lg items-center"
               style={{ backgroundColor: "#FFFBEB", padding: wp(3), marginTop: hp(2) }}
@@ -309,7 +334,6 @@ export default function WaitlistDetailScreen() {
               </Text>
             </View>
 
-            {/* Action Buttons */}
             <View className="flex-row" style={{ gap: wp(2), marginTop: hp(2) }}>
               <TouchableOpacity
                 onPress={handleConfirmSlot}
@@ -337,7 +361,6 @@ export default function WaitlistDetailScreen() {
           </View>
         )}
 
-        {/* Service Details */}
         <View
           className="rounded-xl"
           style={{
@@ -415,14 +438,13 @@ export default function WaitlistDetailScreen() {
                   marginTop: hp(1),
                 }}
               >
-                ✓ Multiple time slots selected
+                Multiple time slots selected
               </Text>
             )}
           </View>
 
         </View>
 
-        {/* Salon Contact */}
         <View
           className="rounded-xl"
           style={{ backgroundColor: "#F9FAFB", padding: wp(4), marginBottom: hp(3) }}
@@ -453,7 +475,6 @@ export default function WaitlistDetailScreen() {
           </View>
         </View>
 
-        {/* Timeline */}
         <View
           className="rounded-xl"
           style={{ backgroundColor: "#F9FAFB", padding: wp(4) }}
@@ -493,7 +514,7 @@ export default function WaitlistDetailScreen() {
                 Joined Waitlist
               </Text>
               <Text style={{ fontSize: rf(12), color: Colors.gray[500], marginTop: hp(0.3) }}>
-                {new Date(entry.joinedAt).toLocaleString()}
+                {new Date(entry.createdAt).toLocaleString()}
               </Text>
             </View>
           </View>
@@ -523,7 +544,6 @@ export default function WaitlistDetailScreen() {
         </View>
       </ScrollView>
 
-      {/* Bottom Action (for waiting status) */}
       {entry.status === "waiting" && (
         <View
           className="border-t"

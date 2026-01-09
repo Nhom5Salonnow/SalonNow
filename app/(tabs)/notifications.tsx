@@ -1,15 +1,14 @@
-import { Colors, NotificationItem } from "@/constants";
-import { hp, rf, wp } from "@/utils/responsive";
+import { notificationApi } from "@/api";
 import { NotificationCard } from "@/components/ui";
-import { Menu, User, Bell, Check, Trash2 } from "lucide-react-native";
-import { FlatList, Image, Text, TouchableOpacity, View, RefreshControl, Alert } from "react-native";
-import { router } from "expo-router";
-import { useState, useCallback, useEffect } from "react";
-import { notificationService, SimpleNotification } from "@/api/notificationService";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Colors, DEFAULT_AVATAR, NotificationItem } from "@/constants";
 import { useAuth } from "@/contexts";
+import { hp, rf, wp } from "@/utils/responsive";
+import { router } from "expo-router";
+import { Bell, Check, Menu, Trash2, User } from "lucide-react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Alert, FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// Guest welcome notification
 const GUEST_NOTIFICATIONS: NotificationItem[] = [
   {
     id: "welcome",
@@ -20,19 +19,6 @@ const GUEST_NOTIFICATIONS: NotificationItem[] = [
     read: false,
   },
 ];
-
-// Convert SimpleNotification to NotificationItem for UI
-const convertToNotificationItem = (n: SimpleNotification): NotificationItem => {
-  const timeAgo = getTimeAgo(n.createdAt);
-  return {
-    id: n.id,
-    type: n.type as NotificationItem['type'],
-    title: n.title,
-    description: n.message,
-    time: timeAgo,
-    read: n.read,
-  };
-};
 
 const getTimeAgo = (dateStr: string): string => {
   const date = new Date(dateStr);
@@ -57,21 +43,31 @@ export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const loadNotifications = useCallback(async (userId: string) => {
+  const loadNotifications = useCallback(async (_userId: string) => {
     try {
-      const [notifRes, countRes] = await Promise.all([
-        notificationService.getUserNotifications(userId),
-        notificationService.getUnreadCount(userId),
+      const [apiNotifRes, apiCountRes] = await Promise.all([
+        notificationApi.getNotifications(),
+        notificationApi.getUnreadCount(),
       ]);
 
-      if (notifRes.success) {
-        setNotifications(notifRes.data.map(convertToNotificationItem));
-      }
-      if (countRes.success) {
-        setUnreadCount(countRes.data);
+      if (apiNotifRes.success && apiNotifRes.data) {
+        setNotifications(apiNotifRes.data.map((n: any) => ({
+          id: n.id || n._id,
+          type: n.type as NotificationItem['type'],
+          title: n.title,
+          description: n.message || n.body,
+          time: getTimeAgo(n.createdAt || n.created_at || new Date().toISOString()),
+          read: n.read || n.is_read || false,
+        })));
+        setUnreadCount(apiCountRes.data?.count || 0);
+      } else {
+        setNotifications([]);
+        setUnreadCount(0);
       }
     } catch (error) {
       console.error("Error loading notifications:", error);
+      setNotifications([]);
+      setUnreadCount(0);
     }
   }, []);
 
@@ -98,10 +94,12 @@ export default function NotificationsScreen() {
 
   const handleMarkAllRead = async () => {
     if (!user) return;
-    const res = await notificationService.markAllAsRead(user.id || 'user-1');
-    if (res.success) {
+    const apiRes = await notificationApi.markAllAsRead();
+    if (apiRes.success) {
       setNotifications(notifications.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
+    } else {
+      Alert.alert('Error', apiRes.message || 'Failed to mark notifications as read');
     }
   };
 
@@ -116,10 +114,12 @@ export default function NotificationsScreen() {
           text: "Clear All",
           style: "destructive",
           onPress: async () => {
-            const res = await notificationService.deleteAllNotifications(user.id || 'user-1');
+            const res = await notificationApi.deleteAllNotifications();
             if (res.success) {
               setNotifications([]);
               setUnreadCount(0);
+            } else {
+              Alert.alert('Error', res.message || 'Failed to clear notifications');
             }
           },
         },
@@ -131,7 +131,6 @@ export default function NotificationsScreen() {
   const displayNotifications = isGuest ? GUEST_NOTIFICATIONS : notifications;
 
   const handleNotificationPress = (item: NotificationItem) => {
-    // Navigate based on notification type
     switch (item.type) {
       case "appointment_confirm":
       case "appointment_update":
@@ -147,7 +146,6 @@ export default function NotificationsScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Decorative pink circle */}
       <View
         className="absolute rounded-full"
         style={{
@@ -160,7 +158,6 @@ export default function NotificationsScreen() {
         }}
       />
 
-      {/* Header */}
       <View
         className="flex-row items-center justify-between"
         style={{
@@ -169,7 +166,6 @@ export default function NotificationsScreen() {
           paddingBottom: hp(1),
         }}
       >
-        {/* Left: Menu + Title */}
         <View className="flex-row items-center">
           <TouchableOpacity
             onPress={() => router.push("/settings" as any)}
@@ -193,7 +189,6 @@ export default function NotificationsScreen() {
           </Text>
         </View>
 
-        {/* Profile Avatar */}
         <TouchableOpacity
           onPress={() => router.push(isGuest ? "/auth/login" : "/profile" as any)}
           className="rounded-full overflow-hidden items-center justify-center"
@@ -209,7 +204,7 @@ export default function NotificationsScreen() {
             <User size={rf(18)} color={Colors.gray[500]} />
           ) : (
             <Image
-              source={{ uri: user?.avatar }}
+              source={{ uri: user?.avatar || DEFAULT_AVATAR }}
               className="w-full h-full"
               resizeMode="cover"
             />
@@ -217,7 +212,6 @@ export default function NotificationsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Action Bar - only show when logged in and has notifications */}
       {!isGuest && displayNotifications.length > 0 && (
         <View
           className="flex-row items-center justify-end"
@@ -240,7 +234,6 @@ export default function NotificationsScreen() {
         </View>
       )}
 
-      {/* Notification List */}
       <FlatList
         data={displayNotifications}
         renderItem={({ item }) => (
@@ -265,7 +258,7 @@ export default function NotificationsScreen() {
                 No Notifications
               </Text>
               <Text style={{ fontSize: rf(14), color: Colors.gray[500], marginTop: hp(1), textAlign: 'center' }}>
-                You're all caught up! We'll notify you when something important happens.
+                You are all caught up! We will notify you when something important happens.
               </Text>
             </View>
           ) : null

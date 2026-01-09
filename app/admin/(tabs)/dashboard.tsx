@@ -5,49 +5,145 @@ import { wp, hp, rf } from "@/utils/responsive";
 import { Colors } from "@/constants";
 import { DecorativeCircle } from "@/components";
 import { TrendingUp, TrendingDown, Calendar, DollarSign, Users, Star, Clock, ChevronRight, AlertCircle } from "lucide-react-native";
-import { adminService, DashboardStats, AppointmentsByDate, StaffPerformance } from "@/api/adminService";
-import { appointmentService } from "@/api/appointmentService";
-import { Appointment } from "@/api/mockServer/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { adminApi } from "@/api";
+
+interface StaffPerformance {
+  staffId: string;
+  staffName: string;
+  staffAvatar?: string;
+  completedAppointments: number;
+  revenue: number;
+  rating: number;
+  reviewCount: number;
+}
 
 type ReportPeriod = "Daily" | "Weekly" | "Monthly";
 
 const SALON_ID = 'salon-1';
+
+interface LocalStats {
+  todayRevenue: number;
+  todayAppointments: number;
+  pendingAppointments: number;
+  waitlistCount: number;
+  averageRating: number;
+  totalReviews: number;
+  totalAppointments?: number;
+  completedToday?: number;
+  totalRevenue?: number;
+  activeStaff?: number;
+}
+
+interface LocalRevenueData {
+  date: string;
+  revenue: number;
+  appointments?: number;
+  count?: number;
+}
+
+interface LocalAppointment {
+  id: string;
+  serviceName: string;
+  staffName?: string;
+  date: string;
+  time: string;
+  status: string;
+}
 
 export default function AdminDashboardScreen() {
   const insets = useSafeAreaInsets();
   const [selectedPeriod, setSelectedPeriod] = useState<ReportPeriod>("Weekly");
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [revenueData, setRevenueData] = useState<AppointmentsByDate[]>([]);
-  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [stats, setStats] = useState<LocalStats | null>(null);
+  const [revenueData, setRevenueData] = useState<LocalRevenueData[]>([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState<LocalAppointment[]>([]);
   const [staffPerformance, setStaffPerformance] = useState<StaffPerformance[]>([]);
 
   const periods: ReportPeriod[] = ["Daily", "Weekly", "Monthly"];
 
   const loadData = useCallback(async () => {
     try {
-      const [statsRes, revenueRes, appointmentsRes, staffRes] = await Promise.all([
-        adminService.getDashboardStats(SALON_ID),
-        adminService.getAppointmentsByDate(SALON_ID, 7),
-        appointmentService.getSalonAppointments(SALON_ID),
-        adminService.getStaffPerformance(SALON_ID),
-      ]);
-
-      if (statsRes.success) setStats(statsRes.data);
-      if (revenueRes.success) setRevenueData(revenueRes.data);
-      if (appointmentsRes.success) {
-        // Get upcoming appointments (today and future, pending or confirmed)
-        const today = new Date().toISOString().split('T')[0];
-        const upcoming = appointmentsRes.data
-          .filter(apt => apt.date >= today && ['pending', 'confirmed'].includes(apt.status))
-          .slice(0, 5);
-        setUpcomingAppointments(upcoming);
+      const apiDashboardRes = await adminApi.getDashboardStats();
+      if (apiDashboardRes.success && apiDashboardRes.data) {
+        const apiStats = apiDashboardRes.data;
+        setStats({
+          todayRevenue: apiStats.totalRevenue || 0,
+          todayAppointments: apiStats.totalBookings || 0,
+          pendingAppointments: apiStats.pendingBookings || 0,
+          waitlistCount: 0,
+          averageRating: apiStats.averageRating || 0,
+          totalReviews: apiStats.totalServices || 0,
+        });
+      } else {
+        setStats({
+          todayRevenue: 0,
+          todayAppointments: 0,
+          pendingAppointments: 0,
+          waitlistCount: 0,
+          averageRating: 0,
+          totalReviews: 0,
+        });
       }
-      if (staffRes.success) setStaffPerformance(staffRes.data.slice(0, 3));
+
+      const apiRevenueRes = await adminApi.getRevenueReport();
+      if (apiRevenueRes.success && apiRevenueRes.data) {
+        setRevenueData(apiRevenueRes.data.map((item: any) => ({
+          date: item.date,
+          revenue: item.revenue,
+          appointments: item.appointments || 0,
+        })));
+      } else {
+        setRevenueData([]);
+      }
+
+      const apiBookingsRes = await adminApi.getAllBookings({ status: 'pending' });
+      if (apiBookingsRes.success && apiBookingsRes.data) {
+        const today = new Date().toISOString().split('T')[0];
+        const upcoming = apiBookingsRes.data
+          .filter((apt: any) => apt.date >= today)
+          .slice(0, 5)
+          .map((apt: any) => ({
+            id: apt.id || apt._id,
+            serviceName: apt.serviceName || apt.service?.name || 'Service',
+            staffName: apt.staffName || apt.stylist?.name,
+            date: apt.date,
+            time: apt.time || apt.startTime,
+            status: apt.status,
+          }));
+        setUpcomingAppointments(upcoming);
+      } else {
+        setUpcomingAppointments([]);
+      }
+
+      const apiStaffRes = await adminApi.getTopStylists(3);
+      if (apiStaffRes.success && apiStaffRes.data) {
+        setStaffPerformance(apiStaffRes.data.map((s: any) => ({
+          staffId: s.stylistId,
+          staffName: s.stylistName,
+          staffAvatar: '',
+          completedAppointments: s.bookingCount,
+          revenue: s.revenue || 0,
+          rating: s.averageRating,
+          reviewCount: 0,
+        })));
+      } else {
+        setStaffPerformance([]);
+      }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      setStats({
+        todayRevenue: 0,
+        todayAppointments: 0,
+        pendingAppointments: 0,
+        waitlistCount: 0,
+        averageRating: 0,
+        totalReviews: 0,
+      });
+      setRevenueData([]);
+      setUpcomingAppointments([]);
+      setStaffPerformance([]);
     }
   }, []);
 
@@ -127,7 +223,6 @@ export default function AdminDashboardScreen() {
           <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
         }
       >
-        {/* Header */}
         <View style={{ paddingTop: insets.top + hp(1), paddingHorizontal: wp(6) }}>
           <Text style={{ fontSize: rf(14), color: Colors.gray[500] }}>
             Welcome back,
@@ -137,7 +232,6 @@ export default function AdminDashboardScreen() {
           </Text>
         </View>
 
-        {/* Overview Cards */}
         <View style={{ paddingHorizontal: wp(4), marginTop: hp(3) }}>
           <ScrollView
             horizontal
@@ -205,9 +299,7 @@ export default function AdminDashboardScreen() {
           </ScrollView>
         </View>
 
-        {/* Quick Actions */}
         <View className="flex-row" style={{ paddingHorizontal: wp(6), marginTop: hp(3), gap: wp(3) }}>
-          {/* Waitlist Management */}
           <TouchableOpacity
             onPress={() => router.push("/admin/waitlist" as any)}
             className="flex-1 rounded-xl"
@@ -230,7 +322,6 @@ export default function AdminDashboardScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Pending Appointments */}
           <TouchableOpacity
             onPress={() => router.push("/admin/appointments" as any)}
             className="flex-1 rounded-xl"
@@ -254,7 +345,6 @@ export default function AdminDashboardScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Upcoming Appointments */}
         <View style={{ paddingHorizontal: wp(6), marginTop: hp(3) }}>
           <View className="flex-row items-center justify-between">
             <Text style={{ fontSize: rf(18), fontWeight: "600", color: "#000" }}>
@@ -314,7 +404,6 @@ export default function AdminDashboardScreen() {
           </View>
         </View>
 
-        {/* Staff Performance */}
         {staffPerformance.length > 0 && (
           <View style={{ paddingHorizontal: wp(6), marginTop: hp(3) }}>
             <Text style={{ fontSize: rf(18), fontWeight: "600", color: "#000" }}>
@@ -371,13 +460,11 @@ export default function AdminDashboardScreen() {
           </View>
         )}
 
-        {/* Revenue Chart */}
         <View style={{ paddingHorizontal: wp(6), marginTop: hp(3) }}>
           <Text style={{ fontSize: rf(18), fontWeight: "600", color: "#000" }}>
             Revenue Overview
           </Text>
 
-          {/* Period Tabs */}
           <View
             className="flex-row rounded-full"
             style={{
@@ -410,7 +497,6 @@ export default function AdminDashboardScreen() {
             ))}
           </View>
 
-          {/* Total Revenue */}
           <View
             className="rounded-xl items-center"
             style={{ backgroundColor: Colors.salon.pinkBg, padding: wp(4), marginTop: hp(2) }}
@@ -421,7 +507,6 @@ export default function AdminDashboardScreen() {
             </Text>
           </View>
 
-          {/* Bar Chart */}
           <View
             className="flex-row items-end justify-between"
             style={{ marginTop: hp(3), height: hp(15) }}

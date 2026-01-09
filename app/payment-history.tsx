@@ -6,8 +6,18 @@ import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { AuthGuard } from '@/components';
 import { useAuth } from '@/contexts';
-import { paymentService } from '@/api/paymentService';
-import { Payment } from '@/api/mockServer/types';
+import { paymentApi } from '@/api';
+
+interface Payment {
+  id: string;
+  receiptNumber?: string;
+  status: string;
+  total: number;
+  subtotal: number;
+  tax: number;
+  discount: number;
+  createdAt: string;
+}
 
 function PaymentHistoryContent() {
   const { user } = useAuth();
@@ -19,14 +29,27 @@ function PaymentHistoryContent() {
 
   const loadPayments = useCallback(async () => {
     try {
-      const res = await paymentService.getPaymentHistory(userId);
+      const res = await paymentApi.getMyPayments();
       if (res.success && res.data) {
-        setPayments(res.data);
+        const mapped = res.data.map((p: any) => ({
+          id: p.id,
+          receiptNumber: p.transactionId || p.receiptNumber || `#${p.id.slice(-6)}`,
+          status: p.status || 'completed',
+          total: p.amount || p.total || 0,
+          subtotal: p.subtotal || p.amount || 0,
+          tax: p.tax || 0,
+          discount: p.discount || 0,
+          createdAt: p.createdAt || new Date().toISOString(),
+        }));
+        setPayments(mapped);
+      } else {
+        setPayments([]);
       }
     } catch (error) {
       console.error('Error loading payments:', error);
+      setPayments([]);
     }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     const init = async () => {
@@ -142,7 +165,6 @@ function PaymentHistoryContent() {
           </View>
         </View>
 
-        {/* Details Row */}
         <View
           className="flex-row items-center justify-between pt-3 mt-3"
           style={{ borderTopWidth: 1, borderTopColor: Colors.gray[100] }}
@@ -182,7 +204,6 @@ function PaymentHistoryContent() {
 
   return (
     <View className="flex-1 bg-gray-50">
-      {/* Header */}
       <View className="bg-white" style={{ paddingTop: hp(6), paddingBottom: hp(2), paddingHorizontal: wp(5) }}>
         <View className="flex-row items-center" style={{ gap: wp(3) }}>
           <TouchableOpacity
@@ -195,7 +216,6 @@ function PaymentHistoryContent() {
           <Text style={{ fontSize: rf(20), fontWeight: '600', color: '#000' }}>Payment History</Text>
         </View>
 
-        {/* Summary */}
         {payments.length > 0 && (
           <View
             className="flex-row items-center justify-between rounded-2xl p-4"
@@ -217,7 +237,6 @@ function PaymentHistoryContent() {
         )}
       </View>
 
-      {/* Payment List */}
       <FlatList
         data={payments}
         renderItem={renderPayment}

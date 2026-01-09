@@ -2,7 +2,6 @@ import { ApiResponse } from './mockServer/types';
 import { mockDatabase } from './mockServer/database';
 import { withDelay } from './mockServer/delay';
 
-// Simplified slot for UI
 export interface AvailableSlot {
   time: string;
   displayTime: string;
@@ -30,14 +29,11 @@ export interface DateAvailability {
 
 class AvailabilityService {
   private workingHours = {
-    start: 9, // 9 AM
-    end: 19,  // 7 PM
-    slotDuration: 60, // 60 minutes per slot
+    start: 9,
+    end: 19,
+    slotDuration: 60,
   };
 
-  /**
-   * Get available dates for next N days
-   */
   async getAvailableDates(
     salonId: string,
     serviceId: string,
@@ -55,12 +51,10 @@ class AvailabilityService {
         const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
         const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 
-        // Check salon opening hours
         const salon = mockDatabase.salons.find((s) => s.id === salonId);
         const hours = salon?.openingHours?.[dayOfWeek];
         const isOpen = hours && !hours.closed;
 
-        // Count booked appointments for this date
         const bookedCount = mockDatabase.appointments.filter(
           (a: any) =>
             a.salonId === salonId &&
@@ -68,8 +62,7 @@ class AvailabilityService {
             ['pending', 'confirmed'].includes(a.status)
         ).length;
 
-        // Calculate total slots (simplified)
-        const totalSlots = isOpen ? 10 : 0; // 10 slots per day when open
+        const totalSlots = isOpen ? 10 : 0;
         const availableCount = Math.max(0, totalSlots - bookedCount);
 
         result.push({
@@ -88,9 +81,6 @@ class AvailabilityService {
     }, 100, 200);
   }
 
-  /**
-   * Get available time slots for a specific date
-   */
   async getAvailableSlots(
     salonId: string,
     serviceId: string,
@@ -100,12 +90,10 @@ class AvailabilityService {
     return withDelay(() => {
       const slots: AvailableSlot[] = [];
 
-      // Generate all possible time slots
       for (let hour = this.workingHours.start; hour < this.workingHours.end; hour++) {
         const time24 = `${hour.toString().padStart(2, '0')}:00`;
         const displayTime = this.formatTime(hour);
 
-        // Check if this slot is booked
         const isBooked = mockDatabase.appointments.some(
           (a: any) =>
             a.salonId === salonId &&
@@ -115,7 +103,6 @@ class AvailabilityService {
             (!staffId || a.staffId === staffId)
         );
 
-        // Check if it's a break time (12-1 PM)
         const isBreak = hour === 12;
 
         slots.push({
@@ -133,16 +120,12 @@ class AvailabilityService {
     }, 100, 200);
   }
 
-  /**
-   * Get staff availability for a date
-   */
   async getStaffAvailability(
     salonId: string,
     date: string,
     serviceId?: string
   ): Promise<ApiResponse<StaffAvailability[]>> {
     return withDelay(() => {
-      // Get staff for this salon
       const salonStaff = mockDatabase.staff.filter(
         (s) => s.salonId === salonId && s.isActive
       );
@@ -155,7 +138,6 @@ class AvailabilityService {
           const displayTime = this.formatTime(hour);
           const isBreak = hour === 12;
 
-          // Check if booked
           const isBooked = mockDatabase.appointments.some(
             (a: any) =>
               a.staffId === staff.id &&
@@ -195,9 +177,6 @@ class AvailabilityService {
     });
   }
 
-  /**
-   * Check if a specific slot is available
-   */
   async checkSlotAvailability(
     salonId: string,
     date: string,
@@ -205,7 +184,6 @@ class AvailabilityService {
     staffId?: string
   ): Promise<ApiResponse<{ available: boolean; reason?: string }>> {
     return withDelay(() => {
-      // Check if date is in the past
       const slotDate = new Date(date + ' ' + time);
       if (slotDate < new Date()) {
         return {
@@ -217,7 +195,6 @@ class AvailabilityService {
         };
       }
 
-      // Check if already booked
       const isBooked = mockDatabase.appointments.some(
         (a: any) =>
           a.salonId === salonId &&
@@ -246,9 +223,6 @@ class AvailabilityService {
     }, 50, 100);
   }
 
-  /**
-   * Get next available slot
-   */
   async getNextAvailableSlot(
     salonId: string,
     serviceId: string,
@@ -257,19 +231,16 @@ class AvailabilityService {
     return withDelay(() => {
       const today = new Date();
 
-      // Check next 7 days
       for (let i = 0; i < 7; i++) {
         const date = new Date(today);
         date.setDate(today.getDate() + i);
         const dateStr = date.toISOString().split('T')[0];
 
-        // Check each time slot
         for (let hour = this.workingHours.start; hour < this.workingHours.end; hour++) {
-          if (hour === 12) continue; // Skip lunch
+          if (hour === 12) continue;
 
           const displayTime = this.formatTime(hour);
 
-          // For today, skip past hours
           if (i === 0 && hour <= today.getHours()) continue;
 
           const isBooked = mockDatabase.appointments.some(
@@ -282,7 +253,6 @@ class AvailabilityService {
           );
 
           if (!isBooked) {
-            // Find available staff
             const availableStaff = staffId
               ? mockDatabase.staff.find((s) => s.id === staffId)
               : mockDatabase.staff.find(
@@ -318,9 +288,6 @@ class AvailabilityService {
     });
   }
 
-  /**
-   * Get availability summary for a service
-   */
   async getAvailabilitySummary(
     salonId: string,
     serviceId: string
@@ -348,7 +315,7 @@ class AvailabilityService {
           ['pending', 'confirmed'].includes(a.status)
       ).length;
 
-      const totalSlots = 10; // Simplified
+      const totalSlots = 10;
 
       return {
         success: true,
@@ -362,7 +329,6 @@ class AvailabilityService {
     }, 100, 200);
   }
 
-  // Helper to format time
   private formatTime(hour: number): string {
     const period = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour > 12 ? hour - 12 : hour;

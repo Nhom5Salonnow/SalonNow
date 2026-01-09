@@ -4,10 +4,15 @@ import EditCategoryScreen from '@/app/admin/edit-category';
 
 // Mock expo-router
 const mockBack = jest.fn();
+const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   router: {
     back: () => mockBack(),
+    push: (path: string) => mockPush(path),
   },
+  useLocalSearchParams: () => ({
+    id: 'facial-neck',
+  }),
 }));
 
 // Mock responsive utilities
@@ -23,8 +28,49 @@ jest.mock('@/constants', () => ({
     primary: '#FE697D',
     salon: {
       pinkLight: '#FFCCD3',
+      pinkBg: '#FFF5F5',
       dark: '#1F2937',
     },
+    gray: {
+      100: '#F3F4F6',
+      200: '#E5E7EB',
+      300: '#D1D5DB',
+      400: '#9CA3AF',
+      500: '#6B7280',
+      600: '#4B5563',
+    },
+  },
+  SERVICES_MENU: [
+    { id: '1', name: 'Face Massage', image: 'https://example.com/face.jpg', rating: 4.5, price: 45, reviews: 30 },
+    { id: '2', name: 'Facial', image: 'https://example.com/facial.jpg', rating: 4.8, price: 60, reviews: 50 },
+    { id: '3', name: 'Neck Massage', image: 'https://example.com/neck.jpg', rating: 4.3, price: 35, reviews: 20 },
+  ],
+  CATEGORY_INFO: {
+    'facial-neck': {
+      name: 'Facial & Neck Care',
+      quote: '"Nourish Your Skin\nRenew Your Soul"',
+      image: 'https://example.com/facial.jpg',
+    },
+  },
+}));
+
+// Mock API modules
+jest.mock('@/api', () => ({
+  serviceApi: {
+    getServices: jest.fn().mockResolvedValue({
+      success: true,
+      data: [],
+    }),
+  },
+  categoryApi: {
+    getCategoryById: jest.fn().mockResolvedValue({
+      success: true,
+      data: {
+        id: 'facial-neck',
+        name: 'Facial & Neck Care',
+        quote: '"Nourish Your Skin\nRenew Your Soul"',
+      },
+    }),
   },
 }));
 
@@ -80,16 +126,19 @@ describe('EditCategoryScreen', () => {
     });
 
     it('should render service prices', () => {
-      const { getAllByText } = render(<EditCategoryScreen />);
-      // All services have €50 price
-      expect(getAllByText('€50').length).toBe(3);
+      const { getByText } = render(<EditCategoryScreen />);
+      // Services have different prices from mock: 45, 60, 35
+      expect(getByText('€45')).toBeTruthy();
+      expect(getByText('€60')).toBeTruthy();
+      expect(getByText('€35')).toBeTruthy();
     });
 
     it('should render service ratings', () => {
-      const { getAllByText } = render(<EditCategoryScreen />);
-      // Ratings are 3, 2, 3
-      expect(getAllByText('3').length).toBe(2);
-      expect(getAllByText('2').length).toBe(1);
+      const { getByText } = render(<EditCategoryScreen />);
+      // Ratings from mock: 4.5, 4.8, 4.3
+      expect(getByText('4.5')).toBeTruthy();
+      expect(getByText('4.8')).toBeTruthy();
+      expect(getByText('4.3')).toBeTruthy();
     });
 
     it('should render "per 1" labels', () => {
@@ -187,7 +236,7 @@ describe('EditCategoryScreen', () => {
 
       // Check Face Massage service
       expect(getByText('Face Massage')).toBeTruthy();
-      expect(getAllByText('€50').length).toBeGreaterThan(0);
+      expect(getByText('€45')).toBeTruthy();
       expect(getAllByText('per 1').length).toBeGreaterThan(0);
     });
   });

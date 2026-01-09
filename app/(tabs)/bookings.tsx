@@ -3,12 +3,12 @@ import { View, Text, TouchableOpacity, ScrollView, RefreshControl } from 'react-
 import { router } from 'expo-router';
 import { Menu, Calendar, Clock, User, LogIn } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
-import { Colors } from '@/constants';
+import { Colors, DEFAULT_AVATAR } from '@/constants';
 import { DecorativeCircle } from '@/components';
-import { mockDatabase } from '@/api/mockServer/database';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image, Platform } from 'react-native';
 import { useAuth } from '@/contexts';
+import { bookingApi } from '@/api';
 
 type TabType = 'upcoming' | 'past';
 
@@ -31,18 +31,32 @@ export default function BookingsScreen() {
 
   const userId = user?.id;
 
-  const loadAppointments = useCallback(() => {
+  const loadAppointments = useCallback(async () => {
     try {
       if (isLoggedIn && userId) {
-        const userAppointments = mockDatabase.appointments.filter(
-          (a) => a.userId === userId || a.userId === 'user-1'
-        );
-        setAppointments(userAppointments);
+        const response = await bookingApi.getMyBookings();
+        if (response.success && response.data && response.data.length > 0) {
+          setAppointments(response.data.map((booking: any) => ({
+            id: booking.id || booking._id,
+            userId: booking.userId,
+            serviceName: booking.serviceName || booking.service?.name || 'Service',
+            salonName: booking.salonName || booking.salon?.name || 'Salon Now',
+            date: booking.date,
+            time: booking.time || booking.startTime,
+            status: booking.status || 'pending',
+            staffName: booking.staffName || booking.stylist?.name,
+            price: booking.price || booking.totalAmount,
+            total: booking.total || booking.totalAmount,
+          })));
+        } else {
+          setAppointments([]);
+        }
       } else {
         setAppointments([]);
       }
     } catch (error) {
       console.error('Error loading appointments:', error);
+      setAppointments([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -100,7 +114,6 @@ export default function BookingsScreen() {
           }),
         }}
       >
-        {/* Header */}
         <View className="flex-row items-start justify-between">
           <View className="flex-1">
             <Text style={{ fontSize: rf(17), fontWeight: '600', color: '#000' }}>
@@ -111,7 +124,6 @@ export default function BookingsScreen() {
             </Text>
           </View>
 
-          {/* Status Badge */}
           <View
             className="rounded-full"
             style={{
@@ -126,7 +138,6 @@ export default function BookingsScreen() {
           </View>
         </View>
 
-        {/* Date & Time */}
         <View className="flex-row items-center" style={{ marginTop: hp(1.5) }}>
           <View className="flex-row items-center" style={{ marginRight: wp(4) }}>
             <Calendar size={rf(14)} color={Colors.gray[400]} />
@@ -142,7 +153,6 @@ export default function BookingsScreen() {
           </View>
         </View>
 
-        {/* Staff */}
         {appointment.staffName && (
           <View className="flex-row items-center" style={{ marginTop: hp(1) }}>
             <User size={rf(14)} color={Colors.gray[400]} />
@@ -152,7 +162,6 @@ export default function BookingsScreen() {
           </View>
         )}
 
-        {/* Price & Action */}
         <View
           className="flex-row items-center justify-between"
           style={{
@@ -251,7 +260,6 @@ export default function BookingsScreen() {
     <View className="flex-1 bg-white">
       <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
 
-      {/* Header */}
       <View
         className="flex-row items-center justify-between"
         style={{
@@ -260,7 +268,6 @@ export default function BookingsScreen() {
           paddingBottom: hp(1),
         }}
       >
-        {/* Left: Menu + Title */}
         <View className="flex-row items-center">
           <TouchableOpacity
             onPress={() => router.push("/settings" as any)}
@@ -281,7 +288,6 @@ export default function BookingsScreen() {
           </Text>
         </View>
 
-        {/* Profile Avatar */}
         <TouchableOpacity
           onPress={() => router.push(isLoggedIn ? "/profile" : "/auth/login" as any)}
           className="rounded-full overflow-hidden items-center justify-center"
@@ -295,7 +301,7 @@ export default function BookingsScreen() {
         >
           {isLoggedIn ? (
             <Image
-              source={{ uri: user?.avatar || 'https://api.builder.io/api/v1/image/assets/TEMP/bf83f7d9f51b91c7f1126d620657aa5f1b9a54bf?width=114' }}
+              source={{ uri: user?.avatar || DEFAULT_AVATAR }}
               className="w-full h-full"
               resizeMode="cover"
             />
@@ -305,7 +311,6 @@ export default function BookingsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Tabs - show for both guest and logged in */}
       <View
         className="flex-row rounded-full"
         style={{
@@ -361,7 +366,6 @@ export default function BookingsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Content Area */}
       {isLoggedIn ? (
         <ScrollView
           className="flex-1 px-5"

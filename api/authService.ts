@@ -2,14 +2,11 @@ import { STORAGE_KEYS, MOCK_USERS } from '@/constants';
 import { LoginInput, SignupInput, AuthResponse, User } from '@/types';
 import { storeData, removeData, getData } from '@/utils/asyncStorage';
 
-// Simulate network delay
 const simulateDelay = (ms: number = 500) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Generate mock token
 const generateToken = () => `mock_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
 export const authService = {
-  // Mock Login - validates against MOCK_USERS
   async login(input: LoginInput): Promise<AuthResponse> {
     await simulateDelay();
 
@@ -32,18 +29,15 @@ export const authService = {
       updatedAt: new Date().toISOString(),
     };
 
-    // Store auth token and user data
     await storeData(STORAGE_KEYS.AUTH_TOKEN, token);
     await storeData(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
 
     return { user: userData, token };
   },
 
-  // Mock Signup - creates new user (stored locally)
   async signup(input: SignupInput): Promise<AuthResponse> {
     await simulateDelay();
 
-    // Check if email already exists
     const existingUser = MOCK_USERS.find(
       u => u.email.toLowerCase() === input.email.toLowerCase()
     );
@@ -63,29 +57,24 @@ export const authService = {
       updatedAt: new Date().toISOString(),
     };
 
-    // Store auth token and user data
     await storeData(STORAGE_KEYS.AUTH_TOKEN, token);
     await storeData(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
 
     return { user: userData, token };
   },
 
-  // Logout
   async logout(): Promise<void> {
     await simulateDelay(300);
 
-    // Clear stored data
     await removeData(STORAGE_KEYS.AUTH_TOKEN);
     await removeData(STORAGE_KEYS.USER_DATA);
   },
 
-  // Check if user is authenticated
   async isAuthenticated(): Promise<boolean> {
     const token = await getData(STORAGE_KEYS.AUTH_TOKEN);
     return !!token;
   },
 
-  // Get current user data
   async getCurrentUser(): Promise<User | null> {
     const userData = await getData(STORAGE_KEYS.USER_DATA);
     if (userData) {

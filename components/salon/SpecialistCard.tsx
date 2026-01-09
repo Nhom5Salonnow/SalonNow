@@ -31,7 +31,6 @@ export const SpecialistCard: React.FC<SpecialistCardProps> = ({
         {name}
       </Text>
 
-      {/* Rating */}
       {rating > 0 && (
         <View className="flex-row gap-1 mt-1">
           {[...Array(3)].map((_, i) => (
@@ -45,7 +44,6 @@ export const SpecialistCard: React.FC<SpecialistCardProps> = ({
         </View>
       )}
 
-      {/* Phone */}
       <View className="flex-row items-center gap-1 mt-2">
         <Phone size={10} color="#2A2E3B" />
         <Text className="text-[12px] text-salon-dark">{phone}</Text>

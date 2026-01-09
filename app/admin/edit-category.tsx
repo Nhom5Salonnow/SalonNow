@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft, Search, Pencil, Plus, Star } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
-import { Colors } from '@/constants';
+import { Colors, SERVICES_MENU, CATEGORY_INFO } from '@/constants';
 import { DecorativeCircle, AdminBottomNav } from '@/components';
+import { serviceApi, categoryApi } from '@/api';
 
 interface ServiceItem {
   id: string;
@@ -13,41 +15,64 @@ interface ServiceItem {
   price: number;
 }
 
-const SERVICES: ServiceItem[] = [
-  {
-    id: '1',
-    name: 'Face Massage',
-    image: 'https://api.builder.io/api/v1/image/assets/TEMP/4ab931700dd594de82119a13ddc008773676e5ab?width=240',
-    rating: 3,
-    price: 50,
-  },
-  {
-    id: '2',
-    name: 'Facial',
-    image: 'https://api.builder.io/api/v1/image/assets/TEMP/ab5fe51fab4ac2627711fedc485bf50f9f29dc9d?width=240',
-    rating: 2,
-    price: 50,
-  },
-  {
-    id: '3',
-    name: 'Neck Massage',
-    image: 'https://api.builder.io/api/v1/image/assets/TEMP/c13a64eddbdb7480b9b4c7efde1b809bfdd47ab0?width=240',
-    rating: 3,
-    price: 50,
-  },
-];
+const HARDCODED_SERVICES: ServiceItem[] = SERVICES_MENU.map(s => ({
+  id: s.id,
+  name: s.name,
+  image: s.image,
+  rating: s.rating,
+  price: s.price,
+}));
+
+const mergeServices = (apiData: ServiceItem[], hardcodedData: ServiceItem[]): ServiceItem[] => {
+  const merged = new Map<string, ServiceItem>();
+  hardcodedData.forEach(item => merged.set(item.id, item));
+  apiData.forEach(item => merged.set(item.id, item));
+  return Array.from(merged.values());
+};
 
 export default function EditCategoryScreen() {
-  const categoryName = 'Facial & Neck Care';
-  const categoryQuote = '"Nourish Your Skin\nRenew Your Soul"';
+  const params = useLocalSearchParams<{ id?: string }>();
+
+  const hardcodedInfo = params.id ? CATEGORY_INFO[params.id] : null;
+
+  const [categoryName, setCategoryName] = useState(hardcodedInfo?.name || 'Category');
+  const [categoryQuote, setCategoryQuote] = useState(hardcodedInfo?.quote || '"Nourish Your Skin\nRenew Your Soul"');
+  const [services, setServices] = useState<ServiceItem[]>(HARDCODED_SERVICES);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (params.id) {
+          const catResponse = await categoryApi.getCategoryById(params.id);
+          if (catResponse.success && catResponse.data) {
+            setCategoryName(catResponse.data.name || hardcodedInfo?.name || 'Category');
+            setCategoryQuote(catResponse.data.quote || hardcodedInfo?.quote || '"Beauty Awaits"');
+          }
+
+          const svcResponse = await serviceApi.getServices({ categoryId: params.id });
+          if (svcResponse.success && svcResponse.data && svcResponse.data.length > 0) {
+            const apiServices = svcResponse.data.map((svc: any) => ({
+              id: svc.id || svc._id,
+              name: svc.name,
+              image: svc.image || svc.imageUrl || HARDCODED_SERVICES[0]?.image,
+              rating: svc.rating || 0,
+              price: svc.price || 0,
+            }));
+            setServices(mergeServices(apiServices, HARDCODED_SERVICES));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching category data:', error);
+      }
+    };
+    fetchData();
+  }, [params.id, hardcodedInfo]);
 
   const handleEditService = (serviceId: string) => {
-    // Edit service
     console.log('Edit service:', serviceId);
   };
 
   const handleAddService = () => {
-    // Add new service
     console.log('Add new service');
   };
 
@@ -57,7 +82,6 @@ export default function EditCategoryScreen() {
       <DecorativeCircle position="topRight" size="medium" opacity={0.3} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View
           className="flex-row items-center justify-between"
           style={{ paddingHorizontal: wp(6), paddingTop: hp(6) }}
@@ -73,7 +97,6 @@ export default function EditCategoryScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Banner - Editable */}
         <View className="relative" style={{ marginTop: hp(3), paddingHorizontal: wp(4) }}>
           <View
             className="rounded-3xl overflow-hidden"
@@ -101,7 +124,6 @@ export default function EditCategoryScreen() {
               />
             </View>
           </View>
-          {/* Edit banner button */}
           <TouchableOpacity
             className="absolute rounded-full items-center justify-center bg-white"
             style={{
@@ -117,7 +139,6 @@ export default function EditCategoryScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Menu Section */}
         <View style={{ paddingHorizontal: wp(6), marginTop: hp(4) }}>
           <Text
             className="text-center"
@@ -126,8 +147,7 @@ export default function EditCategoryScreen() {
             Menu
           </Text>
 
-          {/* Service Items */}
-          {SERVICES.map((service) => (
+          {services.map((service) => (
             <View
               key={service.id}
               className="flex-row items-center bg-white rounded-2xl mb-3 p-3"
@@ -167,7 +187,6 @@ export default function EditCategoryScreen() {
                   </Text>
                 </TouchableOpacity>
               </View>
-              {/* Edit service button */}
               <TouchableOpacity
                 onPress={() => handleEditService(service.id)}
                 className="absolute rounded-full items-center justify-center bg-white"
@@ -185,7 +204,6 @@ export default function EditCategoryScreen() {
             </View>
           ))}
 
-          {/* Add Service Button */}
           <TouchableOpacity
             onPress={handleAddService}
             className="rounded-2xl items-center justify-center"

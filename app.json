@@ -19,7 +19,10 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.salonnow.app"
+      "package": "com.salonnow.app",
+      "permissions": [
+        "INTERNET"
+      ]
     },
     "web": {
       "output": "static",
@@ -49,12 +52,13 @@
       ],
       "expo-font",
       "expo-web-browser",
+      "@sentry/react-native",
       [
-        "@sentry/react-native/expo",
+        "expo-build-properties",
         {
-          "url": "https://sentry.io/",
-          "project": "nhom5salonnow",
-          "organization": "nhom5salonnow"
+          "android": {
+            "usesCleartextTraffic": true
+          }
         }
       ]
     ],
@@ -65,15 +69,15 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "61e58703-a0c6-4098-afcf-2b31e3406168"
+        "projectId": "9a6a4465-56e5-4e6e-9775-22a405f62d3a"
       }
     },
-    "owner": "salonnow",
     "runtimeVersion": {
       "policy": "appVersion"
     },
+    "owner": "vy31082004",
     "updates": {
-      "url": "https://u.expo.dev/bc89eeac-27ab-41aa-a8c6-083949e54435"
+      "url": "https://u.expo.dev/9a6a4465-56e5-4e6e-9775-22a405f62d3a"
     }
   }
 }

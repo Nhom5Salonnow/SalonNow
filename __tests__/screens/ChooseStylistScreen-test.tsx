@@ -1,13 +1,55 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import ChooseStylistScreen from '@/app/service/choose-stylist';
 
 // Mock expo-router
 const mockBack = jest.fn();
+const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   router: {
     back: () => mockBack(),
+    push: (path: string) => mockPush(path),
   },
+  useLocalSearchParams: () => ({
+    salonId: 'salon-1',
+    serviceId: 'service-1',
+  }),
+}));
+
+// Mock stylistApi
+jest.mock('@/api', () => ({
+  stylistApi: {
+    getStylistsBySalon: jest.fn().mockResolvedValue({
+      success: true,
+      data: [
+        { id: 'stylist-1', name: 'Praveen', specialty: 'Hair Specialist', rating: 4.9, imageUrl: 'https://example.com/praveen.jpg' },
+        { id: 'stylist-2', name: 'Thinu', specialty: 'Hair Dresser', rating: 4.8, imageUrl: 'https://example.com/thinu.jpg' },
+        { id: 'stylist-3', name: 'Lisa', specialty: 'Hair Stylist', rating: 4.5, imageUrl: 'https://example.com/lisa.jpg' },
+      ],
+    }),
+    getAll: jest.fn().mockResolvedValue({
+      success: true,
+      data: [
+        { id: 'stylist-1', name: 'Praveen', specialty: 'Hair Specialist', rating: 4.9, imageUrl: 'https://example.com/praveen.jpg' },
+        { id: 'stylist-2', name: 'Thinu', specialty: 'Hair Dresser', rating: 4.8, imageUrl: 'https://example.com/thinu.jpg' },
+        { id: 'stylist-3', name: 'Lisa', specialty: 'Hair Stylist', rating: 4.5, imageUrl: 'https://example.com/lisa.jpg' },
+      ],
+    }),
+  },
+}));
+
+// Mock AsyncStorage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  setItem: jest.fn(),
+  getItem: jest.fn(() => Promise.resolve('mock_token')),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+}));
+
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  SafeAreaProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 // Mock responsive utilities
@@ -23,9 +65,23 @@ jest.mock('@/constants', () => ({
     primary: '#FE697D',
     salon: {
       pinkLight: '#FFCCD3',
+      pinkBg: '#FFF5F5',
       dark: '#1F2937',
     },
+    gray: {
+      100: '#F3F4F6',
+      200: '#E5E7EB',
+      300: '#D1D5DB',
+      400: '#9CA3AF',
+      500: '#6B7280',
+      600: '#4B5563',
+    },
   },
+  SPECIALISTS: [
+    { id: 'stylist-1', name: 'Praveen', role: 'Hair Specialist', rating: 4.9, image: 'https://example.com/praveen.jpg' },
+    { id: 'stylist-2', name: 'Thinu', role: 'Hair Dresser', rating: 4.8, image: 'https://example.com/thinu.jpg' },
+    { id: 'stylist-3', name: 'Lisa', role: 'Hair Stylist', rating: 4.5, image: 'https://example.com/lisa.jpg' },
+  ],
 }));
 
 // Mock lucide-react-native
@@ -87,24 +143,22 @@ describe('ChooseStylistScreen', () => {
       expect(getByText('Choose per service')).toBeTruthy();
     });
 
-    it('should render individual stylists', () => {
+    it('should render individual stylists', async () => {
       const { getByText } = render(<ChooseStylistScreen />);
-      expect(getByText('Praveen')).toBeTruthy();
-      expect(getByText('Thinu')).toBeTruthy();
-      expect(getByText('Lisa')).toBeTruthy();
+      await waitFor(() => {
+        expect(getByText('Praveen')).toBeTruthy();
+        expect(getByText('Thinu')).toBeTruthy();
+        expect(getByText('Lisa')).toBeTruthy();
+      });
     });
 
-    it('should render stylist roles', () => {
+    it('should render stylist roles', async () => {
       const { getByText } = render(<ChooseStylistScreen />);
-      expect(getByText('Hair Specialist')).toBeTruthy();
-      expect(getByText('Hair Dresser')).toBeTruthy();
-      expect(getByText('Hair Stylist')).toBeTruthy();
-    });
-
-    it('should render Top Rated badges for top rated stylists', () => {
-      const { getAllByText } = render(<ChooseStylistScreen />);
-      // Praveen and Thinu are top rated
-      expect(getAllByText('🏆 Top Rated').length).toBe(2);
+      await waitFor(() => {
+        expect(getByText('Hair Specialist')).toBeTruthy();
+        expect(getByText('Hair Dresser')).toBeTruthy();
+        expect(getByText('Hair Stylist')).toBeTruthy();
+      });
     });
 
     it('should render Done button', () => {

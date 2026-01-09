@@ -17,7 +17,7 @@ export default function TabLayout() {
           height: 64,
           paddingBottom: 8,
           paddingTop: 8,
-          backgroundColor: "#FFF0F3", // salon-pink-bg
+          backgroundColor: "#FFF0F3",
           borderTopLeftRadius: 30,
           borderTopRightRadius: 30,
           borderTopWidth: 0,

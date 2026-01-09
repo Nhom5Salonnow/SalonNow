@@ -18,6 +18,7 @@ describe('SalonCard', () => {
     rating: 4.5,
     distance: 2.3,
     imageUrl: 'https://example.com/image.jpg',
+    services: [],
   };
 
   beforeEach(() => {

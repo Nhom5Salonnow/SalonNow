@@ -16,6 +16,35 @@ jest.mock('expo-router', () => ({
     back: () => mockBack(),
     push: (path: string) => mockPush(path),
   },
+  useLocalSearchParams: () => ({
+    appointmentId: 'apt-1',
+    salonName: 'Test Salon',
+  }),
+}));
+
+// Mock AuthContext
+jest.mock('@/contexts', () => ({
+  useAuth: () => ({
+    user: { id: 'user-1', name: 'Test User', email: 'test@test.com' },
+    isLoggedIn: true,
+    isLoading: false,
+  }),
+}));
+
+// Mock feedbackApi and reviewApi - correct path matching the import
+jest.mock('@/api/reviewApi', () => ({
+  feedbackApi: {
+    createFeedback: jest.fn().mockResolvedValue({
+      success: true,
+      data: { id: 'feedback-1' },
+    }),
+  },
+  reviewApi: {
+    createReview: jest.fn().mockResolvedValue({
+      success: true,
+      data: { id: 'review-1' },
+    }),
+  },
 }));
 
 // Mock responsive utilities
@@ -31,7 +60,16 @@ jest.mock('@/constants', () => ({
     primary: '#FE697D',
     salon: {
       pinkLight: '#FFCCD3',
+      pinkBg: '#FFF5F5',
       dark: '#1F2937',
+    },
+    gray: {
+      100: '#F3F4F6',
+      200: '#E5E7EB',
+      300: '#D1D5DB',
+      400: '#9CA3AF',
+      500: '#6B7280',
+      600: '#4B5563',
     },
   },
 }));

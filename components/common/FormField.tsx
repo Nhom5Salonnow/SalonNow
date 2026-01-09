@@ -54,7 +54,6 @@ export const FormField: React.FC<FormFieldProps> = ({
     );
   }
 
-  // Inline variant (label on left, input on right)
   return (
     <View style={{ marginBottom: hp(3) }}>
       <View className="flex-row items-center">

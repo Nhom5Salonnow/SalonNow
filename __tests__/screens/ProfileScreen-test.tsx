@@ -52,12 +52,15 @@ jest.mock('@/contexts', () => ({
   }),
 }));
 
-// Mock userService
-jest.mock('@/api/userService', () => ({
-  userService: {
-    getUserStats: jest.fn().mockResolvedValue({
+// Mock userApi
+jest.mock('@/api', () => ({
+  userApi: {
+    getUserById: jest.fn().mockResolvedValue({
       success: true,
       data: {
+        id: 'user-1',
+        name: 'Test User',
+        email: 'test@test.com',
         loyaltyPoints: 150,
         completedAppointments: 12,
         reviewsGiven: 8,
@@ -71,7 +74,6 @@ jest.mock('@/api/userService', () => ({
       },
     }),
   },
-  UserStats: {},
 }));
 
 // Mock responsive utilities
@@ -91,10 +93,14 @@ jest.mock('@/constants', () => ({
       dark: '#1F2937',
     },
     gray: {
+      100: '#F3F4F6',
+      200: '#E5E7EB',
       400: '#9CA3AF',
       500: '#6B7280',
+      600: '#4B5563',
     },
   },
+  DEFAULT_AVATAR: 'https://example.com/default-avatar.png',
 }));
 
 // Mock lucide-react-native

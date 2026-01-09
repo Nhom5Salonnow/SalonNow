@@ -61,7 +61,6 @@ export default function OnboardingScreen() {
         className="items-center justify-center"
         style={{ width: SCREEN_WIDTH, paddingHorizontal: wp(5) }}
       >
-        {/* Illustration */}
         <View style={{ width: wp(85) }}>
           <Image
             source={{ uri: item.imageUrl }}
@@ -70,7 +69,6 @@ export default function OnboardingScreen() {
           />
         </View>
 
-        {/* Content */}
         <View
           className="items-center"
           style={{ gap: hp(1), paddingHorizontal: wp(5) }}
@@ -107,7 +105,6 @@ export default function OnboardingScreen() {
 
   return (
     <View className="flex-1 bg-white" style={{ paddingVertical: hp(3) }}>
-      {/* Fixed Header - Logo */}
       <View
         className="items-center"
         style={{ paddingVertical: hp(4) }}
@@ -120,7 +117,6 @@ export default function OnboardingScreen() {
         </Text>
       </View>
 
-      {/* Scrollable Content Area - Uses flex for adaptive height */}
       <View style={{ flex: 1, justifyContent: "center" }}>
         <FlatList
           ref={flatListRef}
@@ -137,19 +133,16 @@ export default function OnboardingScreen() {
         />
       </View>
 
-      {/* Fixed Footer */}
       <View
         className="items-center"
         style={{ gap: hp(2), paddingHorizontal: wp(5) }}
       >
-        {/* Pagination Dots - Clickable */}
         <PaginationDots
           length={ONBOARDING_SLIDES.length}
           currentIndex={currentIndex}
           onDotPress={scrollToIndex}
         />
 
-        {/* Next Button */}
         <TouchableOpacity
           onPress={handleNext}
           className="justify-center items-center rounded-xl bg-salon-primary"
@@ -168,7 +161,6 @@ export default function OnboardingScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* Skip Button - Always takes space */}
         <View style={{ height: hp(4) }} className="justify-center">
           {currentIndex < ONBOARDING_SLIDES.length - 1 ? (
             <TouchableOpacity onPress={handleSkip}>

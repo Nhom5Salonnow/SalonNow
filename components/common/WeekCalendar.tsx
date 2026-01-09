@@ -27,7 +27,6 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
 }) => {
   return (
     <View>
-      {/* Month */}
       <Text
         className="text-center"
         style={{ fontSize: rf(18), color: '#6B7280', marginBottom: hp(2) }}
@@ -35,7 +34,6 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
         {month}
       </Text>
 
-      {/* Calendar Week View */}
       <View
         className="flex-row justify-between"
         style={{ paddingHorizontal: wp(6) }}
@@ -74,7 +72,6 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
                 {item.date}
               </Text>
             </View>
-            {/* Appointment indicator dot */}
             {showAppointmentIndicator && item.hasAppointment && (
               <View
                 className="rounded-full mt-1"
@@ -85,7 +82,6 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
                 }}
               />
             )}
-            {/* Selected indicator dot (when no appointment indicator) */}
             {!showAppointmentIndicator && item.isSelected && (
               <View
                 className="absolute rounded-full"
@@ -104,7 +100,6 @@ export const WeekCalendar: React.FC<WeekCalendarProps> = ({
   );
 };
 
-// Helper function to generate week days
 export const generateWeekDays = (
   startDate: number,
   selectedDate: number,

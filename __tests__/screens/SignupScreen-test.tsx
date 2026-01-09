@@ -38,21 +38,15 @@ jest.mock('@/utils/asyncStorage', () => ({
 
 // Mock AuthContext
 const mockContextLogin = jest.fn();
+const mockRegister = jest.fn();
 jest.mock('@/contexts', () => ({
   useAuth: () => ({
     login: mockContextLogin,
+    register: mockRegister,
     user: null,
     isLoggedIn: false,
     isLoading: false,
   }),
-}));
-
-// Mock authService
-const mockSignup = jest.fn();
-jest.mock('@/api/authService', () => ({
-  authService: {
-    signup: (input: any) => mockSignup(input),
-  },
 }));
 
 // Mock responsive utilities
@@ -99,10 +93,7 @@ jest.mock('expo-linear-gradient', () => ({
 describe('SignupScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockSignup.mockResolvedValue({
-      user: { id: '1', email: 'test@example.com', name: 'John Doe', phone: '+1234567890', avatar: 'https://example.com/avatar.jpg' },
-      token: 'mock_token',
-    });
+    mockRegister.mockResolvedValue({ success: true });
     mockContextLogin.mockResolvedValue(undefined);
   });
 
@@ -204,7 +195,7 @@ describe('SignupScreen', () => {
   });
 
   describe('Form Submission', () => {
-    it('should call authService.signup when form is submitted', async () => {
+    it('should call register when form is submitted', async () => {
       const { getByPlaceholderText, getAllByText } = render(<SignupScreen />);
 
       fireEvent.changeText(getByPlaceholderText('Full Name'), 'John Doe');
@@ -218,12 +209,12 @@ describe('SignupScreen', () => {
       fireEvent.press(buttons[buttons.length - 1]); // Press the button one
 
       await waitFor(() => {
-        expect(mockSignup).toHaveBeenCalledWith({
-          name: 'John Doe',
-          email: 'test@example.com',
-          password: 'password123',
-          phone: '+1234567890',
-        });
+        expect(mockRegister).toHaveBeenCalledWith(
+          'John Doe',
+          'test@example.com',
+          'password123',
+          '+1234567890'
+        );
       });
     });
 

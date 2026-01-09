@@ -1,11 +1,22 @@
-import { useState, useEffect, useCallback } from "react";
-import { View, Text, ScrollView, TouchableOpacity, FlatList, RefreshControl, ActivityIndicator, Alert } from "react-native";
-import { wp, hp, rf } from "@/utils/responsive";
-import { Colors } from "@/constants";
+import { adminApi } from "@/api";
 import { DecorativeCircle } from "@/components";
-import { Clock, CheckCircle, XCircle, AlertCircle, Check, X, User } from "lucide-react-native";
-import { adminService } from "@/api/adminService";
-import { Appointment } from "@/api/mockServer/types";
+import { Colors } from "@/constants";
+import { hp, rf, wp } from "@/utils/responsive";
+import { AlertCircle, Check, CheckCircle, Clock, User, X, XCircle } from "lucide-react-native";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Alert, FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+
+interface Appointment {
+  id: string;
+  serviceName: string;
+  staffName?: string;
+  date: string;
+  time: string;
+  status: string;
+  totalPrice?: number;
+  userName?: string;
+  userPhone?: string;
+}
 
 type FilterStatus = "all" | "confirmed" | "pending" | "completed" | "cancelled";
 
@@ -35,13 +46,26 @@ export default function AdminAppointmentsScreen() {
 
   const loadAppointments = useCallback(async () => {
     try {
-      const filters = selectedFilter !== "all" ? { status: [selectedFilter] } : undefined;
-      const res = await adminService.getAppointments(SALON_ID, filters);
+      const filters = selectedFilter !== "all" ? { status: selectedFilter } : {};
+      const res = await adminApi.getAllBookings(filters);
       if (res.success && res.data) {
-        setAppointments(res.data);
+        setAppointments(res.data.map((apt: any) => ({
+          id: apt.id || apt._id,
+          serviceName: apt.serviceName || apt.service?.name || 'Service',
+          staffName: apt.staffName || apt.stylist?.name,
+          date: apt.date,
+          time: apt.time || apt.startTime,
+          status: apt.status,
+          totalPrice: apt.totalPrice || apt.price,
+          userName: apt.userName || apt.user?.name,
+          userPhone: apt.userPhone || apt.user?.phone,
+        })));
+      } else {
+        setAppointments([]);
       }
     } catch (error) {
       console.error("Error loading appointments:", error);
+      setAppointments([]);
     }
   }, [selectedFilter]);
 
@@ -79,9 +103,11 @@ export default function AdminAppointmentsScreen() {
           text: statusLabels[newStatus],
           style: newStatus === "cancelled" || newStatus === "no_show" ? "destructive" : "default",
           onPress: async () => {
-            const res = await adminService.updateAppointmentStatus(appointmentId, newStatus);
+            const res = await adminApi.updateBookingStatus(appointmentId, newStatus);
             if (res.success) {
               await loadAppointments();
+            } else {
+              Alert.alert("Error", res.message || "Failed to update appointment status");
             }
           },
         },
@@ -148,7 +174,6 @@ export default function AdminAppointmentsScreen() {
           </Text>
         </View>
 
-        {/* Actions for pending */}
         {apt.status === "pending" && (
           <View
             className="flex-row items-center justify-between"
@@ -177,7 +202,6 @@ export default function AdminAppointmentsScreen() {
           </View>
         )}
 
-        {/* Actions for confirmed */}
         {apt.status === "confirmed" && (
           <View
             className="flex-row items-center justify-between"
@@ -221,7 +245,6 @@ export default function AdminAppointmentsScreen() {
     <View className="flex-1 bg-white">
       <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
 
-      {/* Header */}
       <View style={{ paddingTop: hp(6), paddingHorizontal: wp(6) }}>
         <Text style={{ fontSize: rf(24), fontWeight: "700", color: "#000" }}>
           Appointments
@@ -231,7 +254,6 @@ export default function AdminAppointmentsScreen() {
         </Text>
       </View>
 
-      {/* Filter Tabs */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -262,7 +284,6 @@ export default function AdminAppointmentsScreen() {
         ))}
       </ScrollView>
 
-      {/* Appointments List */}
       <FlatList
         data={appointments}
         renderItem={renderAppointment}

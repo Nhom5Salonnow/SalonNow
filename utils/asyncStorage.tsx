@@ -1,6 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Re-export STORAGE_KEYS for convenience
 export { STORAGE_KEYS } from '@/constants/api';
 
 export const storeData = async (key: string, value: string) => {

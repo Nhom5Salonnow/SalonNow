@@ -1,6 +1,5 @@
 export const Colors = {
-  // Salon Brand Colors (from design)
-  primary: "#FE697D", // salon-primary (pink/coral)
+  primary: "#FE697D",
   primaryDark: "#E5516C",
   primaryLight: "#FF8899",
 
@@ -18,7 +17,6 @@ export const Colors = {
 
   warning: "#F59E0B",
 
-  // Salon specific colors
   salon: {
     primary: "#FE697D",
     coral: "#FFB5C2",

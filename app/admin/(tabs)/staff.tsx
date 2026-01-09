@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, Image, FlatList } from "react-native";
 import { wp, hp, rf } from "@/utils/responsive";
 import { Colors } from "@/constants";
 import { DecorativeCircle } from "@/components";
 import { Plus, Edit2, Phone, Mail, Star, Clock, MoreVertical } from "lucide-react-native";
+import { stylistApi } from "@/api";
 
 interface Staff {
   id: string;
@@ -19,7 +20,7 @@ interface Staff {
   isActive: boolean;
 }
 
-const STAFF_MEMBERS: Staff[] = [
+const HARDCODED_STAFF: Staff[] = [
   {
     id: "1",
     name: "Emily Chen",
@@ -87,12 +88,47 @@ const STAFF_MEMBERS: Staff[] = [
   },
 ];
 
+const mergeStaff = (apiData: Staff[], hardcodedData: Staff[]): Staff[] => {
+  const merged = new Map<string, Staff>();
+  hardcodedData.forEach(item => merged.set(item.id, item));
+  apiData.forEach(item => merged.set(item.id, item));
+  return Array.from(merged.values());
+};
+
 export default function AdminStaffScreen() {
   const [showActiveOnly, setShowActiveOnly] = useState(false);
+  const [staffMembers, setStaffMembers] = useState<Staff[]>(HARDCODED_STAFF);
+
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const response = await stylistApi.getStylists();
+        if (response.success && response.data && response.data.length > 0) {
+          const apiStaff = response.data.map((s: any) => ({
+            id: s.id || s._id,
+            name: s.name,
+            role: s.specialty || s.role || 'Stylist',
+            avatar: s.avatar || s.imageUrl || HARDCODED_STAFF[0]?.avatar,
+            phone: s.phone || '',
+            email: s.email || '',
+            rating: s.rating || 0,
+            totalAppointments: s.totalAppointments || 0,
+            specialties: s.specialties || [],
+            workingHours: s.workingHours || 'Mon-Sat 9AM-6PM',
+            isActive: s.isActive !== false,
+          }));
+          setStaffMembers(mergeStaff(apiStaff, HARDCODED_STAFF));
+        }
+      } catch (error) {
+        console.error('Error fetching staff:', error);
+      }
+    };
+    fetchStaff();
+  }, []);
 
   const filteredStaff = showActiveOnly
-    ? STAFF_MEMBERS.filter((s) => s.isActive)
-    : STAFF_MEMBERS;
+    ? staffMembers.filter((s) => s.isActive)
+    : staffMembers;
 
   const renderStaffCard = ({ item }: { item: Staff }) => (
     <View
@@ -208,7 +244,6 @@ export default function AdminStaffScreen() {
     <View className="flex-1 bg-white">
       <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
 
-      {/* Header */}
       <View style={{ paddingTop: hp(6), paddingHorizontal: wp(6) }}>
         <View className="flex-row items-center justify-between">
           <Text style={{ fontSize: rf(24), fontWeight: "700", color: "#000" }}>
@@ -225,7 +260,6 @@ export default function AdminStaffScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Filter Toggle */}
         <TouchableOpacity
           onPress={() => setShowActiveOnly(!showActiveOnly)}
           className="flex-row items-center"
@@ -248,14 +282,13 @@ export default function AdminStaffScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* Stats Summary */}
         <View className="flex-row" style={{ marginTop: hp(2), gap: wp(3) }}>
           <View
             className="flex-1 rounded-xl items-center"
             style={{ backgroundColor: Colors.salon.pinkLight, paddingVertical: hp(1.5) }}
           >
             <Text style={{ fontSize: rf(22), fontWeight: "700", color: "#000" }}>
-              {STAFF_MEMBERS.filter((s) => s.isActive).length}
+              {staffMembers.filter((s) => s.isActive).length}
             </Text>
             <Text style={{ fontSize: rf(12), color: Colors.gray[600] }}>Active</Text>
           </View>
@@ -264,7 +297,7 @@ export default function AdminStaffScreen() {
             style={{ backgroundColor: "#F3F4F6", paddingVertical: hp(1.5) }}
           >
             <Text style={{ fontSize: rf(22), fontWeight: "700", color: "#000" }}>
-              {STAFF_MEMBERS.length}
+              {staffMembers.length}
             </Text>
             <Text style={{ fontSize: rf(12), color: Colors.gray[600] }}>Total</Text>
           </View>
@@ -273,14 +306,13 @@ export default function AdminStaffScreen() {
             style={{ backgroundColor: "#ECFDF5", paddingVertical: hp(1.5) }}
           >
             <Text style={{ fontSize: rf(22), fontWeight: "700", color: "#10B981" }}>
-              {(STAFF_MEMBERS.reduce((acc, s) => acc + s.rating, 0) / STAFF_MEMBERS.length).toFixed(1)}
+              {(staffMembers.reduce((acc, s) => acc + s.rating, 0) / staffMembers.length).toFixed(1)}
             </Text>
             <Text style={{ fontSize: rf(12), color: Colors.gray[600] }}>Avg Rating</Text>
           </View>
         </View>
       </View>
 
-      {/* Staff List */}
       <FlatList
         data={filteredStaff}
         renderItem={renderStaffCard}

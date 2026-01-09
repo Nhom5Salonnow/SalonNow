@@ -26,8 +26,7 @@ import {
   Edit3,
   RefreshCw,
 } from "lucide-react-native";
-import { appointmentService } from "@/api/appointmentService";
-import { mockDatabase } from "@/api/mockServer/database";
+import { bookingApi } from "@/api/bookingApi";
 import { useAuth } from "@/contexts";
 
 const STATUS_CONFIG: Record<string, {color: string; bgColor: string; label: string; icon: any}> = {
@@ -83,13 +82,36 @@ export default function AppointmentDetailScreen() {
     if (!id) return;
 
     try {
-      // Find appointment in mock database
-      const appt = mockDatabase.appointments.find((a) => a.id === id);
-      if (appt) {
-        setAppointment(appt);
+      // Try real API first
+      const response = await bookingApi.getBookingById(id);
+
+      if (response.success && response.data && response.data.id) {
+        // Map API response to display format
+        const booking = response.data;
+        setAppointment({
+          id: booking.id,
+          userId: booking.userId,
+          serviceName: booking.serviceName || booking.service?.name || 'Service',
+          salonName: booking.salonName || booking.salon?.name || 'Salon',
+          staffName: booking.stylistName || (booking.stylist ? `${booking.stylist.firstName} ${booking.stylist.lastName}` : undefined),
+          date: booking.date || (booking.startTime ? new Date(booking.startTime).toLocaleDateString() : ''),
+          time: booking.time || (booking.startTime ? new Date(booking.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''),
+          status: booking.status,
+          price: booking.price || booking.totalPrice || booking.service?.price || 60,
+          servicePrice: booking.service?.price,
+          total: booking.total || booking.totalPrice || booking.price,
+          tax: 5,
+          hasReview: booking.hasReview,
+        });
+      } else {
+        // API returned no data - show not found
+        console.log('API returned no data');
+        setAppointment(null);
       }
     } catch (error) {
       console.error("Error loading appointment:", error);
+      // On error - show not found (don't crash)
+      setAppointment(null);
     } finally {
       setIsLoading(false);
     }
@@ -110,40 +132,23 @@ export default function AppointmentDetailScreen() {
     setIsSubmitting(true);
 
     try {
-      const userId = user?.id || "user-1";
+      // Try real API
+      const apiResponse = await bookingApi.cancelBooking(appointment.id);
 
-      const response = await appointmentService.cancelAppointment({
-        appointmentId: appointment.id,
-        userId: userId,
-        reason: cancelReason || undefined,
-      });
-
-      if (response.success) {
+      if (apiResponse.success) {
         setShowCancelModal(false);
-
-        // Check for cancellation fee (total - refundAmount)
-        const cancellationFee = response.data.cancellation
-          ? response.data.total - (response.data.cancellation.refundAmount || 0)
-          : 0;
-        if (cancellationFee > 0) {
-          Alert.alert(
-            "Appointment Cancelled",
-            `Your appointment has been cancelled. A late cancellation fee of $${cancellationFee.toFixed(2)} applies.`,
-            [{ text: "OK", onPress: () => router.back() }]
-          );
-        } else {
-          Alert.alert(
-            "Appointment Cancelled",
-            "Your appointment has been cancelled successfully.",
-            [{ text: "OK", onPress: () => router.back() }]
-          );
-        }
+        Alert.alert(
+          "Appointment Cancelled",
+          "Your appointment has been cancelled successfully.",
+          [{ text: "OK", onPress: () => router.back() }]
+        );
       } else {
-        Alert.alert("Error", response.error || "Failed to cancel appointment");
+        // API failed - show error
+        Alert.alert("Error", apiResponse.message || "Failed to cancel appointment");
       }
     } catch (error) {
       console.error("Error cancelling:", error);
-      Alert.alert("Error", "Something went wrong");
+      Alert.alert("Error", "Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

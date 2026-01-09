@@ -13,7 +13,6 @@ export default function ReviewScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Pink decorative background */}
       <View
         className="absolute rounded-full"
         style={{
@@ -27,7 +26,6 @@ export default function ReviewScreen() {
       />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View
           className="flex-row items-center justify-between px-6"
           style={{ paddingTop: insets.top + hp(1) }}
@@ -43,7 +41,6 @@ export default function ReviewScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Rating Summary Card */}
         <View
           className="mx-6 mt-6 rounded-2xl bg-white p-5"
           style={{
@@ -52,7 +49,6 @@ export default function ReviewScreen() {
           }}
         >
           <View className="flex-row">
-            {/* Rating bars */}
             <View className="flex-1">
               {RATING_DISTRIBUTION.map((item) => (
                 <View key={item.stars} className="flex-row items-center mb-2">
@@ -76,7 +72,6 @@ export default function ReviewScreen() {
               ))}
             </View>
 
-            {/* Average rating */}
             <View className="items-center justify-center ml-6">
               <Text style={{ fontSize: rf(40), fontWeight: "700", color: "#000" }}>
                 {averageRating.toFixed(1)}
@@ -89,7 +84,6 @@ export default function ReviewScreen() {
           </View>
         </View>
 
-        {/* Reviews List */}
         <View className="px-6 mt-4">
           <FlatList
             data={REVIEWS}

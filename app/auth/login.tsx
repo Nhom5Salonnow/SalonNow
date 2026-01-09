@@ -1,25 +1,23 @@
 import { Colors } from "@/constants";
+import { useAuth } from "@/contexts";
 import { hp, rf, wp } from "@/utils/responsive";
 import { router } from "expo-router";
+import { ChevronLeft } from "lucide-react-native";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
-  Alert,
-  ActivityIndicator,
-  SafeAreaView,
+  View
 } from "react-native";
-import { ChevronLeft } from "lucide-react-native";
-import { authService } from "@/api/authService";
-import { useAuth } from "@/contexts";
 
 export default function LoginScreen() {
-  const { login } = useAuth();
+  const { loginWithCredentials } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -35,16 +33,14 @@ export default function LoginScreen() {
     setError(null);
 
     try {
-      const response = await authService.login({ email, password });
-      // Sync with AuthContext
-      await login({
-        id: response.user.id,
-        name: response.user.name,
-        email: response.user.email,
-        phone: response.user.phone,
-        avatar: response.user.avatar,
-      }, response.token);
-      router.replace("/home" as any);
+      const result = await loginWithCredentials(email, password);
+
+      if (result.success) {
+        router.replace("/home" as any);
+        return;
+      }
+
+      setError(result.message || "Login failed. Please try again.");
     } catch (err: any) {
       setError(err.message || "Login failed. Please try again.");
     } finally {
@@ -60,7 +56,6 @@ export default function LoginScreen() {
 
   return (
     <View className="flex-1">
-      {/* Background Image with blur effect */}
       <ImageBackground
         source={{
           uri: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800",
@@ -69,14 +64,12 @@ export default function LoginScreen() {
         resizeMode="cover"
         blurRadius={3}
       >
-        {/* Overlay */}
         <View
           className="absolute inset-0"
           style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
         />
 
         <SafeAreaView className="flex-1">
-          {/* Back Button */}
           <TouchableOpacity
             onPress={() => router.back()}
             style={{
@@ -95,7 +88,6 @@ export default function LoginScreen() {
             className="flex-1 justify-center items-center"
             style={{ paddingHorizontal: wp(5) }}
           >
-            {/* Title */}
             <Text
               style={{
                 fontSize: rf(36),
@@ -108,7 +100,6 @@ export default function LoginScreen() {
               Salon Now
             </Text>
 
-            {/* Subtitle */}
             <Text
               style={{
                 fontSize: rf(14),
@@ -122,7 +113,6 @@ export default function LoginScreen() {
               Login to unlock a seamless beauty experience tailored just for you.
             </Text>
 
-            {/* Login Card */}
           <View
             className="bg-white/90 rounded-3xl w-full"
             style={{
@@ -131,7 +121,6 @@ export default function LoginScreen() {
               maxWidth: wp(90),
             }}
           >
-            {/* Tab Switcher */}
             <View className="flex-row items-center" style={{ marginBottom: hp(2.5) }}>
               <TouchableOpacity
                 activeOpacity={0.7}
@@ -183,7 +172,6 @@ export default function LoginScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Email Input */}
             <View
               className="bg-white rounded-xl border"
               style={{
@@ -206,7 +194,6 @@ export default function LoginScreen() {
               />
             </View>
 
-            {/* Password Input */}
             <View
               className="bg-white rounded-xl border"
               style={{
@@ -228,7 +215,6 @@ export default function LoginScreen() {
               />
             </View>
 
-            {/* Error Message */}
             {error && (
               <View
                 className="rounded-xl"
@@ -250,7 +236,6 @@ export default function LoginScreen() {
               </View>
             )}
 
-            {/* Forget Password */}
             <TouchableOpacity className="items-center" style={{ marginBottom: hp(3) }}>
               <Text
                 style={{
@@ -263,7 +248,6 @@ export default function LoginScreen() {
               </Text>
             </TouchableOpacity>
 
-            {/* Login Button */}
             <TouchableOpacity
               onPress={handleLogin}
               disabled={isLoading}
@@ -288,7 +272,6 @@ export default function LoginScreen() {
               )}
             </TouchableOpacity>
 
-            {/* Demo accounts info */}
             <View style={{ marginTop: hp(3) }}>
               <Text
                 style={{

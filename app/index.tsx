@@ -15,7 +15,6 @@ export default function SplashScreen() {
       if (hasCompletedOnboarding !== 'true') {
         router.replace('/onboarding');
       } else {
-        // Go directly to home, no login required
         router.replace('/home' as any);
       }
     } catch (error) {
@@ -31,7 +30,6 @@ export default function SplashScreen() {
         locations={[0, 0.25, 0.5, 0.75, 1]}
         style={styles.gradient}
       >
-        {/* Watercolor effect overlay */}
         <View style={[styles.watercolorOverlay, { height: hp(30) }]}>
           <LinearGradient
             colors={['transparent', '#FECDD3', '#FDA4AF']}
@@ -39,9 +37,7 @@ export default function SplashScreen() {
           />
         </View>
 
-        {/* Main content area with safe area padding */}
         <View style={[styles.contentContainer, { paddingTop: insets.top + hp(5) }]}>
-          {/* Logo Text */}
           <View style={{ marginBottom: hp(5) }}>
             <Text style={styles.logoText}>
               Salon
@@ -51,13 +47,11 @@ export default function SplashScreen() {
             </Text>
           </View>
 
-          {/* Tagline */}
           <Text style={styles.tagline}>
             Step into a world of personalized{'\n'}services that enhance your beauty{'\n'}and well-being.
           </Text>
         </View>
 
-        {/* Let's Start Button with safe area bottom padding */}
         <View style={[styles.buttonContainer, { paddingBottom: Math.max(insets.bottom, hp(4)) + hp(4) }]}>
           <TouchableOpacity
             onPress={handleStart}

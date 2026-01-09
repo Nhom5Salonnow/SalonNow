@@ -96,7 +96,6 @@ export default function AdminSettingsScreen() {
         }}
         onPress={() => {
           if (item.type === "navigate") {
-            // Handle navigation
           }
         }}
         disabled={item.type === "toggle"}
@@ -137,14 +136,12 @@ export default function AdminSettingsScreen() {
       <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View style={{ paddingTop: hp(6), paddingHorizontal: wp(6) }}>
           <Text style={{ fontSize: rf(24), fontWeight: "700", color: "#000" }}>
             Settings
           </Text>
         </View>
 
-        {/* Salon Profile Card */}
         <View
           className="rounded-2xl"
           style={{
@@ -206,7 +203,6 @@ export default function AdminSettingsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Settings Sections */}
         {SETTINGS_SECTIONS.map((section) => (
           <View key={section.title} style={{ marginTop: hp(3) }}>
             <Text
@@ -229,7 +225,6 @@ export default function AdminSettingsScreen() {
           </View>
         ))}
 
-        {/* Logout Button */}
         <TouchableOpacity
           onPress={handleLogout}
           className="flex-row items-center justify-center rounded-xl"
@@ -247,7 +242,6 @@ export default function AdminSettingsScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* App Version */}
         <Text
           style={{
             fontSize: rf(12),

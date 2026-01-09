@@ -1,3 +1,9 @@
+/**
+ * @deprecated This API class is deprecated and should not be used in new code.
+ * Use `apiClient` from `@/api/apiClient` with the specific API modules instead.
+ * Example: import { authApi, salonApi } from '@/api';
+ * This file is kept for backwards compatibility with legacy services.
+ */
 import { API_CONFIG, STORAGE_KEYS } from '@/constants';
 import { getData } from '@/utils/asyncStorage';
 

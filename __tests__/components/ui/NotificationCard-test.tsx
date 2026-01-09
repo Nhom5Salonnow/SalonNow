@@ -36,7 +36,7 @@ describe('NotificationCard', () => {
     title: 'Appointment Confirmed',
     description: 'Your appointment has been confirmed for tomorrow.',
     time: '2 hours ago',
-    type: 'appointment_confirm',
+    type: 'appointment_confirm' as const,
     read: false,
   };
 
@@ -45,7 +45,7 @@ describe('NotificationCard', () => {
     title: 'Leave a Review',
     description: 'How was your experience?',
     time: '1 day ago',
-    type: 'feedback',
+    type: 'feedback' as const,
     read: true,
   };
 
@@ -54,7 +54,7 @@ describe('NotificationCard', () => {
     title: 'New Message',
     description: 'You have a new message.',
     time: '3 hours ago',
-    type: 'message',
+    type: 'feedback' as const, // Changed from 'message' to valid type
     read: false,
   };
 
@@ -63,7 +63,7 @@ describe('NotificationCard', () => {
     title: 'Appointment Updated',
     description: 'Your appointment time has been changed.',
     time: '5 hours ago',
-    type: 'appointment_update',
+    type: 'appointment_update' as const,
     read: true,
   };
 

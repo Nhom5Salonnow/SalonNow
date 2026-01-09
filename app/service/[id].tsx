@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, FlatList, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, FlatList } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Menu, Search, Star, ShoppingCart, Clock, AlertCircle } from 'lucide-react-native';
 import { wp, hp, rf } from '@/utils/responsive';
-import { Colors } from '@/constants';
+import { Colors, SERVICES_MENU, CATEGORY_INFO } from '@/constants';
 import { DecorativeCircle, QuoteBanner } from '@/components';
-import { mockDatabase } from '@/api/mockServer/database';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { serviceApi } from '@/api';
 
 interface ServiceItem {
   id: string;
@@ -17,32 +17,21 @@ interface ServiceItem {
   reviews: number;
 }
 
-const SERVICES: ServiceItem[] = [
-  {
-    id: '1',
-    name: 'Basic Haircut',
-    image: 'https://api.builder.io/api/v1/image/assets/TEMP/4ab931700dd594de82119a13ddc008773676e5ab?width=240',
-    rating: 3,
-    price: 60,
-    reviews: 24,
-  },
-  {
-    id: '2',
-    name: 'Layered Haircut',
-    image: 'https://api.builder.io/api/v1/image/assets/TEMP/ab5fe51fab4ac2627711fedc485bf50f9f29dc9d?width=240',
-    rating: 2,
-    price: 65,
-    reviews: 18,
-  },
-  {
-    id: '3',
-    name: 'Bob Haircut',
-    image: 'https://api.builder.io/api/v1/image/assets/TEMP/c13a64eddbdb7480b9b4c7efde1b809bfdd47ab0?width=240',
-    rating: 3,
-    price: 65,
-    reviews: 31,
-  },
-];
+const HARDCODED_SERVICES: ServiceItem[] = SERVICES_MENU.map(s => ({
+  id: s.id,
+  name: s.name,
+  image: s.image,
+  rating: s.rating,
+  price: s.price,
+  reviews: s.reviews,
+}));
+
+const mergeServices = (apiData: ServiceItem[], hardcodedData: ServiceItem[]): ServiceItem[] => {
+  const merged = new Map<string, ServiceItem>();
+  hardcodedData.forEach(item => merged.set(item.id, item));
+  apiData.forEach(item => merged.set(item.id, item));
+  return Array.from(merged.values());
+};
 
 export default function ServiceDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -50,29 +39,37 @@ export default function ServiceDetailScreen() {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [slotsAvailable, setSlotsAvailable] = useState<number>(0);
   const [isFullyBooked, setIsFullyBooked] = useState(false);
+  const [services, setServices] = useState<ServiceItem[]>(HARDCODED_SERVICES);
 
-  // Simulate checking availability
+  const categoryInfo = CATEGORY_INFO[params.id as string] || { name: 'Services', quote: '"Beauty Awaits."' };
+  const { name: categoryName, quote: categoryQuote } = categoryInfo;
+
   useEffect(() => {
-    // Simulate some services having limited/no availability
-    const availableSlots = Math.floor(Math.random() * 5); // 0-4 slots
-    setSlotsAvailable(availableSlots);
-    setIsFullyBooked(availableSlots === 0);
-  }, []);
+    const fetchServices = async () => {
+      try {
+        const response = await serviceApi.getServices({ categoryId: params.id as string });
+        if (response.success && response.data && response.data.length > 0) {
+          const apiServices = response.data.map((svc: any) => ({
+            id: svc.id || svc._id,
+            name: svc.name,
+            image: svc.image || HARDCODED_SERVICES[0]?.image,
+            rating: svc.rating || 3,
+            price: svc.price || 50,
+            reviews: svc.reviewCount || 0,
+          }));
+          setServices(mergeServices(apiServices, HARDCODED_SERVICES));
+        }
+      } catch (error) {
+        console.error('Error fetching services:', error);
+      }
 
-  // Get category name based on ID
-  const getCategoryInfo = (id: string) => {
-    const categories: Record<string, { name: string; quote: string }> = {
-      'hair-design': { name: 'Hair Design & Cut', quote: '"Crafting Confidence,\nOne Cut at a Time."' },
-      'color-shine': { name: 'Color & Shine', quote: '"Shine Bright,\nColor Your World."' },
-      'texture-volume': { name: 'Texture & Volume', quote: '"Volume That Speaks,\nTexture That Inspires."' },
-      'scalp-spa': { name: 'Scalp & Head Spa', quote: '"Relax & Rejuvenate,\nFrom Root to Soul."' },
-      'facial-neck': { name: 'Facial & Neck Care', quote: '"Glow From Within,\nCare That Shows."' },
-      'bridal-vip': { name: 'Bridal & VIP Styling', quote: '"Your Special Day,\nPerfectly Styled."' },
+      const availableSlots = Math.floor(Math.random() * 5);
+      setSlotsAvailable(availableSlots);
+      setIsFullyBooked(availableSlots === 0);
     };
-    return categories[id] || { name: 'Services', quote: '"Beauty Awaits."' };
-  };
 
-  const { name: categoryName, quote: categoryQuote } = getCategoryInfo(params.id as string);
+    fetchServices();
+  }, [params.id]);
 
   const toggleService = (serviceId: string) => {
     setSelectedServices(prev =>
@@ -83,7 +80,7 @@ export default function ServiceDetailScreen() {
   };
 
   const handleJoinWaitlist = () => {
-    const selectedService = SERVICES.find(s => selectedServices.includes(s.id));
+    const selectedService = services.find(s => selectedServices.includes(s.id));
     router.push({
       pathname: '/waitlist/join',
       params: {
@@ -120,7 +117,7 @@ export default function ServiceDetailScreen() {
             {item.rating}
           </Text>
           <Text style={{ fontSize: rf(14), color: '#6B7280', marginLeft: 12 }}>
-            €{item.price}
+            ${item.price}
           </Text>
         </View>
       </View>
@@ -140,7 +137,6 @@ export default function ServiceDetailScreen() {
       <DecorativeCircle position="topLeft" size="large" opacity={0.5} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View
           className="flex-row items-center justify-between px-6"
           style={{ paddingTop: insets.top + hp(1) }}
@@ -156,7 +152,6 @@ export default function ServiceDetailScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Banner */}
         <View className="mx-4 mt-4">
           <QuoteBanner
             quote={categoryQuote}
@@ -164,7 +159,6 @@ export default function ServiceDetailScreen() {
           />
         </View>
 
-        {/* Menu Section */}
         <View className="px-6 mt-6">
           <Text
             className="text-center mb-4"
@@ -174,14 +168,13 @@ export default function ServiceDetailScreen() {
           </Text>
 
           <FlatList
-            data={SERVICES}
+            data={services}
             renderItem={renderServiceItem}
             keyExtractor={(item) => item.id}
             scrollEnabled={false}
           />
         </View>
 
-        {/* Stylist Section */}
         <View className="px-6 mt-6">
           <Text
             className="text-center mb-4"
@@ -204,7 +197,6 @@ export default function ServiceDetailScreen() {
         <View style={{ height: hp(15) }} />
       </ScrollView>
 
-      {/* Availability Banner */}
       {isFullyBooked && (
         <View
           className="absolute left-0 right-0 flex-row items-center justify-center"
@@ -239,7 +231,6 @@ export default function ServiceDetailScreen() {
         </View>
       )}
 
-      {/* Bottom Actions */}
       <View
         className="absolute bottom-0 left-0 right-0 px-6"
         style={{ paddingBottom: hp(12), paddingTop: hp(2), backgroundColor: 'white' }}

@@ -1,28 +1,44 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  RefreshControl,
-  Alert,
-} from "react-native";
-import { router } from "expo-router";
-import { wp, hp, rf } from "@/utils/responsive";
-import { Colors } from "@/constants";
+import { waitlistApi } from "@/api";
 import { DecorativeCircle } from "@/components";
+import { Colors } from "@/constants";
+import { hp, rf, wp } from "@/utils/responsive";
+import { router } from "expo-router";
 import {
+  Calendar,
+  CheckCircle,
   ChevronLeft,
   Clock,
-  Users,
-  CheckCircle,
-  XCircle,
   Phone,
-  Calendar,
   Play,
+  Users,
+  XCircle,
 } from "lucide-react-native";
-import { waitlistService } from "@/api/waitlistService";
-import { WaitlistEntry } from "@/api/mockServer/types";
+import { useCallback, useEffect, useState } from "react";
+import {
+  Alert,
+  FlatList,
+  RefreshControl,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+interface WaitlistEntry {
+  id: string;
+  userId: string;
+  salonName: string;
+  serviceName: string;
+  staffName?: string;
+  preferredDate: string;
+  preferredTimeSlots: string[];
+  position: number;
+  status: 'waiting' | 'slot_available' | 'confirmed' | 'expired' | 'cancelled' | 'notified' | 'booked';
+  availableSlot?: { date: string; time: string; notifiedAt?: string; expiresAt?: string };
+  expiresAt?: string;
+  createdAt: string;
+  userName?: string;
+  userPhone?: string;
+}
 
 type FilterType = "all" | "waiting" | "slot_available" | "confirmed" | "expired";
 
@@ -34,7 +50,7 @@ const FILTERS: { value: FilterType; label: string }[] = [
   { value: "expired", label: "Expired" },
 ];
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: Record<WaitlistEntry['status'], { color: string; bgColor: string; icon: typeof Clock }> = {
   waiting: {
     color: "#F59E0B",
     bgColor: "#FFFBEB",
@@ -60,6 +76,16 @@ const STATUS_CONFIG = {
     bgColor: "#FEF2F2",
     icon: XCircle,
   },
+  notified: {
+    color: "#8B5CF6",
+    bgColor: "#F5F3FF",
+    icon: Clock,
+  },
+  booked: {
+    color: "#059669",
+    bgColor: "#D1FAE5",
+    icon: CheckCircle,
+  },
 };
 
 export default function AdminWaitlistScreen() {
@@ -77,20 +103,45 @@ export default function AdminWaitlistScreen() {
 
   const loadWaitlist = useCallback(async () => {
     try {
-      const [entriesRes, statsRes] = await Promise.all([
-        waitlistService.getAdminWaitlist("salon-1"),
-        waitlistService.getWaitlistStats("salon-1", new Date().toISOString().split("T")[0]),
-      ]);
+      const entriesRes = await waitlistApi.getAdminWaitlist();
 
-      if (entriesRes.success) {
-        setEntries(entriesRes.data);
-      }
+      if (entriesRes.success && entriesRes.data) {
+        setEntries(entriesRes.data.map((w: any) => ({
+          id: w.id,
+          userId: w.userId,
+          salonName: w.salonName || w.salon?.name || 'Salon',
+          serviceName: w.serviceName || w.service?.name || 'Service',
+          staffName: w.staffName || w.staff?.name,
+          preferredDate: w.preferredDate,
+          preferredTimeSlots: w.preferredTimeSlots || [],
+          position: w.position || 1,
+          status: w.status || 'waiting',
+          availableSlot: w.availableSlot,
+          expiresAt: w.expiresAt,
+          createdAt: w.createdAt || new Date().toISOString(),
+          userName: w.userName || w.user?.name,
+          userPhone: w.userPhone || w.user?.phone,
+        })));
 
-      if (statsRes.success) {
-        setStats(statsRes.data);
+        const waiting = entriesRes.data.filter((e: any) => e.status === 'waiting').length;
+        setStats({
+          totalWaiting: waiting,
+          avgWaitTime: 0,
+          conversionRate: 0,
+          byService: [],
+        });
+      } else {
+        setEntries([]);
+        setStats({
+          totalWaiting: 0,
+          avgWaitTime: 0,
+          conversionRate: 0,
+          byService: [],
+        });
       }
     } catch (error) {
       console.error("Error loading waitlist:", error);
+      setEntries([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -128,9 +179,13 @@ export default function AdminWaitlistScreen() {
               const slotDate = today.toISOString().split("T")[0];
               const slotTime = entry.preferredTimeSlots[0] || "10:00 AM";
 
-              await waitlistService.simulateSlotAvailable(entry.id, slotDate, slotTime);
-              Alert.alert("Success", "Slot available notification sent!");
-              loadWaitlist();
+              const response = await waitlistApi.triggerSlotAvailable(entry.id, slotDate, slotTime);
+              if (response.success) {
+                Alert.alert("Success", "Slot available notification sent!");
+                loadWaitlist();
+              } else {
+                Alert.alert("Error", response.message || "Failed to send notification");
+              }
             } catch (error) {
               console.error("Error triggering slot:", error);
               Alert.alert("Error", "Failed to send notification");
@@ -168,7 +223,6 @@ export default function AdminWaitlistScreen() {
           borderColor: item.status === "waiting" ? Colors.primary : "#F3F4F6",
         }}
       >
-        {/* Header */}
         <View className="flex-row items-start justify-between">
           <View className="flex-1">
             <Text style={{ fontSize: rf(16), fontWeight: "600", color: "#000" }}>
@@ -179,7 +233,6 @@ export default function AdminWaitlistScreen() {
             </Text>
           </View>
 
-          {/* Status Badge */}
           <View
             className="flex-row items-center rounded-full"
             style={{
@@ -202,7 +255,6 @@ export default function AdminWaitlistScreen() {
           </View>
         </View>
 
-        {/* Details */}
         <View className="flex-row flex-wrap" style={{ marginTop: hp(1.5), gap: wp(3) }}>
           <View className="flex-row items-center">
             <Calendar size={rf(14)} color={Colors.gray[400]} />
@@ -226,7 +278,6 @@ export default function AdminWaitlistScreen() {
           )}
         </View>
 
-        {/* Position & Wait Info */}
         {item.status === "waiting" && (
           <View
             className="flex-row items-center justify-between rounded-lg"
@@ -241,19 +292,18 @@ export default function AdminWaitlistScreen() {
             <View>
               <Text style={{ fontSize: rf(11), color: Colors.gray[500] }}>Wait Time</Text>
               <Text style={{ fontSize: rf(14), fontWeight: "600", color: "#000" }}>
-                {Math.floor((Date.now() - new Date(item.joinedAt).getTime()) / 60000)} min
+                {Math.floor((Date.now() - new Date(item.createdAt).getTime()) / 60000)} min
               </Text>
             </View>
             <View>
               <Text style={{ fontSize: rf(11), color: Colors.gray[500] }}>Joined</Text>
               <Text style={{ fontSize: rf(14), fontWeight: "600", color: "#000" }}>
-                {new Date(item.joinedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {new Date(item.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </Text>
             </View>
           </View>
         )}
 
-        {/* Action Buttons */}
         {item.status === "waiting" && (
           <View className="flex-row" style={{ marginTop: hp(2), gap: wp(2) }}>
             <TouchableOpacity
@@ -282,7 +332,6 @@ export default function AdminWaitlistScreen() {
           </View>
         )}
 
-        {/* Available Slot Info */}
         {item.status === "slot_available" && item.availableSlot && (
           <View
             className="rounded-lg"
@@ -291,9 +340,11 @@ export default function AdminWaitlistScreen() {
             <Text style={{ fontSize: rf(12), color: "#065F46" }}>
               Slot offered: {item.availableSlot.date} at {item.availableSlot.time}
             </Text>
-            <Text style={{ fontSize: rf(11), color: "#065F46", marginTop: hp(0.5) }}>
-              Expires: {new Date(item.availableSlot.expiresAt).toLocaleTimeString()}
-            </Text>
+            {item.availableSlot.expiresAt && (
+              <Text style={{ fontSize: rf(11), color: "#065F46", marginTop: hp(0.5) }}>
+                Expires: {new Date(item.availableSlot.expiresAt).toLocaleTimeString()}
+              </Text>
+            )}
           </View>
         )}
       </View>
@@ -325,7 +376,7 @@ export default function AdminWaitlistScreen() {
           paddingHorizontal: wp(10),
         }}
       >
-        When customers join the waitlist for fully booked slots, they'll appear here.
+        When customers join the waitlist for fully booked slots, they will appear here.
       </Text>
     </View>
   );
@@ -334,7 +385,6 @@ export default function AdminWaitlistScreen() {
     <View className="flex-1 bg-white">
       <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
 
-      {/* Header */}
       <View
         className="flex-row items-center"
         style={{ paddingTop: hp(6), paddingHorizontal: wp(4), paddingBottom: hp(2) }}
@@ -347,7 +397,6 @@ export default function AdminWaitlistScreen() {
         </Text>
       </View>
 
-      {/* Stats Cards */}
       <View
         className="flex-row"
         style={{ paddingHorizontal: wp(4), marginBottom: hp(2), gap: wp(2) }}
@@ -390,7 +439,6 @@ export default function AdminWaitlistScreen() {
         </View>
       </View>
 
-      {/* Filters */}
       <View style={{ paddingHorizontal: wp(4), marginBottom: hp(2) }}>
         <FlatList
           horizontal
@@ -422,7 +470,6 @@ export default function AdminWaitlistScreen() {
         />
       </View>
 
-      {/* List */}
       <FlatList
         data={filteredEntries}
         keyExtractor={(item) => item.id}

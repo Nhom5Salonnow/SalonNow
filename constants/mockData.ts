@@ -275,12 +275,15 @@ export const CATEGORY_INFO: Record<string, { name: string; quote: string }> = {
   "bridal-vip": { name: "Bridal & VIP Styling", quote: '"Your Special Day,\nPerfectly Styled."' },
 };
 
+// ==================== DEFAULT AVATAR ====================
+export const DEFAULT_AVATAR = "https://api.builder.io/api/v1/image/assets/TEMP/bf83f7d9f51b91c7f1126d620657aa5f1b9a54bf?width=114";
+
 // ==================== DEFAULT USER ====================
 export const DEFAULT_USER = {
   name: "Doe John",
   email: "doejohn@example.com",
   phone: "+732 8888 111",
-  avatar: "https://api.builder.io/api/v1/image/assets/TEMP/bf83f7d9f51b91c7f1126d620657aa5f1b9a54bf?width=114",
+  avatar: DEFAULT_AVATAR,
 };
 
 // ==================== GUEST USER ====================

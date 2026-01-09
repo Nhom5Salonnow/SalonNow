@@ -6,28 +6,23 @@ import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 
 interface ScreenHeaderProps {
-  // Header type
   variant?: 'home' | 'back' | 'menu' | 'title';
 
-  // Content
   title?: string;
   greeting?: { line1: string; line2: string };
 
-  // Right side
   showNotification?: boolean;
   showProfile?: boolean;
   showSearch?: boolean;
   profileImage?: string;
   notificationCount?: number;
 
-  // Callbacks
   onMenuPress?: () => void;
   onBackPress?: () => void;
   onNotificationPress?: () => void;
   onProfilePress?: () => void;
   onSearchPress?: () => void;
 
-  // Right element override
   rightElement?: React.ReactNode;
 }
 
@@ -164,7 +159,6 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
             />
           </TouchableOpacity>
         )}
-        {/* Spacer for back variant with title */}
         {variant === 'back' && title && !showSearch && !showNotification && !showProfile && (
           <View style={{ width: wp(7) }} />
         )}

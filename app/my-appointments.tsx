@@ -6,7 +6,7 @@ import { wp, hp, rf } from '@/utils/responsive';
 import { Colors } from '@/constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import { WeekCalendar, generateWeekDays, AuthGuard } from '@/components';
-import { mockDatabase } from '@/api/mockServer/database';
+import { bookingApi } from '@/api/bookingApi';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts';
 
@@ -31,14 +31,31 @@ function MyAppointmentsContent() {
 
   const userId = user?.id || 'user-1';
 
-  const loadAppointments = useCallback(() => {
+  const loadAppointments = useCallback(async () => {
     try {
-      const userAppointments = mockDatabase.appointments.filter(
-        (a) => a.userId === userId || a.userId === 'user-1'
-      );
-      setAppointments(userAppointments);
+      const response = await bookingApi.getMyBookings();
+
+      if (response.success && response.data) {
+        const mappedAppointments = response.data.map((booking) => ({
+          id: booking.id,
+          userId: booking.userId,
+          serviceName: booking.serviceName || booking.service?.name || 'Service',
+          salonName: booking.salonName || booking.salon?.name || 'Salon',
+          staffName: booking.stylistName || (booking.stylist ? `${booking.stylist.firstName} ${booking.stylist.lastName}` : undefined),
+          date: booking.date || (booking.startTime ? new Date(booking.startTime).toLocaleDateString() : ''),
+          time: booking.time || (booking.startTime ? new Date(booking.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''),
+          status: booking.status,
+          price: booking.price || booking.totalPrice || booking.service?.price || 0,
+          total: booking.total || booking.totalPrice || booking.price || 0,
+        }));
+        setAppointments(mappedAppointments);
+      } else {
+        console.log('API returned no data');
+        setAppointments([]);
+      }
     } catch (error) {
       console.error('Error loading appointments:', error);
+      setAppointments([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -92,7 +109,6 @@ function MyAppointmentsContent() {
           borderColor: '#F3F4F6',
         }}
       >
-        {/* Header */}
         <View className="flex-row items-start justify-between">
           <View className="flex-1">
             <Text style={{ fontSize: rf(17), fontWeight: '600', color: '#000' }}>
@@ -103,7 +119,6 @@ function MyAppointmentsContent() {
             </Text>
           </View>
 
-          {/* Status Badge */}
           <View
             className="rounded-full"
             style={{
@@ -118,7 +133,6 @@ function MyAppointmentsContent() {
           </View>
         </View>
 
-        {/* Date & Time */}
         <View className="flex-row items-center" style={{ marginTop: hp(2) }}>
           <View className="flex-row items-center" style={{ marginRight: wp(4) }}>
             <Calendar size={rf(16)} color={Colors.gray[400]} />
@@ -134,7 +148,6 @@ function MyAppointmentsContent() {
           </View>
         </View>
 
-        {/* Staff */}
         {appointment.staffName && (
           <View className="flex-row items-center" style={{ marginTop: hp(1) }}>
             <User size={rf(16)} color={Colors.gray[400]} />
@@ -144,7 +157,6 @@ function MyAppointmentsContent() {
           </View>
         )}
 
-        {/* Price & Action */}
         <View
           className="flex-row items-center justify-between"
           style={{
@@ -197,7 +209,6 @@ function MyAppointmentsContent() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Pink gradient header */}
       <LinearGradient
         colors={['#FECDD3', '#FFF5F5', '#FFFFFF']}
         locations={[0, 0.5, 0.8]}
@@ -205,7 +216,6 @@ function MyAppointmentsContent() {
         style={{ height: hp(25) }}
       />
 
-      {/* Header */}
       <View
         className="flex-row items-center px-6"
         style={{ paddingTop: insets.top + hp(1) }}
@@ -222,7 +232,6 @@ function MyAppointmentsContent() {
         <View style={{ width: wp(7) }} />
       </View>
 
-      {/* Tabs */}
       <View
         className="flex-row rounded-full mx-6"
         style={{
@@ -269,7 +278,6 @@ function MyAppointmentsContent() {
         </TouchableOpacity>
       </View>
 
-      {/* Appointments List */}
       <ScrollView
         className="flex-1 px-6"
         style={{ marginTop: hp(3) }}
@@ -285,7 +293,6 @@ function MyAppointmentsContent() {
         <View style={{ height: hp(15) }} />
       </ScrollView>
 
-      {/* Book Appointment Button */}
       <View
         className="absolute bottom-0 left-0 right-0 px-6"
         style={{ paddingBottom: hp(4), backgroundColor: 'white' }}
