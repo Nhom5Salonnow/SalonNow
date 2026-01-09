@@ -1,70 +1,152 @@
 # SalonNow
 
-SalonNow is a modern mobile application that streamlines the process of booking and experiencing salon services. With just a few taps, users can:
+A React Native mobile application for booking salon services. Users can browse salons, view service menus, check availability, and book appointments.
 
-- Browse a wide range of salons conveniently.
-- View detailed service menus.
-- Check real-time availability.
-- Secure appointments instantly.
+> This project is developed by **Group 5** as part of the Mobile Development (CO3043) course, class CN01.
 
-This project is developed by Group 5 as part of the Mobile Development (CO3043) course, class CN01.
+## Tech Stack
 
-## Get started
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| React Native | 0.81.5 | Mobile framework |
+| Expo | 54 | Development platform |
+| Expo Router | v6 | File-based navigation |
+| TypeScript | 5.9 | Type safety |
+| NativeWind | 4.2.1 | TailwindCSS styling |
+| Axios | - | HTTP client |
+| Jest | - | Testing framework |
+| Sentry | 7.2.0 | Error tracking |
 
-1. Install dependencies
+## Getting Started
 
-   ```bash
-   npm install
-   ```
+### Prerequisites
 
-2. Start the app
+- Node.js 18+
+- npm or yarn
+- Expo CLI
+- Android Studio (for Android) or Xcode (for iOS)
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## 🧪 Testing Guide
-
-This project uses **Jest** and **React Native Testing Library** to test both UI components and application logic.
-
-### 1. Run all tests
+### Installation
 
 ```bash
-npm run test
+git clone https://github.com/Nhom5Salonnow/SalonNow.git
+cd SalonNow
+npm install
 ```
 
-This command will:
-
-- Execute all test files inside the `__tests__/` directory
-- Display pass/fail results in the terminal
-- Automatically watch file changes in development mode
-
-### 2. Run tests with coverage report
+### Running the App
 
 ```bash
-npm run test:coverage
+npx expo start      # Start development server
+npm run android     # Run on Android
+npm run ios         # Run on iOS
+npm run web         # Run on web browser
 ```
 
-This command will:
-
-- Generate a **coverage report**
-- Export results to:
+## Project Structure
 
 ```
-coverage/
-└── index.html
+SalonNow/
+├── app/                    # Screens (Expo Router)
+│   ├── (tabs)/            # Main tab navigation
+│   │   ├── home.tsx
+│   │   ├── bookings.tsx
+│   │   ├── notifications.tsx
+│   │   └── profile.tsx
+│   ├── admin/             # Admin screens
+│   ├── auth/              # Login, Signup
+│   ├── service/           # Service detail, Choose stylist
+│   └── waitlist/          # Waitlist management
+│
+├── api/                   # API layer
+│   ├── apiClient.ts       # Axios instance
+│   ├── authApi.ts
+│   ├── bookingApi.ts
+│   ├── serviceApi.ts
+│   └── ...
+│
+├── components/
+│   ├── common/            # Shared components
+│   ├── ui/                # UI components
+│   └── salon/             # Domain components
+│
+├── contexts/              # React Context
+├── constants/             # App constants
+├── hooks/                 # Custom hooks
+├── types/                 # TypeScript types
+├── utils/                 # Utilities
+└── __tests__/             # Test files
 ```
 
-You can open `coverage/index.html` in your browser to view a detailed coverage dashboard (statements, branches, functions, lines).
+## Features
 
-[![React Native CI - Test, Report & SonarCloud](https://github.com/Nhom5Salonnow/SalonNow/actions/workflows/test.yml/badge.svg)](https://github.com/Nhom5Salonnow/SalonNow/actions/workflows/test.yml)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Nhom5Salonnow_SalonNow&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Nhom5Salonnow_SalonNow)
+### Customer
+- Browse services and categories
+- View stylist profiles
+- Book appointments
+- Join waitlist
+- View booking history
+- Leave reviews
+- Manage payments
+- Notifications
+
+### Admin
+- Dashboard analytics
+- Manage services
+- Manage staff
+- Handle appointments
+- View feedback
+
+## API
+
+| Item | URL |
+|------|-----|
+| Base URL | `http://35.240.204.147:3000` |
+| Swagger Docs | `http://35.240.204.147:3000/api` |
+
+Configuration: `api/apiClient.ts`
+
+## Testing
+
+```bash
+npm test                              # Run all tests (watch mode)
+npm test -- --watchAll=false          # Run once (CI mode)
+npm run test:coverage                 # With coverage report
+npm test -- --testPathPattern="Home"  # Run specific test
+```
+
+Coverage report: `coverage/index.html`
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm start` | Start Expo server |
+| `npm run android` | Run on Android |
+| `npm run ios` | Run on iOS |
+| `npm run web` | Run on web |
+| `npm run lint` | Run ESLint |
+| `npm test` | Run tests |
+| `npm run test:coverage` | Tests with coverage |
+
+## Build (EAS)
+
+```bash
+eas login
+eas build --profile development --platform android
+eas build --profile development --platform ios
+```
+
+## CI/CD
+
+- GitHub Actions runs tests on PRs
+- SonarCloud code quality analysis
+- Coverage threshold: 80%
+
+## Team
+
+**Group 5 - CO3043 Mobile Development**
+
+## License
+
+Proprietary - All rights reserved.
