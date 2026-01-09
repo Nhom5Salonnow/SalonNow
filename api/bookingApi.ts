@@ -9,14 +9,7 @@ import {
   BookingSearchParams,
 } from './types/booking.types';
 
-/**
- * Booking API Service
- * Handles booking related API calls
- */
 export const bookingApi = {
-  /**
-   * Create booking - AVAILABLE
-   */
   createBooking: async (data: CreateBookingRequest): Promise<ApiResponse<Booking>> => {
     return safeApiCall(
       () => apiClient.post('/bookings', data),
@@ -24,9 +17,6 @@ export const bookingApi = {
     );
   },
 
-  /**
-   * Get my bookings - AVAILABLE
-   */
   getMyBookings: async (): Promise<ApiResponse<Booking[]>> => {
     return safeApiCall(
       () => apiClient.get('/bookings/my-bookings'),
@@ -34,10 +24,6 @@ export const bookingApi = {
     );
   },
 
-  /**
-   * Cancel booking - AVAILABLE
-   * Uses DELETE /bookings/:id
-   */
   cancelBooking: async (bookingId: string): Promise<ApiResponse<null>> => {
     return safeApiCall(
       () => apiClient.delete(`/bookings/${bookingId}`),
@@ -45,9 +31,6 @@ export const bookingApi = {
     );
   },
 
-  /**
-   * Get booking by ID - MAY NOT BE AVAILABLE
-   */
   getBookingById: async (bookingId: string): Promise<ApiResponse<Booking>> => {
     return safeApiCallOptional(
       () => apiClient.get(`/bookings/${bookingId}`),
@@ -55,9 +38,6 @@ export const bookingApi = {
     );
   },
 
-  /**
-   * Update booking - MAY NOT BE AVAILABLE
-   */
   updateBooking: async (bookingId: string, data: UpdateBookingRequest): Promise<ApiResponse<Booking>> => {
     return safeApiCallOptional(
       () => apiClient.patch(`/bookings/${bookingId}`, data),
@@ -65,9 +45,6 @@ export const bookingApi = {
     );
   },
 
-  /**
-   * Update booking status (for salon owners) - MAY NOT BE AVAILABLE
-   */
   updateBookingStatus: async (
     bookingId: string,
     data: UpdateBookingStatusRequest
@@ -78,9 +55,6 @@ export const bookingApi = {
     );
   },
 
-  /**
-   * Get bookings by salon (for salon owners) - MAY NOT BE AVAILABLE
-   */
   getBookingsBySalon: async (
     salonId: string,
     params?: BookingSearchParams
@@ -91,9 +65,6 @@ export const bookingApi = {
     );
   },
 
-  /**
-   * Get booking history - MAY NOT BE AVAILABLE
-   */
   getBookingHistory: async (params?: BookingSearchParams): Promise<ApiResponse<Booking[]>> => {
     return safeApiCallOptional(
       () => apiClient.get('/bookings/history', { params }),
@@ -101,9 +72,6 @@ export const bookingApi = {
     );
   },
 
-  /**
-   * Reschedule booking - MAY NOT BE AVAILABLE
-   */
   rescheduleBooking: async (bookingId: string, data: { newDate: string; newTime: string; reason?: string }): Promise<ApiResponse<Booking>> => {
     return safeApiCallOptional(
       () => apiClient.patch(`/bookings/${bookingId}/reschedule`, data),

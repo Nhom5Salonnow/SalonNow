@@ -11,11 +11,6 @@ interface AuthGuardProps {
   message?: string;
 }
 
-/**
- * AuthGuard component wraps screens that require authentication.
- * If user is not logged in, shows a modal prompting them to login.
- * Otherwise, renders the children normally.
- */
 export const AuthGuard: React.FC<AuthGuardProps> = ({
   children,
   message = 'Please login to access this feature',
@@ -52,7 +47,6 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
     router.back();
   };
 
-  // Still loading auth state
   if (isAuthenticated === null) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
@@ -61,7 +55,6 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
     );
   }
 
-  // Not authenticated - show modal over blank screen
   if (!isAuthenticated) {
     return (
       <View className="flex-1 bg-white">
@@ -80,16 +73,13 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
               style={{
                 width: wp(85),
                 padding: wp(6),
-                // iOS shadow
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.2,
                 shadowRadius: 10,
-                // Android shadow
                 elevation: 5,
               }}
             >
-              {/* Close button */}
               <TouchableOpacity
                 onPress={handleGoBack}
                 className="absolute"
@@ -98,7 +88,6 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
                 <X size={24} color={Colors.gray[400]} />
               </TouchableOpacity>
 
-              {/* Icon */}
               <View
                 className="rounded-full items-center justify-center"
                 style={{
@@ -111,7 +100,6 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
                 <LogIn size={rf(36)} color={Colors.primary} />
               </View>
 
-              {/* Title */}
               <Text
                 style={{
                   fontSize: rf(22),
@@ -124,7 +112,6 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
                 Login Required
               </Text>
 
-              {/* Message */}
               <Text
                 style={{
                   fontSize: rf(14),
@@ -138,7 +125,6 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
                 {message}
               </Text>
 
-              {/* Login Button */}
               <TouchableOpacity
                 onPress={handleLogin}
                 className="w-full items-center justify-center rounded-full"
@@ -159,7 +145,6 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
                 </Text>
               </TouchableOpacity>
 
-              {/* Go Back Button */}
               <TouchableOpacity
                 onPress={handleGoBack}
                 className="w-full items-center justify-center rounded-full"
@@ -185,6 +170,5 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
     );
   }
 
-  // Authenticated - render children
   return <>{children}</>;
 };

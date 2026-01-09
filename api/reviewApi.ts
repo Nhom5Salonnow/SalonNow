@@ -1,6 +1,6 @@
 import apiClient from './apiClient';
 import { safeApiCallOptional } from './apiHelper';
-import { ApiResponse, PaginatedResponse } from './types/common.types';
+import { ApiResponse } from './types/common.types';
 import {
   Review,
   CreateReviewRequest,
@@ -13,15 +13,7 @@ import {
   RespondFeedbackRequest,
 } from './types/review.types';
 
-/**
- * Review API Service
- * ALL ENDPOINTS MAY NOT BE AVAILABLE YET
- * Will gracefully fail without crashing
- */
 export const reviewApi = {
-  /**
-   * Create review
-   */
   createReview: async (data: CreateReviewRequest): Promise<ApiResponse<Review>> => {
     return safeApiCallOptional(
       () => apiClient.post('/reviews', data),
@@ -29,9 +21,6 @@ export const reviewApi = {
     );
   },
 
-  /**
-   * Get my reviews
-   */
   getMyReviews: async (): Promise<ApiResponse<Review[]>> => {
     return safeApiCallOptional(
       () => apiClient.get('/reviews/my-reviews'),
@@ -39,9 +28,6 @@ export const reviewApi = {
     );
   },
 
-  /**
-   * Get reviews by service
-   */
   getServiceReviews: async (
     serviceId: string,
     params?: ReviewSearchParams
@@ -59,9 +45,6 @@ export const reviewApi = {
     );
   },
 
-  /**
-   * Get reviews by salon
-   */
   getSalonReviews: async (
     salonId: string,
     params?: ReviewSearchParams
@@ -79,9 +62,6 @@ export const reviewApi = {
     );
   },
 
-  /**
-   * Get reviews by stylist
-   */
   getStylistReviews: async (
     stylistId: string,
     params?: ReviewSearchParams
@@ -92,9 +72,6 @@ export const reviewApi = {
     );
   },
 
-  /**
-   * Update review
-   */
   updateReview: async (reviewId: string, data: UpdateReviewRequest): Promise<ApiResponse<Review>> => {
     return safeApiCallOptional(
       () => apiClient.patch(`/reviews/${reviewId}`, data),
@@ -102,9 +79,6 @@ export const reviewApi = {
     );
   },
 
-  /**
-   * Delete review
-   */
   deleteReview: async (reviewId: string): Promise<ApiResponse<null>> => {
     return safeApiCallOptional(
       () => apiClient.delete(`/reviews/${reviewId}`),
@@ -112,9 +86,6 @@ export const reviewApi = {
     );
   },
 
-  /**
-   * Respond to review (salon owner)
-   */
   respondToReview: async (reviewId: string, data: RespondReviewRequest): Promise<ApiResponse<Review>> => {
     return safeApiCallOptional(
       () => apiClient.post(`/reviews/${reviewId}/respond`, data),
@@ -123,14 +94,7 @@ export const reviewApi = {
   },
 };
 
-/**
- * Feedback API Service
- * ALL ENDPOINTS MAY NOT BE AVAILABLE YET
- */
 export const feedbackApi = {
-  /**
-   * Create feedback
-   */
   createFeedback: async (data: CreateFeedbackRequest): Promise<ApiResponse<Feedback>> => {
     return safeApiCallOptional(
       () => apiClient.post('/feedback', data),
@@ -138,9 +102,6 @@ export const feedbackApi = {
     );
   },
 
-  /**
-   * Get all feedback (admin)
-   */
   getFeedbackList: async (): Promise<ApiResponse<Feedback[]>> => {
     return safeApiCallOptional(
       () => apiClient.get('/feedback'),
@@ -148,9 +109,6 @@ export const feedbackApi = {
     );
   },
 
-  /**
-   * Get feedback by ID (admin)
-   */
   getFeedbackById: async (feedbackId: string): Promise<ApiResponse<Feedback>> => {
     return safeApiCallOptional(
       () => apiClient.get(`/feedback/${feedbackId}`),
@@ -158,9 +116,6 @@ export const feedbackApi = {
     );
   },
 
-  /**
-   * Respond to feedback (admin)
-   */
   respondToFeedback: async (
     feedbackId: string,
     data: RespondFeedbackRequest

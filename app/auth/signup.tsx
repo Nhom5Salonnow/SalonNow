@@ -18,7 +18,7 @@ import { ChevronLeft } from "lucide-react-native";
 import { useAuth } from "@/contexts";
 
 export default function SignupScreen() {
-  const { login, register } = useAuth();
+  const { register } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -29,7 +29,6 @@ export default function SignupScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const handleSignup = async () => {
-    // Validation
     if (!name.trim()) {
       setError("Please enter your name");
       return;
@@ -55,7 +54,6 @@ export default function SignupScreen() {
     setError(null);
 
     try {
-      // Call real API
       const result = await register(name, email, password, phone);
 
       if (result.success) {
@@ -63,7 +61,6 @@ export default function SignupScreen() {
         return;
       }
 
-      // API failed - show error
       setError(result.message || "Registration failed. Please try again.");
     } catch (err: any) {
       setError(err.message || "Registration failed. Please try again.");
@@ -80,7 +77,6 @@ export default function SignupScreen() {
 
   return (
     <View className="flex-1">
-      {/* Background Image with blur effect */}
       <ImageBackground
         source={{
           uri: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800",
@@ -89,14 +85,12 @@ export default function SignupScreen() {
         resizeMode="cover"
         blurRadius={3}
       >
-        {/* Overlay */}
         <View
           className="absolute inset-0"
           style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
         />
 
         <SafeAreaView className="flex-1">
-          {/* Back Button */}
           <TouchableOpacity
             onPress={() => router.back()}
             style={{
@@ -123,7 +117,6 @@ export default function SignupScreen() {
               }}
               showsVerticalScrollIndicator={false}
             >
-              {/* Title */}
               <Text
                 style={{
                   fontSize: rf(32),
@@ -136,7 +129,6 @@ export default function SignupScreen() {
                 Salon Now
               </Text>
 
-              {/* Subtitle */}
               <Text
                 style={{
                   fontSize: rf(14),
@@ -149,7 +141,6 @@ export default function SignupScreen() {
                 Register to unlock a seamless beauty experience tailored just for you.
               </Text>
 
-              {/* Signup Card */}
             <View
               className="bg-white/90 rounded-3xl w-full"
               style={{
@@ -159,7 +150,6 @@ export default function SignupScreen() {
                 alignSelf: "center",
               }}
             >
-              {/* Tab Switcher */}
               <View className="flex-row items-center" style={{ marginBottom: hp(3) }}>
                 <TouchableOpacity
                   activeOpacity={0.7}
@@ -211,7 +201,6 @@ export default function SignupScreen() {
                 </TouchableOpacity>
               </View>
 
-              {/* Name Input */}
               <View
                 className="bg-white rounded-xl border"
                 style={{
@@ -232,7 +221,6 @@ export default function SignupScreen() {
                 />
               </View>
 
-              {/* Email Input */}
               <View
                 className="bg-white rounded-xl border"
                 style={{
@@ -255,7 +243,6 @@ export default function SignupScreen() {
                 />
               </View>
 
-              {/* Phone Input */}
               <View
                 className="bg-white rounded-xl border"
                 style={{
@@ -277,7 +264,6 @@ export default function SignupScreen() {
                 />
               </View>
 
-              {/* Password Input */}
               <View
                 className="bg-white rounded-xl border"
                 style={{
@@ -299,7 +285,6 @@ export default function SignupScreen() {
                 />
               </View>
 
-              {/* Confirm Password Input */}
               <View
                 className="bg-white rounded-xl border"
                 style={{
@@ -321,7 +306,6 @@ export default function SignupScreen() {
                 />
               </View>
 
-              {/* Error Message */}
               {error && (
                 <View
                   className="rounded-xl"
@@ -343,7 +327,6 @@ export default function SignupScreen() {
                 </View>
               )}
 
-              {/* Register Button */}
               <TouchableOpacity
                 onPress={handleSignup}
                 disabled={isLoading}
@@ -369,7 +352,6 @@ export default function SignupScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Remember Me Checkbox */}
             <TouchableOpacity
               onPress={() => setRememberMe(!rememberMe)}
               className="flex-row items-center justify-center"

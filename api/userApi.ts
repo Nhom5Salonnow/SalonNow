@@ -3,14 +3,7 @@ import { safeApiCall } from './apiHelper';
 import { ApiResponse } from './types/common.types';
 import { User, UpdateUserRequest, CreateUserRequest } from './types/user.types';
 
-/**
- * User API Service
- * Handles user related API calls
- */
 export const userApi = {
-  /**
-   * Get all users
-   */
   getUsers: async (): Promise<ApiResponse<User[]>> => {
     return safeApiCall(
       () => apiClient.get('/users'),
@@ -18,9 +11,6 @@ export const userApi = {
     );
   },
 
-  /**
-   * Get user by ID
-   */
   getUserById: async (userId: string): Promise<ApiResponse<User>> => {
     return safeApiCall(
       () => apiClient.get(`/users/${userId}`),
@@ -28,9 +18,6 @@ export const userApi = {
     );
   },
 
-  /**
-   * Create user
-   */
   createUser: async (data: CreateUserRequest): Promise<ApiResponse<User>> => {
     return safeApiCall(
       () => apiClient.post('/users', data),
@@ -38,9 +25,6 @@ export const userApi = {
     );
   },
 
-  /**
-   * Update user
-   */
   updateUser: async (userId: string, data: UpdateUserRequest): Promise<ApiResponse<User>> => {
     return safeApiCall(
       () => apiClient.patch(`/users/${userId}`, data),
@@ -48,9 +32,6 @@ export const userApi = {
     );
   },
 
-  /**
-   * Delete user
-   */
   deleteUser: async (userId: string): Promise<ApiResponse<null>> => {
     return safeApiCall(
       () => apiClient.delete(`/users/${userId}`),
@@ -58,9 +39,6 @@ export const userApi = {
     );
   },
 
-  /**
-   * Bulk create users
-   */
   bulkCreateUsers: async (users: CreateUserRequest[]): Promise<ApiResponse<User[]>> => {
     return safeApiCall(
       () => apiClient.post('/users/bulk', users),
@@ -68,9 +46,6 @@ export const userApi = {
     );
   },
 
-  /**
-   * Update current user's profile
-   */
   updateProfile: async (data: UpdateUserRequest): Promise<ApiResponse<User>> => {
     return safeApiCall(
       () => apiClient.patch('/users/profile', data),

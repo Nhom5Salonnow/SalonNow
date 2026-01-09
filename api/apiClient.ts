@@ -4,18 +4,12 @@ import { STORAGE_KEYS } from '@/constants/api';
 
 const API_BASE_URL = 'http://35.240.204.147:3000';
 
-// Callback to notify when auth is invalidated (401)
 let onAuthInvalidated: (() => void) | null = null;
 
-/**
- * Set callback to be called when 401 is received
- * Used by AuthContext to handle session expiration
- */
 export const setOnAuthInvalidated = (callback: (() => void) | null) => {
   onAuthInvalidated = callback;
 };
 
-// Create axios instance
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
@@ -24,7 +18,6 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Request interceptor - add token to header
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     try {
@@ -33,7 +26,6 @@ apiClient.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     } catch (error) {
-      // Silently fail - don't crash if AsyncStorage fails
       console.log('Failed to get auth token:', error);
     }
     return config;
@@ -41,25 +33,20 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor - handle errors gracefully
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    // Handle 401 - Token expired
     if (error.response?.status === 401) {
       try {
-        // Clear tokens on 401
         await AsyncStorage.multiRemove([
           STORAGE_KEYS.AUTH_TOKEN,
           STORAGE_KEYS.REFRESH_TOKEN,
           STORAGE_KEYS.USER_DATA,
         ]);
-        // Notify AuthContext about session expiration
         if (onAuthInvalidated) {
           onAuthInvalidated();
         }
       } catch (storageError) {
-        // Silently fail
         console.error('Failed to clear tokens:', storageError);
       }
     }

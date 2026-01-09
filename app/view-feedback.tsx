@@ -44,7 +44,6 @@ export default function ViewFeedbackScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Decorative pink circle */}
       <View
         className="absolute rounded-full"
         style={{
@@ -58,7 +57,6 @@ export default function ViewFeedbackScreen() {
       />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View
           className="flex-row items-center justify-between"
           style={{ paddingHorizontal: wp(6), paddingTop: insets.top + hp(1) }}
@@ -74,7 +72,6 @@ export default function ViewFeedbackScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Feedback Card */}
         <View
           className="mx-6 mt-8 rounded-3xl bg-white p-6"
           style={{
@@ -86,7 +83,6 @@ export default function ViewFeedbackScreen() {
             Your Feedback
           </Text>
 
-          {/* Rating Categories - Read Only */}
           {ratings.map((category) => (
             <View
               key={category.id}
@@ -100,7 +96,6 @@ export default function ViewFeedbackScreen() {
             </View>
           ))}
 
-          {/* Comment Section - Read Only */}
           <View style={{ marginTop: hp(4) }}>
             <Text style={{ fontSize: rf(16), fontWeight: '600', color: '#000' }}>
               Your Comment
@@ -120,7 +115,6 @@ export default function ViewFeedbackScreen() {
             </View>
           </View>
 
-          {/* Change Feedback Button */}
           <TouchableOpacity
             onPress={handleChangeFeedback}
             className="mt-6 rounded-full items-center justify-center"
@@ -135,7 +129,6 @@ export default function ViewFeedbackScreen() {
         <View style={{ height: hp(15) }} />
       </ScrollView>
 
-      {/* Bottom Navigation */}
       <View
         className="absolute bottom-0 left-0 right-0 flex-row items-center justify-around"
         style={{

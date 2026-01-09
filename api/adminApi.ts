@@ -2,9 +2,6 @@ import apiClient from './apiClient';
 import { safeApiCallOptional } from './apiHelper';
 import { ApiResponse } from './types/common.types';
 
-/**
- * Admin Dashboard Types
- */
 export interface DashboardStats {
   totalBookings: number;
   totalRevenue: number;
@@ -48,15 +45,7 @@ export interface DashboardOverview {
   topStylists: TopStylist[];
 }
 
-/**
- * Admin API Service
- * ALL ENDPOINTS MAY NOT BE AVAILABLE YET
- * Will gracefully fail without crashing
- */
 export const adminApi = {
-  /**
-   * Get dashboard overview
-   */
   getDashboardOverview: async (): Promise<ApiResponse<DashboardOverview>> => {
     return safeApiCallOptional(
       () => apiClient.get('/admin/dashboard'),
@@ -79,9 +68,6 @@ export const adminApi = {
     );
   },
 
-  /**
-   * Get dashboard stats
-   */
   getDashboardStats: async (): Promise<ApiResponse<DashboardStats>> => {
     return safeApiCallOptional(
       () => apiClient.get('/admin/dashboard/stats'),
@@ -98,9 +84,6 @@ export const adminApi = {
     );
   },
 
-  /**
-   * Get revenue report
-   */
   getRevenueReport: async (params?: {
     startDate?: string;
     endDate?: string;
@@ -112,9 +95,6 @@ export const adminApi = {
     );
   },
 
-  /**
-   * Get booking trends
-   */
   getBookingTrends: async (params?: {
     startDate?: string;
     endDate?: string;
@@ -125,9 +105,6 @@ export const adminApi = {
     );
   },
 
-  /**
-   * Get top services
-   */
   getTopServices: async (limit?: number): Promise<ApiResponse<TopService[]>> => {
     return safeApiCallOptional(
       () => apiClient.get('/admin/reports/top-services', { params: { limit } }),
@@ -135,9 +112,6 @@ export const adminApi = {
     );
   },
 
-  /**
-   * Get top stylists
-   */
   getTopStylists: async (limit?: number): Promise<ApiResponse<TopStylist[]>> => {
     return safeApiCallOptional(
       () => apiClient.get('/admin/reports/top-stylists', { params: { limit } }),
@@ -145,9 +119,6 @@ export const adminApi = {
     );
   },
 
-  /**
-   * Get all bookings (admin view)
-   */
   getAllBookings: async (params?: {
     status?: string;
     startDate?: string;
@@ -161,9 +132,6 @@ export const adminApi = {
     );
   },
 
-  /**
-   * Update booking status (admin)
-   */
   updateBookingStatus: async (
     bookingId: string,
     status: string
@@ -174,9 +142,6 @@ export const adminApi = {
     );
   },
 
-  /**
-   * Get all users (admin)
-   */
   getAllUsers: async (params?: {
     role?: string;
     search?: string;
@@ -189,9 +154,6 @@ export const adminApi = {
     );
   },
 
-  /**
-   * Update user role (admin)
-   */
   updateUserRole: async (
     userId: string,
     role: string

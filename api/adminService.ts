@@ -47,9 +47,6 @@ export interface AdminAppointmentFilters {
 }
 
 class AdminService {
-  /**
-   * Get dashboard statistics
-   */
   async getDashboardStats(salonId: string): Promise<ApiResponse<DashboardStats>> {
     return withDelay(() => {
       const today = new Date().toISOString().split('T')[0];
@@ -113,9 +110,6 @@ class AdminService {
     });
   }
 
-  /**
-   * Get appointments by date range
-   */
   async getAppointmentsByDate(
     salonId: string,
     days: number = 7
@@ -154,9 +148,6 @@ class AdminService {
     });
   }
 
-  /**
-   * Get revenue by service
-   */
   async getRevenueByService(salonId: string): Promise<ApiResponse<RevenueByService[]>> {
     return withDelay(() => {
       const serviceStats: Record<string, { revenue: number; count: number }> = {};
@@ -193,9 +184,6 @@ class AdminService {
     });
   }
 
-  /**
-   * Get staff performance
-   */
   async getStaffPerformance(salonId: string): Promise<ApiResponse<StaffPerformance[]>> {
     return withDelay(() => {
       const salonStaff = mockDatabase.staff.filter(
@@ -237,9 +225,6 @@ class AdminService {
     });
   }
 
-  /**
-   * Get all appointments with filters
-   */
   async getAppointments(
     salonId: string,
     filters?: AdminAppointmentFilters,
@@ -251,7 +236,6 @@ class AdminService {
         (a: any) => a.salonId === salonId
       );
 
-      // Apply filters
       if (filters) {
         if (filters.status?.length) {
           appointments = appointments.filter((a: any) => filters.status!.includes(a.status));
@@ -270,14 +254,12 @@ class AdminService {
         }
       }
 
-      // Sort by date desc
       appointments.sort((a: any, b: any) => {
         const dateA = new Date(a.date + ' ' + a.time);
         const dateB = new Date(b.date + ' ' + b.time);
         return dateB.getTime() - dateA.getTime();
       });
 
-      // Pagination
       const startIndex = (page - 1) * limit;
       const paginatedAppointments = appointments.slice(startIndex, startIndex + limit);
 
@@ -294,9 +276,6 @@ class AdminService {
     });
   }
 
-  /**
-   * Update appointment status
-   */
   async updateAppointmentStatus(
     appointmentId: string,
     status: 'confirmed' | 'cancelled' | 'completed' | 'no_show'
@@ -324,9 +303,6 @@ class AdminService {
     });
   }
 
-  /**
-   * Get recent reviews
-   */
   async getRecentReviews(salonId: string, limit: number = 10): Promise<ApiResponse<Review[]>> {
     return withDelay(() => {
       const reviews = mockDatabase.reviews
@@ -341,9 +317,6 @@ class AdminService {
     });
   }
 
-  /**
-   * Respond to review
-   */
   async respondToReview(reviewId: string, response: string): Promise<ApiResponse<Review>> {
     return withDelay(() => {
       const review = mockDatabase.reviews.find((r) => r.id === reviewId);
@@ -369,9 +342,6 @@ class AdminService {
     });
   }
 
-  /**
-   * Add new service
-   */
   async addService(service: Omit<Service, 'id'>): Promise<ApiResponse<Service>> {
     return withDelay(() => {
       const newService: Service = {
@@ -388,9 +358,6 @@ class AdminService {
     });
   }
 
-  /**
-   * Update service
-   */
   async updateService(serviceId: string, updates: Partial<Service>): Promise<ApiResponse<Service>> {
     return withDelay(() => {
       const serviceIndex = mockDatabase.services.findIndex((s) => s.id === serviceId);
@@ -413,9 +380,6 @@ class AdminService {
     });
   }
 
-  /**
-   * Delete service
-   */
   async deleteService(serviceId: string): Promise<ApiResponse<boolean>> {
     return withDelay(() => {
       const serviceIndex = mockDatabase.services.findIndex((s) => s.id === serviceId);
@@ -437,9 +401,6 @@ class AdminService {
     });
   }
 
-  /**
-   * Add new staff member
-   */
   async addStaff(staff: Omit<Staff, 'id'>): Promise<ApiResponse<Staff>> {
     return withDelay(() => {
       const newStaff: Staff = {
@@ -456,9 +417,6 @@ class AdminService {
     });
   }
 
-  /**
-   * Update staff member
-   */
   async updateStaff(staffId: string, updates: Partial<Staff>): Promise<ApiResponse<Staff>> {
     return withDelay(() => {
       const staffIndex = mockDatabase.staff.findIndex((s) => s.id === staffId);
@@ -481,9 +439,6 @@ class AdminService {
     });
   }
 
-  /**
-   * Delete staff member
-   */
   async deleteStaff(staffId: string): Promise<ApiResponse<boolean>> {
     return withDelay(() => {
       const staffIndex = mockDatabase.staff.findIndex((s) => s.id === staffId);
@@ -496,7 +451,6 @@ class AdminService {
         };
       }
 
-      // Soft delete - set as inactive
       mockDatabase.staff[staffIndex].isActive = false;
 
       return {
@@ -506,9 +460,6 @@ class AdminService {
     });
   }
 
-  /**
-   * Get popular times
-   */
   async getPopularTimes(salonId: string): Promise<ApiResponse<{ hour: number; count: number }[]>> {
     return withDelay(() => {
       const hourCounts: Record<number, number> = {};

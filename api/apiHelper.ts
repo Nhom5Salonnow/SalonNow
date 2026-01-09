@@ -2,11 +2,6 @@ import { AxiosError } from 'axios';
 import { ApiResponse } from './types/common.types';
 import { handleApiError } from '@/utils/apiErrorHandler';
 
-/**
- * Safe API call wrapper
- * Wraps API calls to prevent crashes when API fails
- * Returns a consistent response structure
- */
 export async function safeApiCall<T>(
   apiCall: () => Promise<{ data: any }>,
   defaultData: T
@@ -14,7 +9,6 @@ export async function safeApiCall<T>(
   try {
     const response = await apiCall();
 
-    // If response has success field, use it
     if (response.data && typeof response.data.success === 'boolean') {
       return {
         success: response.data.success,
@@ -23,7 +17,6 @@ export async function safeApiCall<T>(
       };
     }
 
-    // Otherwise, wrap the response data
     return {
       success: true,
       data: response.data ?? defaultData,
@@ -32,7 +25,6 @@ export async function safeApiCall<T>(
     const axiosError = error as AxiosError;
     const message = handleApiError(axiosError);
 
-    // Log error for debugging but don't crash
     console.log('API Error:', {
       status: axiosError?.response?.status,
       message,
@@ -49,10 +41,6 @@ export async function safeApiCall<T>(
   }
 }
 
-/**
- * Safe API call for endpoints that might not exist yet
- * Will return default data without error
- */
 export async function safeApiCallOptional<T>(
   apiCall: () => Promise<{ data: any }>,
   defaultData: T
@@ -73,8 +61,6 @@ export async function safeApiCallOptional<T>(
       data: response.data ?? defaultData,
     };
   } catch (error) {
-    // Silently return default data for optional endpoints
-    // This is for APIs that don't exist yet
     return {
       success: true,
       data: defaultData,

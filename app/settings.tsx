@@ -49,7 +49,6 @@ export default function SettingsScreen() {
   const { user, isLoggedIn, logout } = useAuth();
 
   const handleSignOut = async () => {
-    // On web, use window.confirm instead of Alert.alert
     if (Platform.OS === 'web') {
       const confirmed = window.confirm('Are you sure you want to sign out?');
       if (confirmed) {
@@ -58,7 +57,6 @@ export default function SettingsScreen() {
       return;
     }
 
-    // On native, use Alert.alert
     Alert.alert(
       "Sign Out",
       "Are you sure you want to sign out?",
@@ -77,7 +75,6 @@ export default function SettingsScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Decorative pink circle */}
       <View
         className="absolute rounded-full"
         style={{
@@ -91,7 +88,6 @@ export default function SettingsScreen() {
       />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View
           className="flex-row items-center justify-between px-6"
           style={{ paddingTop: insets.top + hp(1), paddingBottom: hp(3) }}
@@ -105,7 +101,6 @@ export default function SettingsScreen() {
             </Text>
           </View>
 
-          {/* Profile Avatar */}
           <TouchableOpacity
             onPress={() => router.push(isLoggedIn ? '/profile' : '/auth/login' as any)}
             className="rounded-full overflow-hidden items-center justify-center"
@@ -129,16 +124,13 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Guest Login/Register Section */}
         {!isLoggedIn && (
           <View className="px-6" style={{ marginBottom: hp(3) }}>
             <GuestPrompt message="Sign in to access all settings and features" />
           </View>
         )}
 
-        {/* Settings List */}
         <View className="px-6" style={{ marginTop: isLoggedIn ? hp(4) : hp(2) }}>
-          {/* Account Info - only for logged in users */}
           {isLoggedIn && (
             <SettingsItem
               title="Account Info"
@@ -147,7 +139,6 @@ export default function SettingsScreen() {
             />
           )}
 
-          {/* Change Password - only for logged in users */}
           {isLoggedIn && (
             <SettingsItem
               title="Change Password"
@@ -156,14 +147,12 @@ export default function SettingsScreen() {
             />
           )}
 
-          {/* Language */}
           <SettingsItem
             title="Language"
             showArrow
             onPress={() => {}}
           />
 
-          {/* Dark Mode */}
           <View className="flex-row items-center justify-between py-4 border-b border-gray-100">
             <Text style={{ fontSize: rf(18), color: '#000', fontWeight: '400' }}>
               Dark Mode
@@ -177,28 +166,24 @@ export default function SettingsScreen() {
             />
           </View>
 
-          {/* Help Center */}
           <TouchableOpacity className="py-4">
             <Text style={{ fontSize: rf(16), color: '#6B7280', fontWeight: '400' }}>
               Help Center
             </Text>
           </TouchableOpacity>
 
-          {/* Privacy Policy */}
           <TouchableOpacity className="py-2">
             <Text style={{ fontSize: rf(16), color: '#6B7280', fontWeight: '400' }}>
               Privacy Policy
             </Text>
           </TouchableOpacity>
 
-          {/* Recommendations */}
           <TouchableOpacity className="py-4">
             <Text style={{ fontSize: rf(16), color: '#6B7280', fontWeight: '400' }}>
               Recommendations
             </Text>
           </TouchableOpacity>
 
-          {/* Sign Out - only for logged in users */}
           {isLoggedIn && (
             <TouchableOpacity
               activeOpacity={0.6}

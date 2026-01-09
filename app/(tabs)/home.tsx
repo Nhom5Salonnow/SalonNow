@@ -28,14 +28,11 @@ interface Stylist {
   phone: string;
 }
 
-// Helper: Merge API data with hardcoded data (API takes priority, hardcoded fills gaps)
 const mergeCategories = (apiData: Category[], hardcodedData: Category[]): Category[] => {
   const merged = new Map<string, Category>();
 
-  // Add hardcoded first (as base)
   hardcodedData.forEach(item => merged.set(item.id, item));
 
-  // Override/add with API data (API takes priority)
   apiData.forEach(item => merged.set(item.id, item));
 
   return Array.from(merged.values());
@@ -44,10 +41,8 @@ const mergeCategories = (apiData: Category[], hardcodedData: Category[]): Catego
 const mergeSpecialists = (apiData: Stylist[], hardcodedData: Stylist[]): Stylist[] => {
   const merged = new Map<string, Stylist>();
 
-  // Add hardcoded first (as base)
   hardcodedData.forEach(item => merged.set(item.id, item));
 
-  // Override/add with API data (API takes priority)
   apiData.forEach(item => merged.set(item.id, item));
 
   return Array.from(merged.values());
@@ -57,15 +52,12 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { user, isLoggedIn } = useAuth();
 
-  // Initialize with hardcoded data, then merge with API
   const [categories, setCategories] = useState<Category[]>(HOME_CATEGORIES);
   const [specialists, setSpecialists] = useState<Stylist[]>(SPECIALISTS);
 
-  // Fetch data from API and merge with hardcoded
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch categories from API
         const categoryResponse = await categoryApi.getCategories();
         if (categoryResponse.success && categoryResponse.data && categoryResponse.data.length > 0) {
           const apiCategories = categoryResponse.data.map((cat: any) => ({
@@ -73,12 +65,9 @@ export default function HomeScreen() {
             name: cat.name,
             imageUrl: cat.image || cat.imageUrl || HOME_CATEGORIES[0]?.imageUrl,
           }));
-          // Merge API data with hardcoded data
           setCategories(mergeCategories(apiCategories, HOME_CATEGORIES));
         }
-        // If API fails or empty, keep hardcoded data (already set as initial state)
 
-        // Fetch stylists from API
         const stylistResponse = await stylistApi.getStylists();
         if (stylistResponse.success && stylistResponse.data && stylistResponse.data.length > 0) {
           const apiSpecialists = stylistResponse.data.map((sty: any) => ({
@@ -88,13 +77,10 @@ export default function HomeScreen() {
             rating: sty.rating || 4.5,
             phone: sty.phone || '',
           }));
-          // Merge API data with hardcoded data
           setSpecialists(mergeSpecialists(apiSpecialists, SPECIALISTS));
         }
-        // If API fails or empty, keep hardcoded data (already set as initial state)
       } catch (error) {
         console.error('Error fetching home data:', error);
-        // Keep hardcoded data on error (already set as initial state)
       }
     };
 
@@ -115,7 +101,6 @@ export default function HomeScreen() {
   };
 
   const handlePromoPress = () => {
-    // Navigate to promotions or specific service
     router.push("/service/hair-design" as any);
   };
 
@@ -128,13 +113,11 @@ export default function HomeScreen() {
       <DecorativeCircle position="topLeft" size="xlarge" />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View
           className="flex-row items-center justify-between relative z-10"
           style={{ paddingHorizontal: wp(6), marginTop: insets.top + hp(1) }}
         >
           <View className="flex-row items-center" style={{ gap: wp(4) }}>
-            {/* Menu Icon */}
             <TouchableOpacity
               className="p-2"
               onPress={() => router.push("/settings" as any)}
@@ -142,7 +125,6 @@ export default function HomeScreen() {
               <Menu size={rf(28)} color={Colors.salon.dark} strokeWidth={2} />
             </TouchableOpacity>
 
-            {/* Greeting */}
             <View>
               <Text
                 style={{ fontSize: rf(22), fontWeight: "400", color: "rgba(0,0,0,0.8)" }}
@@ -157,7 +139,6 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* Profile / Login Button with border */}
           <TouchableOpacity
             testID="profile-button"
             onPress={isGuest ? () => router.push("/auth/login") : handleProfilePress}
@@ -182,7 +163,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Promotional Banners */}
         <View className="relative z-10" style={{ marginTop: hp(2) }}>
           <ScrollView
             horizontal
@@ -222,7 +202,6 @@ Save Some"
           </ScrollView>
         </View>
 
-        {/* Categories */}
         <View className="relative z-10" style={{ paddingHorizontal: wp(6), marginTop: hp(3) }}>
           <View className="flex-row items-center justify-between" style={{ marginBottom: hp(1.5) }}>
             <Text
@@ -230,7 +209,6 @@ Save Some"
             >
               Categories
             </Text>
-            {/* Shopping Cart next to Categories */}
             <TouchableOpacity
               testID="cart-button"
               onPress={handleCartPress}
@@ -251,7 +229,6 @@ Save Some"
           </View>
         </View>
 
-        {/* Hair Specialist */}
         <View className="relative z-10" style={{ marginTop: hp(5) }}>
           <Text
             style={{
@@ -283,7 +260,6 @@ Save Some"
           </ScrollView>
         </View>
 
-        {/* Bottom spacing for navigation */}
         <View style={{ height: hp(4) }} />
       </ScrollView>
     </View>

@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
-import { View, Text, ScrollView, TouchableOpacity, FlatList, RefreshControl, ActivityIndicator, Alert } from "react-native";
-import { wp, hp, rf } from "@/utils/responsive";
-import { Colors } from "@/constants";
-import { DecorativeCircle } from "@/components";
-import { Clock, CheckCircle, XCircle, AlertCircle, Check, X, User } from "lucide-react-native";
 import { adminApi } from "@/api";
+import { DecorativeCircle } from "@/components";
+import { Colors } from "@/constants";
+import { hp, rf, wp } from "@/utils/responsive";
+import { AlertCircle, Check, CheckCircle, Clock, User, X, XCircle } from "lucide-react-native";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Alert, FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 interface Appointment {
   id: string;
@@ -46,11 +46,9 @@ export default function AdminAppointmentsScreen() {
 
   const loadAppointments = useCallback(async () => {
     try {
-      // Call real API
       const filters = selectedFilter !== "all" ? { status: selectedFilter } : {};
       const res = await adminApi.getAllBookings(filters);
       if (res.success && res.data) {
-        // Map API response to local format
         setAppointments(res.data.map((apt: any) => ({
           id: apt.id || apt._id,
           serviceName: apt.serviceName || apt.service?.name || 'Service',
@@ -63,7 +61,6 @@ export default function AdminAppointmentsScreen() {
           userPhone: apt.userPhone || apt.user?.phone,
         })));
       } else {
-        // API returned no data - show empty
         setAppointments([]);
       }
     } catch (error) {
@@ -106,7 +103,6 @@ export default function AdminAppointmentsScreen() {
           text: statusLabels[newStatus],
           style: newStatus === "cancelled" || newStatus === "no_show" ? "destructive" : "default",
           onPress: async () => {
-            // Call real API
             const res = await adminApi.updateBookingStatus(appointmentId, newStatus);
             if (res.success) {
               await loadAppointments();
@@ -178,7 +174,6 @@ export default function AdminAppointmentsScreen() {
           </Text>
         </View>
 
-        {/* Actions for pending */}
         {apt.status === "pending" && (
           <View
             className="flex-row items-center justify-between"
@@ -207,7 +202,6 @@ export default function AdminAppointmentsScreen() {
           </View>
         )}
 
-        {/* Actions for confirmed */}
         {apt.status === "confirmed" && (
           <View
             className="flex-row items-center justify-between"
@@ -251,7 +245,6 @@ export default function AdminAppointmentsScreen() {
     <View className="flex-1 bg-white">
       <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
 
-      {/* Header */}
       <View style={{ paddingTop: hp(6), paddingHorizontal: wp(6) }}>
         <Text style={{ fontSize: rf(24), fontWeight: "700", color: "#000" }}>
           Appointments
@@ -261,7 +254,6 @@ export default function AdminAppointmentsScreen() {
         </Text>
       </View>
 
-      {/* Filter Tabs */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -292,7 +284,6 @@ export default function AdminAppointmentsScreen() {
         ))}
       </ScrollView>
 
-      {/* Appointments List */}
       <FlatList
         data={appointments}
         renderItem={renderAppointment}

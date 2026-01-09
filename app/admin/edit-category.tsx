@@ -15,7 +15,6 @@ interface ServiceItem {
   price: number;
 }
 
-// Hardcoded services for fallback/merge
 const HARDCODED_SERVICES: ServiceItem[] = SERVICES_MENU.map(s => ({
   id: s.id,
   name: s.name,
@@ -24,7 +23,6 @@ const HARDCODED_SERVICES: ServiceItem[] = SERVICES_MENU.map(s => ({
   price: s.price,
 }));
 
-// Merge API data with hardcoded (API takes priority)
 const mergeServices = (apiData: ServiceItem[], hardcodedData: ServiceItem[]): ServiceItem[] => {
   const merged = new Map<string, ServiceItem>();
   hardcodedData.forEach(item => merged.set(item.id, item));
@@ -35,18 +33,15 @@ const mergeServices = (apiData: ServiceItem[], hardcodedData: ServiceItem[]): Se
 export default function EditCategoryScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
 
-  // Get hardcoded category info
   const hardcodedInfo = params.id ? CATEGORY_INFO[params.id] : null;
 
   const [categoryName, setCategoryName] = useState(hardcodedInfo?.name || 'Category');
   const [categoryQuote, setCategoryQuote] = useState(hardcodedInfo?.quote || '"Nourish Your Skin\nRenew Your Soul"');
-  // Initialize with hardcoded services
   const [services, setServices] = useState<ServiceItem[]>(HARDCODED_SERVICES);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch category details from API
         if (params.id) {
           const catResponse = await categoryApi.getCategoryById(params.id);
           if (catResponse.success && catResponse.data) {
@@ -54,7 +49,6 @@ export default function EditCategoryScreen() {
             setCategoryQuote(catResponse.data.quote || hardcodedInfo?.quote || '"Beauty Awaits"');
           }
 
-          // Fetch services for this category from API
           const svcResponse = await serviceApi.getServices({ categoryId: params.id });
           if (svcResponse.success && svcResponse.data && svcResponse.data.length > 0) {
             const apiServices = svcResponse.data.map((svc: any) => ({
@@ -64,26 +58,21 @@ export default function EditCategoryScreen() {
               rating: svc.rating || 0,
               price: svc.price || 0,
             }));
-            // Merge API data with hardcoded
             setServices(mergeServices(apiServices, HARDCODED_SERVICES));
           }
-          // If API fails/empty, keep hardcoded (already set as initial state)
         }
       } catch (error) {
         console.error('Error fetching category data:', error);
-        // Keep hardcoded on error
       }
     };
     fetchData();
   }, [params.id, hardcodedInfo]);
 
   const handleEditService = (serviceId: string) => {
-    // Edit service
     console.log('Edit service:', serviceId);
   };
 
   const handleAddService = () => {
-    // Add new service
     console.log('Add new service');
   };
 
@@ -93,7 +82,6 @@ export default function EditCategoryScreen() {
       <DecorativeCircle position="topRight" size="medium" opacity={0.3} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View
           className="flex-row items-center justify-between"
           style={{ paddingHorizontal: wp(6), paddingTop: hp(6) }}
@@ -109,7 +97,6 @@ export default function EditCategoryScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Banner - Editable */}
         <View className="relative" style={{ marginTop: hp(3), paddingHorizontal: wp(4) }}>
           <View
             className="rounded-3xl overflow-hidden"
@@ -137,7 +124,6 @@ export default function EditCategoryScreen() {
               />
             </View>
           </View>
-          {/* Edit banner button */}
           <TouchableOpacity
             className="absolute rounded-full items-center justify-center bg-white"
             style={{
@@ -153,7 +139,6 @@ export default function EditCategoryScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Menu Section */}
         <View style={{ paddingHorizontal: wp(6), marginTop: hp(4) }}>
           <Text
             className="text-center"
@@ -162,7 +147,6 @@ export default function EditCategoryScreen() {
             Menu
           </Text>
 
-          {/* Service Items */}
           {services.map((service) => (
             <View
               key={service.id}
@@ -203,7 +187,6 @@ export default function EditCategoryScreen() {
                   </Text>
                 </TouchableOpacity>
               </View>
-              {/* Edit service button */}
               <TouchableOpacity
                 onPress={() => handleEditService(service.id)}
                 className="absolute rounded-full items-center justify-center bg-white"
@@ -221,7 +204,6 @@ export default function EditCategoryScreen() {
             </View>
           ))}
 
-          {/* Add Service Button */}
           <TouchableOpacity
             onPress={handleAddService}
             className="rounded-2xl items-center justify-center"

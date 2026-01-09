@@ -1,41 +1,39 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-} from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
-import { wp, hp, rf } from "@/utils/responsive";
-import { Colors, SPECIALISTS } from "@/constants";
+import { stylistApi, waitlistApi } from "@/api";
 import { DecorativeCircle } from "@/components";
-import {
-  ChevronLeft,
-  Calendar,
-  Clock,
-  User,
-  Scissors,
-  Bell,
-  CheckCircle,
-  Info,
-} from "lucide-react-native";
+import { Colors, SPECIALISTS } from "@/constants";
 import { useAuth } from "@/contexts";
-import { waitlistApi, stylistApi } from "@/api";
+import { hp, rf, wp } from "@/utils/responsive";
+import { router, useLocalSearchParams } from "expo-router";
+import {
+  Bell,
+  Calendar,
+  CheckCircle,
+  ChevronLeft,
+  Clock,
+  Info,
+  Scissors,
+  User,
+} from "lucide-react-native";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface Staff {
   id: string;
   name: string;
 }
 
-// Hardcoded staff for fallback/merge
 const HARDCODED_STAFF: Staff[] = SPECIALISTS.map(s => ({
   id: s.id,
   name: s.name,
 }));
 
-// Merge API data with hardcoded (API takes priority)
 const mergeStaff = (apiData: Staff[], hardcodedData: Staff[]): Staff[] => {
   const merged = new Map<string, Staff>();
   hardcodedData.forEach(item => merged.set(item.id, item));
@@ -73,10 +71,8 @@ export default function JoinWaitlistScreen() {
   const [flexibleDates, setFlexibleDates] = useState(false);
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Initialize with hardcoded staff
   const [availableStaff, setAvailableStaff] = useState<Staff[]>(HARDCODED_STAFF);
 
-  // Generate next 7 days
   const getNextDays = () => {
     const days = [];
     const today = new Date();
@@ -95,25 +91,20 @@ export default function JoinWaitlistScreen() {
 
   const days = getNextDays();
 
-  // Fetch staff and merge with hardcoded
   useEffect(() => {
     const loadStaff = async () => {
       if (params.salonId) {
         try {
-          // Call real API
           const response = await stylistApi.getStylistsBySalon(params.salonId);
           if (response.success && response.data && response.data.length > 0) {
             const apiStaff = response.data.map((s: any) => ({
               id: s.id || s._id,
               name: s.name || `${s.firstName} ${s.lastName}`,
             }));
-            // Merge API data with hardcoded
             setAvailableStaff(mergeStaff(apiStaff, HARDCODED_STAFF));
           }
-          // If API fails/empty, keep hardcoded (already set as initial state)
         } catch (error) {
           console.error('Error loading staff:', error);
-          // Keep hardcoded on error
         }
       }
     };
@@ -141,7 +132,6 @@ export default function JoinWaitlistScreen() {
     setIsSubmitting(true);
 
     try {
-      // Call real API
       const response = await waitlistApi.joinWaitlist({
         salonId: params.salonId || "salon-1",
         serviceId: params.serviceId || "service-1",
@@ -167,7 +157,6 @@ export default function JoinWaitlistScreen() {
           ]
         );
       } else {
-        // API failed - show error
         Alert.alert("Error", response.message || "Failed to join waitlist");
       }
     } catch (error) {
@@ -182,7 +171,6 @@ export default function JoinWaitlistScreen() {
     <View className="flex-1 bg-white">
       <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
 
-      {/* Header */}
       <View
         className="flex-row items-center"
         style={{ paddingTop: hp(6), paddingHorizontal: wp(4), paddingBottom: hp(2) }}
@@ -200,7 +188,6 @@ export default function JoinWaitlistScreen() {
         contentContainerStyle={{ paddingHorizontal: wp(4), paddingBottom: hp(4) }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Service Info */}
         <View
           className="rounded-xl"
           style={{
@@ -227,7 +214,6 @@ export default function JoinWaitlistScreen() {
           </Text>
         </View>
 
-        {/* Info Box */}
         <View
           className="flex-row rounded-xl"
           style={{
@@ -238,12 +224,11 @@ export default function JoinWaitlistScreen() {
         >
           <Info size={rf(20)} color="#3B82F6" style={{ marginRight: wp(3) }} />
           <Text style={{ fontSize: rf(13), color: "#1E40AF", flex: 1, lineHeight: rf(20) }}>
-            Join the waitlist when your preferred time is fully booked. We'll notify you
+            Join the waitlist when your preferred time is fully booked. We will notify you
             immediately when a slot opens up!
           </Text>
         </View>
 
-        {/* Select Date */}
         <View style={{ marginBottom: hp(3) }}>
           <View className="flex-row items-center" style={{ marginBottom: hp(1.5) }}>
             <Calendar size={rf(18)} color={Colors.primary} />
@@ -306,7 +291,6 @@ export default function JoinWaitlistScreen() {
             ))}
           </ScrollView>
 
-          {/* Flexible Dates Toggle */}
           <TouchableOpacity
             onPress={() => setFlexibleDates(!flexibleDates)}
             className="flex-row items-center"
@@ -327,12 +311,11 @@ export default function JoinWaitlistScreen() {
             <Text
               style={{ fontSize: rf(14), color: Colors.gray[600], marginLeft: wp(2) }}
             >
-              I'm flexible with nearby dates
+              I am flexible with nearby dates
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Select Time Slots */}
         <View style={{ marginBottom: hp(3) }}>
           <View className="flex-row items-center" style={{ marginBottom: hp(1.5) }}>
             <Clock size={rf(18)} color={Colors.primary} />
@@ -379,7 +362,6 @@ export default function JoinWaitlistScreen() {
           </View>
         </View>
 
-        {/* Select Staff (Optional) */}
         {availableStaff.length > 0 && (
           <View style={{ marginBottom: hp(3) }}>
             <View className="flex-row items-center" style={{ marginBottom: hp(1.5) }}>
@@ -446,7 +428,6 @@ export default function JoinWaitlistScreen() {
           </View>
         )}
 
-        {/* Notes */}
         <View style={{ marginBottom: hp(3) }}>
           <Text
             style={{
@@ -477,7 +458,6 @@ export default function JoinWaitlistScreen() {
           />
         </View>
 
-        {/* Notification Info */}
         <View
           className="flex-row items-center rounded-xl"
           style={{
@@ -488,13 +468,12 @@ export default function JoinWaitlistScreen() {
         >
           <Bell size={rf(20)} color="#F59E0B" style={{ marginRight: wp(3) }} />
           <Text style={{ fontSize: rf(13), color: "#92400E", flex: 1 }}>
-            You'll receive a notification when a slot becomes available. You'll have
+            You will receive a notification when a slot becomes available. You will have
             5 minutes to confirm your booking!
           </Text>
         </View>
       </ScrollView>
 
-      {/* Submit Button */}
       <View
         className="border-t"
         style={{

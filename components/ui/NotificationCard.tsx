@@ -37,7 +37,6 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ item, onPres
         borderBottomColor: Colors.gray[100],
       }}
     >
-      {/* Unread dot */}
       <View style={{ width: wp(4), paddingTop: hp(0.5) }}>
         {!item.read && (
           <View
@@ -51,7 +50,6 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ item, onPres
         )}
       </View>
 
-      {/* Icon */}
       <View
         className="rounded-full items-center justify-center"
         style={{
@@ -64,7 +62,6 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ item, onPres
         <NotificationIcon type={item.type} />
       </View>
 
-      {/* Content */}
       <View style={{ flex: 1 }}>
         <Text
           style={{

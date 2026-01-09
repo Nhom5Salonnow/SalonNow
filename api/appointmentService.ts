@@ -2,14 +2,12 @@ import { Appointment, ApiResponse, NotificationType } from './mockServer/types';
 import { mockDatabase, generateId, getCurrentTimestamp } from './mockServer/database';
 import { withDelay } from './mockServer/delay';
 
-// Simple TimeSlot for availability
 export interface SimpleTimeSlot {
   time: string;
   available: boolean;
   bookedBy?: string;
 }
 
-// Simple Appointment for display
 export interface SimpleAppointment {
   id: string;
   serviceName: string;
@@ -51,16 +49,12 @@ export interface CancelInput {
 }
 
 class AppointmentService {
-  /**
-   * Get all appointments for a user
-   */
   async getUserAppointments(userId: string): Promise<ApiResponse<Appointment[]>> {
     return withDelay(() => {
       const appointments = mockDatabase.appointments.filter(
         (a: Appointment) => a.userId === userId
       );
 
-      // Sort by date (newest first)
       appointments.sort((a: Appointment, b: Appointment) =>
         new Date(b.date + ' ' + b.time).getTime() -
         new Date(a.date + ' ' + a.time).getTime()
@@ -73,9 +67,6 @@ class AppointmentService {
     });
   }
 
-  /**
-   * Get upcoming appointments for a user
-   */
   async getUpcomingAppointments(userId: string): Promise<ApiResponse<Appointment[]>> {
     return withDelay(() => {
       const now = new Date();
@@ -100,9 +91,6 @@ class AppointmentService {
     });
   }
 
-  /**
-   * Get past appointments for a user
-   */
   async getPastAppointments(userId: string): Promise<ApiResponse<Appointment[]>> {
     return withDelay(() => {
       const now = new Date();
@@ -126,9 +114,6 @@ class AppointmentService {
     });
   }
 
-  /**
-   * Get single appointment details
-   */
   async getAppointment(id: string): Promise<ApiResponse<Appointment | null>> {
     return withDelay(() => {
       const appointment = mockDatabase.appointments.find((a: Appointment) => a.id === id);
@@ -139,9 +124,6 @@ class AppointmentService {
     });
   }
 
-  /**
-   * Create a new appointment
-   */
   async createAppointment(input: CreateAppointmentInput): Promise<ApiResponse<Appointment>> {
     return withDelay(() => {
       const tax = Math.round(input.servicePrice * 0.08 * 100) / 100;
@@ -173,7 +155,6 @@ class AppointmentService {
 
       mockDatabase.appointments.push(appointment);
 
-      // Create notification
       mockDatabase.notifications.push({
         id: generateId('notif'),
         userId: input.userId,
@@ -192,9 +173,6 @@ class AppointmentService {
     });
   }
 
-  /**
-   * Reschedule an appointment
-   */
   async rescheduleAppointment(input: RescheduleInput): Promise<ApiResponse<Appointment>> {
     return withDelay(() => {
       const appointmentIndex = mockDatabase.appointments.findIndex(
@@ -211,7 +189,6 @@ class AppointmentService {
 
       const appointment = mockDatabase.appointments[appointmentIndex];
 
-      // Check if appointment can be rescheduled
       if (['completed', 'cancelled', 'no_show'].includes(appointment.status)) {
         return {
           success: false,
@@ -220,7 +197,6 @@ class AppointmentService {
         };
       }
 
-      // Check if new slot is available (simplified check)
       const conflictingAppointment = mockDatabase.appointments.find(
         (a: Appointment) =>
           a.id !== input.appointmentId &&
@@ -239,16 +215,13 @@ class AppointmentService {
         };
       }
 
-      // Store old date/time for notification
       const oldDate = appointment.date;
       const oldTime = appointment.time;
 
-      // Update appointment
       appointment.date = input.newDate;
       appointment.time = input.newTime;
       appointment.status = 'confirmed';
       appointment.updatedAt = getCurrentTimestamp();
-      // Add reschedule history
       appointment.rescheduleHistory = appointment.rescheduleHistory || [];
       appointment.rescheduleHistory.push({
         fromDate: oldDate,
@@ -261,7 +234,6 @@ class AppointmentService {
 
       mockDatabase.appointments[appointmentIndex] = appointment;
 
-      // Create notification
       mockDatabase.notifications.push({
         id: generateId('notif'),
         userId: input.userId,
@@ -280,9 +252,6 @@ class AppointmentService {
     });
   }
 
-  /**
-   * Cancel an appointment
-   */
   async cancelAppointment(input: CancelInput): Promise<ApiResponse<Appointment>> {
     return withDelay(() => {
       const appointmentIndex = mockDatabase.appointments.findIndex(
@@ -299,7 +268,6 @@ class AppointmentService {
 
       const appointment = mockDatabase.appointments[appointmentIndex];
 
-      // Check if appointment can be cancelled
       if (['completed', 'cancelled', 'no_show'].includes(appointment.status)) {
         return {
           success: false,
@@ -308,18 +276,15 @@ class AppointmentService {
         };
       }
 
-      // Check cancellation policy (e.g., 24 hours before)
       const appointmentDate = new Date(appointment.date + ' ' + appointment.time);
       const now = new Date();
       const hoursUntil = (appointmentDate.getTime() - now.getTime()) / (1000 * 60 * 60);
 
       let cancellationFee = 0;
       if (hoursUntil < 24 && hoursUntil > 0) {
-        // Late cancellation - charge 50% fee
         cancellationFee = Math.round(appointment.price * 0.5);
       }
 
-      // Update appointment
       appointment.status = 'cancelled';
       appointment.updatedAt = getCurrentTimestamp();
       appointment.cancellation = {
@@ -332,7 +297,6 @@ class AppointmentService {
 
       mockDatabase.appointments[appointmentIndex] = appointment;
 
-      // Create notification
       mockDatabase.notifications.push({
         id: generateId('notif'),
         userId: input.userId,
@@ -346,7 +310,6 @@ class AppointmentService {
         createdAt: getCurrentTimestamp(),
       });
 
-      // Check if anyone on waitlist wants this slot
       const waitlistEntry = mockDatabase.waitlist.find(
         (w) =>
           w.salonId === appointment.salonId &&
@@ -357,13 +320,12 @@ class AppointmentService {
       );
 
       if (waitlistEntry) {
-        // Notify waitlist customer
         waitlistEntry.status = 'slot_available';
         waitlistEntry.availableSlot = {
           date: appointment.date,
           time: appointment.time,
           notifiedAt: getCurrentTimestamp(),
-          expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 min
+          expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
         };
 
         mockDatabase.notifications.push({
@@ -385,9 +347,6 @@ class AppointmentService {
     });
   }
 
-  /**
-   * Get available time slots for a date
-   */
   async getAvailableSlots(
     salonId: string,
     serviceId: string,
@@ -395,7 +354,6 @@ class AppointmentService {
     staffId?: string
   ): Promise<ApiResponse<SimpleTimeSlot[]>> {
     return withDelay(() => {
-      // Generate all possible slots (9 AM to 6 PM)
       const allSlots: SimpleTimeSlot[] = [];
       for (let hour = 9; hour <= 18; hour++) {
         const time = `${hour > 12 ? hour - 12 : hour}:00 ${hour >= 12 ? 'PM' : 'AM'}`;
@@ -405,7 +363,6 @@ class AppointmentService {
         });
       }
 
-      // Mark booked slots as unavailable
       const bookedAppointments = mockDatabase.appointments.filter(
         (a: Appointment) =>
           a.salonId === salonId &&
@@ -429,9 +386,6 @@ class AppointmentService {
     });
   }
 
-  /**
-   * Admin: Get all appointments for a salon
-   */
   async getSalonAppointments(
     salonId: string,
     filters?: {
@@ -469,9 +423,6 @@ class AppointmentService {
     });
   }
 
-  /**
-   * Admin: Update appointment status
-   */
   async updateAppointmentStatus(
     appointmentId: string,
     status: Appointment['status']
@@ -495,7 +446,6 @@ class AppointmentService {
 
       mockDatabase.appointments[appointmentIndex] = appointment;
 
-      // Create notification for user
       let message = '';
       switch (status) {
         case 'confirmed':

@@ -34,10 +34,8 @@ export default function BookingsScreen() {
   const loadAppointments = useCallback(async () => {
     try {
       if (isLoggedIn && userId) {
-        // Call real API
         const response = await bookingApi.getMyBookings();
         if (response.success && response.data && response.data.length > 0) {
-          // Map API response to app format
           setAppointments(response.data.map((booking: any) => ({
             id: booking.id || booking._id,
             userId: booking.userId,
@@ -51,7 +49,6 @@ export default function BookingsScreen() {
             total: booking.total || booking.totalAmount,
           })));
         } else {
-          // API returned no data - show empty
           setAppointments([]);
         }
       } else {
@@ -59,7 +56,6 @@ export default function BookingsScreen() {
       }
     } catch (error) {
       console.error('Error loading appointments:', error);
-      // On error - show empty
       setAppointments([]);
     } finally {
       setIsLoading(false);
@@ -118,7 +114,6 @@ export default function BookingsScreen() {
           }),
         }}
       >
-        {/* Header */}
         <View className="flex-row items-start justify-between">
           <View className="flex-1">
             <Text style={{ fontSize: rf(17), fontWeight: '600', color: '#000' }}>
@@ -129,7 +124,6 @@ export default function BookingsScreen() {
             </Text>
           </View>
 
-          {/* Status Badge */}
           <View
             className="rounded-full"
             style={{
@@ -144,7 +138,6 @@ export default function BookingsScreen() {
           </View>
         </View>
 
-        {/* Date & Time */}
         <View className="flex-row items-center" style={{ marginTop: hp(1.5) }}>
           <View className="flex-row items-center" style={{ marginRight: wp(4) }}>
             <Calendar size={rf(14)} color={Colors.gray[400]} />
@@ -160,7 +153,6 @@ export default function BookingsScreen() {
           </View>
         </View>
 
-        {/* Staff */}
         {appointment.staffName && (
           <View className="flex-row items-center" style={{ marginTop: hp(1) }}>
             <User size={rf(14)} color={Colors.gray[400]} />
@@ -170,7 +162,6 @@ export default function BookingsScreen() {
           </View>
         )}
 
-        {/* Price & Action */}
         <View
           className="flex-row items-center justify-between"
           style={{
@@ -269,7 +260,6 @@ export default function BookingsScreen() {
     <View className="flex-1 bg-white">
       <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
 
-      {/* Header */}
       <View
         className="flex-row items-center justify-between"
         style={{
@@ -278,7 +268,6 @@ export default function BookingsScreen() {
           paddingBottom: hp(1),
         }}
       >
-        {/* Left: Menu + Title */}
         <View className="flex-row items-center">
           <TouchableOpacity
             onPress={() => router.push("/settings" as any)}
@@ -299,7 +288,6 @@ export default function BookingsScreen() {
           </Text>
         </View>
 
-        {/* Profile Avatar */}
         <TouchableOpacity
           onPress={() => router.push(isLoggedIn ? "/profile" : "/auth/login" as any)}
           className="rounded-full overflow-hidden items-center justify-center"
@@ -323,7 +311,6 @@ export default function BookingsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Tabs - show for both guest and logged in */}
       <View
         className="flex-row rounded-full"
         style={{
@@ -379,7 +366,6 @@ export default function BookingsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Content Area */}
       {isLoggedIn ? (
         <ScrollView
           className="flex-1 px-5"

@@ -3,14 +3,7 @@ import { safeApiCall, safeApiCallOptional } from './apiHelper';
 import { ApiResponse } from './types/common.types';
 import { Notification, UnreadCountResponse } from './types/notification.types';
 
-/**
- * Notification API Service
- * Handles notification related API calls
- */
 export const notificationApi = {
-  /**
-   * Get notifications - AVAILABLE
-   */
   getNotifications: async (): Promise<ApiResponse<Notification[]>> => {
     return safeApiCall(
       () => apiClient.get('/notifications'),
@@ -18,9 +11,6 @@ export const notificationApi = {
     );
   },
 
-  /**
-   * Mark notification as read - AVAILABLE
-   */
   markAsRead: async (notificationId: string): Promise<ApiResponse<null>> => {
     return safeApiCall(
       () => apiClient.patch(`/notifications/${notificationId}/read`),
@@ -28,9 +18,6 @@ export const notificationApi = {
     );
   },
 
-  /**
-   * Get unread count - MAY NOT BE AVAILABLE
-   */
   getUnreadCount: async (): Promise<ApiResponse<UnreadCountResponse>> => {
     return safeApiCallOptional(
       () => apiClient.get('/notifications/unread-count'),
@@ -38,9 +25,6 @@ export const notificationApi = {
     );
   },
 
-  /**
-   * Mark all as read
-   */
   markAllAsRead: async (): Promise<ApiResponse<null>> => {
     return safeApiCallOptional(
       () => apiClient.patch('/notifications/read-all'),
@@ -48,9 +32,6 @@ export const notificationApi = {
     );
   },
 
-  /**
-   * Delete notification - MAY NOT BE AVAILABLE
-   */
   deleteNotification: async (notificationId: string): Promise<ApiResponse<null>> => {
     return safeApiCallOptional(
       () => apiClient.delete(`/notifications/${notificationId}`),
@@ -58,9 +39,6 @@ export const notificationApi = {
     );
   },
 
-  /**
-   * Delete all notifications - MAY NOT BE AVAILABLE
-   */
   deleteAllNotifications: async (): Promise<ApiResponse<null>> => {
     return safeApiCallOptional(
       () => apiClient.delete('/notifications'),

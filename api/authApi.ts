@@ -10,14 +10,7 @@ import {
   TokenResponse,
 } from './types/auth.types';
 
-/**
- * Auth API Service
- * Handles authentication related API calls
- */
 export const authApi = {
-  /**
-   * Login - AVAILABLE
-   */
   login: async (data: LoginRequest): Promise<ApiResponse<AuthResponse>> => {
     return safeApiCall(
       () => apiClient.post('/auth/login', data),
@@ -25,9 +18,6 @@ export const authApi = {
     );
   },
 
-  /**
-   * Register - AVAILABLE
-   */
   register: async (data: RegisterRequest): Promise<ApiResponse<AuthResponse>> => {
     return safeApiCall(
       () => apiClient.post('/auth/register', data),
@@ -35,9 +25,6 @@ export const authApi = {
     );
   },
 
-  /**
-   * Logout - MAY NOT BE AVAILABLE YET
-   */
   logout: async (): Promise<ApiResponse<null>> => {
     return safeApiCallOptional(
       () => apiClient.post('/auth/logout'),
@@ -45,9 +32,6 @@ export const authApi = {
     );
   },
 
-  /**
-   * Get current user - MAY NOT BE AVAILABLE YET
-   */
   getMe: async (): Promise<ApiResponse<AuthUser>> => {
     return safeApiCallOptional(
       () => apiClient.get('/auth/me'),
@@ -55,9 +39,6 @@ export const authApi = {
     );
   },
 
-  /**
-   * Refresh token - MAY NOT BE AVAILABLE YET
-   */
   refreshToken: async (refreshToken: string): Promise<ApiResponse<TokenResponse>> => {
     return safeApiCallOptional(
       () => apiClient.post('/auth/refresh-token', { refreshToken }),
@@ -65,9 +46,6 @@ export const authApi = {
     );
   },
 
-  /**
-   * Change password - MAY NOT BE AVAILABLE YET
-   */
   changePassword: async (data: ChangePasswordRequest): Promise<ApiResponse<null>> => {
     return safeApiCallOptional(
       () => apiClient.post('/auth/change-password', data),
@@ -75,9 +53,6 @@ export const authApi = {
     );
   },
 
-  /**
-   * Forgot password - MAY NOT BE AVAILABLE YET
-   */
   forgotPassword: async (email: string): Promise<ApiResponse<null>> => {
     return safeApiCallOptional(
       () => apiClient.post('/auth/forgot-password', { email }),
@@ -85,9 +60,6 @@ export const authApi = {
     );
   },
 
-  /**
-   * Reset password - MAY NOT BE AVAILABLE YET
-   */
   resetPassword: async (token: string, newPassword: string): Promise<ApiResponse<null>> => {
     return safeApiCallOptional(
       () => apiClient.post('/auth/reset-password', { token, newPassword }),

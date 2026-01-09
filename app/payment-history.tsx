@@ -29,10 +29,8 @@ function PaymentHistoryContent() {
 
   const loadPayments = useCallback(async () => {
     try {
-      // Call real API
       const res = await paymentApi.getMyPayments();
       if (res.success && res.data) {
-        // Map API response to local format
         const mapped = res.data.map((p: any) => ({
           id: p.id,
           receiptNumber: p.transactionId || p.receiptNumber || `#${p.id.slice(-6)}`,
@@ -45,7 +43,6 @@ function PaymentHistoryContent() {
         }));
         setPayments(mapped);
       } else {
-        // API returned no data - show empty
         setPayments([]);
       }
     } catch (error) {
@@ -168,7 +165,6 @@ function PaymentHistoryContent() {
           </View>
         </View>
 
-        {/* Details Row */}
         <View
           className="flex-row items-center justify-between pt-3 mt-3"
           style={{ borderTopWidth: 1, borderTopColor: Colors.gray[100] }}
@@ -208,7 +204,6 @@ function PaymentHistoryContent() {
 
   return (
     <View className="flex-1 bg-gray-50">
-      {/* Header */}
       <View className="bg-white" style={{ paddingTop: hp(6), paddingBottom: hp(2), paddingHorizontal: wp(5) }}>
         <View className="flex-row items-center" style={{ gap: wp(3) }}>
           <TouchableOpacity
@@ -221,7 +216,6 @@ function PaymentHistoryContent() {
           <Text style={{ fontSize: rf(20), fontWeight: '600', color: '#000' }}>Payment History</Text>
         </View>
 
-        {/* Summary */}
         {payments.length > 0 && (
           <View
             className="flex-row items-center justify-between rounded-2xl p-4"
@@ -243,7 +237,6 @@ function PaymentHistoryContent() {
         )}
       </View>
 
-      {/* Payment List */}
       <FlatList
         data={payments}
         renderItem={renderPayment}

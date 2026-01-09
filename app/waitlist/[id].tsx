@@ -53,10 +53,8 @@ export default function WaitlistDetailScreen() {
     if (!id) return;
 
     try {
-      // Call real API
       const response = await waitlistApi.getWaitlistEntry(id);
       if (response.success && response.data) {
-        // Map API response to local format
         const w = response.data;
         setEntry({
           id: w.id,
@@ -72,7 +70,6 @@ export default function WaitlistDetailScreen() {
           createdAt: w.createdAt || new Date().toISOString(),
         });
       } else {
-        // API returned no data - show not found
         setEntry(null);
       }
     } catch (error) {
@@ -104,7 +101,6 @@ export default function WaitlistDetailScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              // Call real API
               const response = await waitlistApi.cancelWaitlist(id!);
               if (response.success) {
                 Alert.alert("Left Waitlist", "You've been removed from the waitlist.", [
@@ -127,7 +123,6 @@ export default function WaitlistDetailScreen() {
     if (!entry?.availableSlot) return;
 
     try {
-      // Call real API
       const response = await waitlistApi.confirmSlot(entry.id);
       if (response.success) {
         Alert.alert(
@@ -152,7 +147,6 @@ export default function WaitlistDetailScreen() {
           text: "Skip",
           onPress: async () => {
             try {
-              // Call real API
               const response = await waitlistApi.skipSlot(entry!.id);
               if (response.success) {
                 loadEntry();
@@ -239,7 +233,6 @@ export default function WaitlistDetailScreen() {
     <View className="flex-1 bg-white">
       <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
 
-      {/* Header */}
       <View
         className="flex-row items-center justify-between"
         style={{ paddingTop: hp(6), paddingHorizontal: wp(4), paddingBottom: hp(2) }}
@@ -267,7 +260,6 @@ export default function WaitlistDetailScreen() {
           <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
         }
       >
-        {/* Status Banner */}
         <View
           className="flex-row items-center rounded-xl"
           style={{
@@ -293,7 +285,6 @@ export default function WaitlistDetailScreen() {
           </View>
         </View>
 
-        {/* Position Display (only for waiting status) */}
         {entry.status === "waiting" && (
           <View style={{ marginBottom: hp(3) }}>
             <WaitlistPosition
@@ -304,7 +295,6 @@ export default function WaitlistDetailScreen() {
           </View>
         )}
 
-        {/* Available Slot Card */}
         {entry.status === "slot_available" && entry.availableSlot && (
           <View
             className="rounded-xl"
@@ -332,7 +322,6 @@ export default function WaitlistDetailScreen() {
               {entry.availableSlot.time}
             </Text>
 
-            {/* Timer */}
             <View
               className="rounded-lg items-center"
               style={{ backgroundColor: "#FFFBEB", padding: wp(3), marginTop: hp(2) }}
@@ -345,7 +334,6 @@ export default function WaitlistDetailScreen() {
               </Text>
             </View>
 
-            {/* Action Buttons */}
             <View className="flex-row" style={{ gap: wp(2), marginTop: hp(2) }}>
               <TouchableOpacity
                 onPress={handleConfirmSlot}
@@ -373,7 +361,6 @@ export default function WaitlistDetailScreen() {
           </View>
         )}
 
-        {/* Service Details */}
         <View
           className="rounded-xl"
           style={{
@@ -451,14 +438,13 @@ export default function WaitlistDetailScreen() {
                   marginTop: hp(1),
                 }}
               >
-                ✓ Multiple time slots selected
+                Multiple time slots selected
               </Text>
             )}
           </View>
 
         </View>
 
-        {/* Salon Contact */}
         <View
           className="rounded-xl"
           style={{ backgroundColor: "#F9FAFB", padding: wp(4), marginBottom: hp(3) }}
@@ -489,7 +475,6 @@ export default function WaitlistDetailScreen() {
           </View>
         </View>
 
-        {/* Timeline */}
         <View
           className="rounded-xl"
           style={{ backgroundColor: "#F9FAFB", padding: wp(4) }}
@@ -559,7 +544,6 @@ export default function WaitlistDetailScreen() {
         </View>
       </ScrollView>
 
-      {/* Bottom Action (for waiting status) */}
       {entry.status === "waiting" && (
         <View
           className="border-t"

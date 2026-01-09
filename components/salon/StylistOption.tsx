@@ -82,7 +82,6 @@ export const StylistOption: React.FC<StylistOptionProps> = (props) => {
       );
     }
 
-    // Individual stylist
     const { stylist } = props as IndividualStylistOptionProps;
     return (
       <>

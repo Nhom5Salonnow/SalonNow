@@ -20,7 +20,6 @@ interface Staff {
   isActive: boolean;
 }
 
-// Hardcoded staff for fallback/merge
 const HARDCODED_STAFF: Staff[] = [
   {
     id: "1",
@@ -89,7 +88,6 @@ const HARDCODED_STAFF: Staff[] = [
   },
 ];
 
-// Merge API data with hardcoded (API takes priority)
 const mergeStaff = (apiData: Staff[], hardcodedData: Staff[]): Staff[] => {
   const merged = new Map<string, Staff>();
   hardcodedData.forEach(item => merged.set(item.id, item));
@@ -99,10 +97,8 @@ const mergeStaff = (apiData: Staff[], hardcodedData: Staff[]): Staff[] => {
 
 export default function AdminStaffScreen() {
   const [showActiveOnly, setShowActiveOnly] = useState(false);
-  // Initialize with hardcoded staff
   const [staffMembers, setStaffMembers] = useState<Staff[]>(HARDCODED_STAFF);
 
-  // Fetch staff and merge with hardcoded
   useEffect(() => {
     const fetchStaff = async () => {
       try {
@@ -121,13 +117,10 @@ export default function AdminStaffScreen() {
             workingHours: s.workingHours || 'Mon-Sat 9AM-6PM',
             isActive: s.isActive !== false,
           }));
-          // Merge API data with hardcoded
           setStaffMembers(mergeStaff(apiStaff, HARDCODED_STAFF));
         }
-        // If API fails/empty, keep hardcoded (already set as initial state)
       } catch (error) {
         console.error('Error fetching staff:', error);
-        // Keep hardcoded on error
       }
     };
     fetchStaff();
@@ -251,7 +244,6 @@ export default function AdminStaffScreen() {
     <View className="flex-1 bg-white">
       <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
 
-      {/* Header */}
       <View style={{ paddingTop: hp(6), paddingHorizontal: wp(6) }}>
         <View className="flex-row items-center justify-between">
           <Text style={{ fontSize: rf(24), fontWeight: "700", color: "#000" }}>
@@ -268,7 +260,6 @@ export default function AdminStaffScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Filter Toggle */}
         <TouchableOpacity
           onPress={() => setShowActiveOnly(!showActiveOnly)}
           className="flex-row items-center"
@@ -291,7 +282,6 @@ export default function AdminStaffScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* Stats Summary */}
         <View className="flex-row" style={{ marginTop: hp(2), gap: wp(3) }}>
           <View
             className="flex-1 rounded-xl items-center"
@@ -323,7 +313,6 @@ export default function AdminStaffScreen() {
         </View>
       </View>
 
-      {/* Staff List */}
       <FlatList
         data={filteredStaff}
         renderItem={renderStaffCard}

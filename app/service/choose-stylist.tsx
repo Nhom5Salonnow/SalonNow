@@ -15,7 +15,6 @@ interface Stylist {
   isTopRated: boolean;
 }
 
-// Hardcoded stylists for fallback/merge
 const HARDCODED_STYLISTS: Stylist[] = SPECIALISTS.map(s => ({
   id: s.id,
   name: s.name,
@@ -24,7 +23,6 @@ const HARDCODED_STYLISTS: Stylist[] = SPECIALISTS.map(s => ({
   isTopRated: s.isTopRated || false,
 }));
 
-// Merge API data with hardcoded (API takes priority)
 const mergeStylists = (apiData: Stylist[], hardcodedData: Stylist[]): Stylist[] => {
   const merged = new Map<string, Stylist>();
   hardcodedData.forEach(item => merged.set(item.id, item));
@@ -37,13 +35,11 @@ type StylistOption = 'any' | 'multiple' | string;
 export default function ChooseStylistScreen() {
   const params = useLocalSearchParams<{ salonId?: string; serviceId?: string }>();
   const [selectedOption, setSelectedOption] = useState<StylistOption>('any');
-  // Initialize with hardcoded data
   const [stylists, setStylists] = useState<Stylist[]>(HARDCODED_STYLISTS);
 
   useEffect(() => {
     const fetchStylists = async () => {
       try {
-        // Fetch stylists from API
         const response = params.salonId
           ? await stylistApi.getStylistsBySalon(params.salonId)
           : await stylistApi.getStylists();
@@ -56,13 +52,10 @@ export default function ChooseStylistScreen() {
             image: sty.avatar || sty.imageUrl || HARDCODED_STYLISTS[0]?.image,
             isTopRated: sty.rating >= 4.5 || sty.isTopRated || false,
           }));
-          // Merge API data with hardcoded
           setStylists(mergeStylists(apiStylists, HARDCODED_STYLISTS));
         }
-        // If API fails/empty, keep hardcoded (already set as initial state)
       } catch (error) {
         console.error('Error fetching stylists:', error);
-        // Keep hardcoded on error
       }
     };
     fetchStylists();
@@ -77,7 +70,6 @@ export default function ChooseStylistScreen() {
       <DecorativeCircle position="topLeft" size="large" opacity={0.5} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View
           className="flex-row items-center justify-between px-6"
           style={{ paddingTop: hp(6) }}
@@ -93,7 +85,6 @@ export default function ChooseStylistScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Banner */}
         <View className="mx-4 mt-4">
           <QuoteBanner
             quote='"Crafting Confidence,\nOne Cut at a Time."'
@@ -101,7 +92,6 @@ export default function ChooseStylistScreen() {
           />
         </View>
 
-        {/* Menu Title */}
         <Text
           className="px-6 mt-6"
           style={{ fontSize: rf(20), fontWeight: '500', color: '#000' }}
@@ -109,9 +99,7 @@ export default function ChooseStylistScreen() {
           Menu
         </Text>
 
-        {/* Stylist Options */}
         <View className="px-6 mt-4">
-          {/* Any Stylist */}
           <TouchableOpacity
             onPress={() => setSelectedOption('any')}
             className="flex-row items-center bg-white rounded-2xl mb-3 p-4"
@@ -140,7 +128,6 @@ export default function ChooseStylistScreen() {
             </View>
           </TouchableOpacity>
 
-          {/* Multiple Stylists */}
           <TouchableOpacity
             onPress={() => setSelectedOption('multiple')}
             className="flex-row items-center bg-white rounded-2xl mb-3 p-4"
@@ -169,7 +156,6 @@ export default function ChooseStylistScreen() {
             </View>
           </TouchableOpacity>
 
-          {/* Individual Stylists */}
           {stylists.map((stylist) => (
             <TouchableOpacity
               key={stylist.id}
@@ -200,7 +186,7 @@ export default function ChooseStylistScreen() {
                   style={{ backgroundColor: '#FEF3C7' }}
                 >
                   <Text style={{ fontSize: rf(12), color: '#92400E' }}>
-                    🏆 Top Rated
+                    Top Rated
                   </Text>
                 </View>
               )}
@@ -211,7 +197,6 @@ export default function ChooseStylistScreen() {
         <View style={{ height: hp(15) }} />
       </ScrollView>
 
-      {/* Done Button */}
       <View
         className="absolute bottom-0 left-0 right-0 px-6"
         style={{ paddingBottom: hp(12), backgroundColor: 'white' }}

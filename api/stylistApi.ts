@@ -12,15 +12,7 @@ import {
   StylistSchedule,
 } from './types/stylist.types';
 
-/**
- * Stylist API Service
- * ALL ENDPOINTS MAY NOT BE AVAILABLE YET
- * Will gracefully fail without crashing
- */
 export const stylistApi = {
-  /**
-   * Get all stylists
-   */
   getStylists: async (params?: StylistSearchParams): Promise<ApiResponse<Stylist[]>> => {
     return safeApiCallOptional(
       () => apiClient.get('/stylists', { params }),
@@ -28,9 +20,6 @@ export const stylistApi = {
     );
   },
 
-  /**
-   * Get stylist by ID
-   */
   getStylistById: async (stylistId: string): Promise<ApiResponse<Stylist>> => {
     return safeApiCallOptional(
       () => apiClient.get(`/stylists/${stylistId}`),
@@ -38,9 +27,6 @@ export const stylistApi = {
     );
   },
 
-  /**
-   * Get stylists by salon
-   */
   getStylistsBySalon: async (salonId: string, params?: StylistSearchParams): Promise<ApiResponse<Stylist[]>> => {
     return safeApiCallOptional(
       () => apiClient.get(`/stylists/salon/${salonId}`, { params }),
@@ -48,9 +34,6 @@ export const stylistApi = {
     );
   },
 
-  /**
-   * Create stylist (salon owner)
-   */
   createStylist: async (data: CreateStylistRequest): Promise<ApiResponse<Stylist>> => {
     return safeApiCallOptional(
       () => apiClient.post('/stylists', data),
@@ -58,9 +41,6 @@ export const stylistApi = {
     );
   },
 
-  /**
-   * Update stylist (salon owner)
-   */
   updateStylist: async (stylistId: string, data: UpdateStylistRequest): Promise<ApiResponse<Stylist>> => {
     return safeApiCallOptional(
       () => apiClient.patch(`/stylists/${stylistId}`, data),
@@ -68,9 +48,6 @@ export const stylistApi = {
     );
   },
 
-  /**
-   * Delete stylist (salon owner)
-   */
   deleteStylist: async (stylistId: string): Promise<ApiResponse<null>> => {
     return safeApiCallOptional(
       () => apiClient.delete(`/stylists/${stylistId}`),
@@ -78,9 +55,6 @@ export const stylistApi = {
     );
   },
 
-  /**
-   * Get stylist availability
-   */
   getStylistAvailability: async (
     stylistId: string,
     params: AvailabilityParams
@@ -95,9 +69,6 @@ export const stylistApi = {
     );
   },
 
-  /**
-   * Get stylist schedule
-   */
   getStylistSchedule: async (stylistId: string): Promise<ApiResponse<StylistSchedule[]>> => {
     return safeApiCallOptional(
       () => apiClient.get(`/stylists/${stylistId}/schedule`),
@@ -105,9 +76,6 @@ export const stylistApi = {
     );
   },
 
-  /**
-   * Set stylist schedule (salon owner)
-   */
   setStylistSchedule: async (stylistId: string, data: SetScheduleRequest): Promise<ApiResponse<null>> => {
     return safeApiCallOptional(
       () => apiClient.post(`/stylists/${stylistId}/schedule`, data),

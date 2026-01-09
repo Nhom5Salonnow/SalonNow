@@ -150,9 +150,8 @@ describe('ServiceDetailScreen', () => {
     it('should render service prices', async () => {
       const { getByText, getAllByText } = render(<ServiceDetailScreen />);
       await waitFor(() => {
-        expect(getByText('€60')).toBeTruthy();
-        // There are two services with €65 (Layered and Bob)
-        expect(getAllByText('€65').length).toBe(2);
+        expect(getByText('$60')).toBeTruthy();
+        expect(getAllByText('$65').length).toBe(2);
       });
     });
 

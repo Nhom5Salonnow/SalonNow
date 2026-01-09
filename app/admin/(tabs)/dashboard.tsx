@@ -22,7 +22,6 @@ type ReportPeriod = "Daily" | "Weekly" | "Monthly";
 
 const SALON_ID = 'salon-1';
 
-// Local flexible interface for stats
 interface LocalStats {
   todayRevenue: number;
   todayAppointments: number;
@@ -66,7 +65,6 @@ export default function AdminDashboardScreen() {
 
   const loadData = useCallback(async () => {
     try {
-      // Call real API for dashboard stats
       const apiDashboardRes = await adminApi.getDashboardStats();
       if (apiDashboardRes.success && apiDashboardRes.data) {
         const apiStats = apiDashboardRes.data;
@@ -79,7 +77,6 @@ export default function AdminDashboardScreen() {
           totalReviews: apiStats.totalServices || 0,
         });
       } else {
-        // API returned no data - show empty stats
         setStats({
           todayRevenue: 0,
           todayAppointments: 0,
@@ -90,7 +87,6 @@ export default function AdminDashboardScreen() {
         });
       }
 
-      // Call real API for revenue
       const apiRevenueRes = await adminApi.getRevenueReport();
       if (apiRevenueRes.success && apiRevenueRes.data) {
         setRevenueData(apiRevenueRes.data.map((item: any) => ({
@@ -102,7 +98,6 @@ export default function AdminDashboardScreen() {
         setRevenueData([]);
       }
 
-      // Call real API for appointments
       const apiBookingsRes = await adminApi.getAllBookings({ status: 'pending' });
       if (apiBookingsRes.success && apiBookingsRes.data) {
         const today = new Date().toISOString().split('T')[0];
@@ -122,7 +117,6 @@ export default function AdminDashboardScreen() {
         setUpcomingAppointments([]);
       }
 
-      // Call real API for staff performance
       const apiStaffRes = await adminApi.getTopStylists(3);
       if (apiStaffRes.success && apiStaffRes.data) {
         setStaffPerformance(apiStaffRes.data.map((s: any) => ({
@@ -139,7 +133,6 @@ export default function AdminDashboardScreen() {
       }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
-      // On error - show empty data
       setStats({
         todayRevenue: 0,
         todayAppointments: 0,
@@ -230,7 +223,6 @@ export default function AdminDashboardScreen() {
           <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
         }
       >
-        {/* Header */}
         <View style={{ paddingTop: insets.top + hp(1), paddingHorizontal: wp(6) }}>
           <Text style={{ fontSize: rf(14), color: Colors.gray[500] }}>
             Welcome back,
@@ -240,7 +232,6 @@ export default function AdminDashboardScreen() {
           </Text>
         </View>
 
-        {/* Overview Cards */}
         <View style={{ paddingHorizontal: wp(4), marginTop: hp(3) }}>
           <ScrollView
             horizontal
@@ -308,9 +299,7 @@ export default function AdminDashboardScreen() {
           </ScrollView>
         </View>
 
-        {/* Quick Actions */}
         <View className="flex-row" style={{ paddingHorizontal: wp(6), marginTop: hp(3), gap: wp(3) }}>
-          {/* Waitlist Management */}
           <TouchableOpacity
             onPress={() => router.push("/admin/waitlist" as any)}
             className="flex-1 rounded-xl"
@@ -333,7 +322,6 @@ export default function AdminDashboardScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Pending Appointments */}
           <TouchableOpacity
             onPress={() => router.push("/admin/appointments" as any)}
             className="flex-1 rounded-xl"
@@ -357,7 +345,6 @@ export default function AdminDashboardScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Upcoming Appointments */}
         <View style={{ paddingHorizontal: wp(6), marginTop: hp(3) }}>
           <View className="flex-row items-center justify-between">
             <Text style={{ fontSize: rf(18), fontWeight: "600", color: "#000" }}>
@@ -417,7 +404,6 @@ export default function AdminDashboardScreen() {
           </View>
         </View>
 
-        {/* Staff Performance */}
         {staffPerformance.length > 0 && (
           <View style={{ paddingHorizontal: wp(6), marginTop: hp(3) }}>
             <Text style={{ fontSize: rf(18), fontWeight: "600", color: "#000" }}>
@@ -474,13 +460,11 @@ export default function AdminDashboardScreen() {
           </View>
         )}
 
-        {/* Revenue Chart */}
         <View style={{ paddingHorizontal: wp(6), marginTop: hp(3) }}>
           <Text style={{ fontSize: rf(18), fontWeight: "600", color: "#000" }}>
             Revenue Overview
           </Text>
 
-          {/* Period Tabs */}
           <View
             className="flex-row rounded-full"
             style={{
@@ -513,7 +497,6 @@ export default function AdminDashboardScreen() {
             ))}
           </View>
 
-          {/* Total Revenue */}
           <View
             className="rounded-xl items-center"
             style={{ backgroundColor: Colors.salon.pinkBg, padding: wp(4), marginTop: hp(2) }}
@@ -524,7 +507,6 @@ export default function AdminDashboardScreen() {
             </Text>
           </View>
 
-          {/* Bar Chart */}
           <View
             className="flex-row items-end justify-between"
             style={{ marginTop: hp(3), height: hp(15) }}

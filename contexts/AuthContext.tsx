@@ -37,7 +37,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const token = await getData(STORAGE_KEYS.AUTH_TOKEN);
       if (token) {
-        // Try to get user from API first
         const response = await authApi.getMe();
         if (response.success && response.data && response.data.id) {
           const apiUser = response.data;
@@ -59,7 +58,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Fallback to stored user data
         const storedUserData = await getData(STORAGE_KEYS.USER_DATA);
         if (storedUserData) {
           setUser(JSON.parse(storedUserData));
@@ -69,7 +67,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
     } catch (error) {
       console.error('Error refreshing auth:', error);
-      // Try to use stored data as fallback
       try {
         const storedUserData = await getData(STORAGE_KEYS.USER_DATA);
         if (storedUserData) {
@@ -77,7 +74,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
       } catch {
-        // Ignore fallback errors
       }
       setUser(null);
     } finally {
@@ -89,12 +85,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshAuth();
   }, [refreshAuth]);
 
-  // Handle session invalidation (401 from API)
   useEffect(() => {
     const handleSessionInvalidated = () => {
       setUser(null);
-      // Optionally navigate to login
-      // router.replace('/auth/login');
     };
 
     setOnAuthInvalidated(handleSessionInvalidated);
@@ -104,9 +97,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  /**
-   * Login with email and password via API
-   */
   const loginWithCredentials = useCallback(async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
     try {
       const response = await authApi.login({ email, password });
@@ -114,13 +104,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.success && response.data) {
         const { access_token, user: apiUser } = response.data;
 
-        // Store token
         if (access_token) {
           await storeData(STORAGE_KEYS.AUTH_TOKEN, access_token);
         }
 
-        // Map API user to local User interface
-        // API returns firstName/lastName, we combine to name
         const fullName = apiUser?.name ||
           (apiUser?.firstName && apiUser?.lastName
             ? `${apiUser.firstName} ${apiUser.lastName}`
@@ -148,9 +135,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  /**
-   * Register new user via API
-   */
   const register = useCallback(async (
     name: string,
     email: string,
@@ -158,7 +142,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     phone?: string
   ): Promise<{ success: boolean; message?: string }> => {
     try {
-      // Split name into firstName and lastName for API
       const nameParts = name.trim().split(' ');
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
@@ -180,14 +163,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         console.log('Register success, token:', access_token ? 'received' : 'missing', 'user:', apiUser);
 
-        // Store token if provided
         if (access_token) {
           await storeData(STORAGE_KEYS.AUTH_TOKEN, access_token);
         } else {
           console.warn('Registration succeeded but no access_token received');
         }
 
-        // Map API user to local User interface
         const fullName = apiUser?.name ||
           (apiUser?.firstName && apiUser?.lastName
             ? `${apiUser.firstName} ${apiUser.lastName}`
@@ -215,10 +196,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  /**
-   * Legacy login method - accepts user data directly
-   * Used for backward compatibility with mock authentication
-   */
   const login = useCallback(async (userData: User, token: string = 'mock_token_123') => {
     try {
       await storeData(STORAGE_KEYS.AUTH_TOKEN, token);
@@ -232,17 +209,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      // Call logout API (will gracefully fail if not available)
       await authApi.logout();
 
-      // Clear local storage
       await removeData(STORAGE_KEYS.AUTH_TOKEN);
       await removeData(STORAGE_KEYS.USER_DATA);
       setUser(null);
       router.replace('/home' as any);
     } catch (error) {
       console.error('Error logging out:', error);
-      // Still clear local data even if API fails
       await removeData(STORAGE_KEYS.AUTH_TOKEN);
       await removeData(STORAGE_KEYS.USER_DATA);
       setUser(null);
@@ -253,7 +227,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateUser = useCallback(async (userData: Partial<User>) => {
     if (!user) return;
     try {
-      // Try to update via API first
       if (user.id) {
         const response = await userApi.updateUser(user.id, {
           name: userData.name,
@@ -276,22 +249,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Fallback to local update
       const updatedUser = { ...user, ...userData };
       await storeData(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
       setUser(updatedUser);
     } catch (error) {
       console.error('Error updating user:', error);
-      // Fallback to local update
       const updatedUser = { ...user, ...userData };
       await storeData(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
       setUser(updatedUser);
     }
   }, [user]);
 
-  /**
-   * Change password via API
-   */
   const changePassword = useCallback(async (
     currentPassword: string,
     newPassword: string

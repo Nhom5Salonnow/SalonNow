@@ -15,12 +15,10 @@ function ChangePasswordContent() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Visibility toggles
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateForm = (): boolean => {
@@ -73,7 +71,6 @@ function ChangePasswordContent() {
     setIsLoading(true);
 
     try {
-      // Call real API
       const res = await authApi.changePassword({
         currentPassword,
         newPassword,
@@ -84,7 +81,6 @@ function ChangePasswordContent() {
           { text: 'OK', onPress: () => router.back() }
         ]);
       } else {
-        // API failed - show error
         Alert.alert('Error', res.message || 'Failed to change password');
       }
     } catch (error) {
@@ -101,7 +97,6 @@ function ChangePasswordContent() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className="flex-1 bg-white"
     >
-      {/* Pink decorative background */}
       <View
         className="absolute rounded-full"
         style={{
@@ -115,7 +110,6 @@ function ChangePasswordContent() {
       />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View
           className="flex-row items-center justify-between px-5"
           style={{ paddingTop: hp(6) }}
@@ -131,7 +125,6 @@ function ChangePasswordContent() {
           <View style={{ width: wp(10) }} />
         </View>
 
-        {/* Icon */}
         <View className="items-center" style={{ marginTop: hp(4) }}>
           <View
             className="rounded-full items-center justify-center"
@@ -144,9 +137,7 @@ function ChangePasswordContent() {
           </Text>
         </View>
 
-        {/* Form */}
         <View className="px-5" style={{ marginTop: hp(4) }}>
-          {/* Current Password */}
           <View style={{ marginBottom: hp(2.5) }}>
             <Text style={{ fontSize: rf(14), fontWeight: '500', color: Colors.gray[600], marginBottom: hp(1) }}>
               Current Password
@@ -182,7 +173,6 @@ function ChangePasswordContent() {
             )}
           </View>
 
-          {/* New Password */}
           <View style={{ marginBottom: hp(1) }}>
             <Text style={{ fontSize: rf(14), fontWeight: '500', color: Colors.gray[600], marginBottom: hp(1) }}>
               New Password
@@ -218,7 +208,6 @@ function ChangePasswordContent() {
             )}
           </View>
 
-          {/* Password Strength */}
           {newPassword && (
             <View style={{ marginBottom: hp(2.5) }}>
               <View className="flex-row items-center justify-between" style={{ marginBottom: hp(0.5) }}>
@@ -236,7 +225,6 @@ function ChangePasswordContent() {
             </View>
           )}
 
-          {/* Confirm Password */}
           <View style={{ marginBottom: hp(3) }}>
             <Text style={{ fontSize: rf(14), fontWeight: '500', color: Colors.gray[600], marginBottom: hp(1) }}>
               Confirm New Password
@@ -275,7 +263,6 @@ function ChangePasswordContent() {
             )}
           </View>
 
-          {/* Security Tips */}
           <View
             className="rounded-xl p-4"
             style={{ backgroundColor: Colors.gray[50] }}
@@ -298,7 +285,6 @@ function ChangePasswordContent() {
         <View style={{ height: hp(20) }} />
       </ScrollView>
 
-      {/* Change Password Button */}
       <View
         className="px-5"
         style={{ paddingBottom: hp(4), paddingTop: hp(2), backgroundColor: 'white' }}

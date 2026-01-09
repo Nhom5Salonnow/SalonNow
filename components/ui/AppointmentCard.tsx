@@ -21,16 +21,13 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
         borderRadius: wp(4),
         marginBottom: hp(1.5),
         padding: wp(4),
-        // iOS shadow
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 8,
-        // Android shadow
         elevation: 3,
       }}
     >
-      {/* Service Name & Price */}
       <View className="flex-row justify-between items-start">
         <View style={{ flex: 1 }}>
           <Text
@@ -66,7 +63,6 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
         </Text>
       </View>
 
-      {/* Date & Time Row */}
       <View
         className="flex-row items-center justify-between"
         style={{
@@ -103,7 +99,6 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
           </View>
         </View>
 
-        {/* Review Button */}
         <TouchableOpacity
           onPress={() => onReviewPress?.(item)}
           className="flex-row items-center rounded-full"

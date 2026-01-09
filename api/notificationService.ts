@@ -2,7 +2,6 @@ import { Notification, NotificationPreferences, ApiResponse } from './mockServer
 import { mockDatabase, generateId, getCurrentTimestamp } from './mockServer/database';
 import { withDelay } from './mockServer/delay';
 
-// Simple notification for UI
 export interface SimpleNotification {
   id: string;
   type: string;
@@ -21,9 +20,6 @@ export interface NotificationGroup {
 }
 
 class NotificationService {
-  /**
-   * Get all notifications for a user
-   */
   async getUserNotifications(userId: string): Promise<ApiResponse<SimpleNotification[]>> {
     return withDelay(() => {
       const notifications = mockDatabase.notifications
@@ -47,9 +43,6 @@ class NotificationService {
     });
   }
 
-  /**
-   * Get notifications grouped by date
-   */
   async getGroupedNotifications(userId: string): Promise<ApiResponse<NotificationGroup[]>> {
     return withDelay(() => {
       const notifications = mockDatabase.notifications
@@ -109,9 +102,6 @@ class NotificationService {
     });
   }
 
-  /**
-   * Get unread notification count
-   */
   async getUnreadCount(userId: string): Promise<ApiResponse<number>> {
     return withDelay(() => {
       const count = mockDatabase.notifications.filter(
@@ -125,9 +115,6 @@ class NotificationService {
     }, 50, 100);
   }
 
-  /**
-   * Mark notification as read
-   */
   async markAsRead(notificationId: string): Promise<ApiResponse<boolean>> {
     return withDelay(() => {
       const notification = mockDatabase.notifications.find((n) => n.id === notificationId);
@@ -148,9 +135,6 @@ class NotificationService {
     }, 50, 100);
   }
 
-  /**
-   * Mark all notifications as read
-   */
   async markAllAsRead(userId: string): Promise<ApiResponse<number>> {
     return withDelay(() => {
       let count = 0;
@@ -169,9 +153,6 @@ class NotificationService {
     });
   }
 
-  /**
-   * Delete a notification
-   */
   async deleteNotification(notificationId: string): Promise<ApiResponse<boolean>> {
     return withDelay(() => {
       const index = mockDatabase.notifications.findIndex((n) => n.id === notificationId);
@@ -192,18 +173,13 @@ class NotificationService {
     });
   }
 
-  /**
-   * Delete all notifications for a user
-   */
   async deleteAllNotifications(userId: string): Promise<ApiResponse<number>> {
     return withDelay(() => {
       const initialLength = mockDatabase.notifications.length;
 
-      // Filter out user's notifications
       const remaining = mockDatabase.notifications.filter((n) => n.userId !== userId);
       const deletedCount = initialLength - remaining.length;
 
-      // Update the array (can't reassign, so splice and push)
       mockDatabase.notifications.length = 0;
       remaining.forEach((n) => mockDatabase.notifications.push(n));
 
@@ -214,9 +190,6 @@ class NotificationService {
     });
   }
 
-  /**
-   * Get notification preferences
-   */
   async getPreferences(userId: string): Promise<ApiResponse<NotificationPreferences | null>> {
     return withDelay(() => {
       const prefs = mockDatabase.notificationPreferences.find((p) => p.userId === userId);
@@ -228,9 +201,6 @@ class NotificationService {
     });
   }
 
-  /**
-   * Update notification preferences
-   */
   async updatePreferences(
     userId: string,
     updates: Partial<NotificationPreferences>
@@ -239,7 +209,6 @@ class NotificationService {
       let prefs = mockDatabase.notificationPreferences.find((p) => p.userId === userId);
 
       if (!prefs) {
-        // Create default preferences
         prefs = {
           userId,
           pushEnabled: true,
@@ -253,7 +222,6 @@ class NotificationService {
         mockDatabase.notificationPreferences.push(prefs);
       }
 
-      // Apply updates
       Object.assign(prefs, updates);
 
       return {
@@ -263,9 +231,6 @@ class NotificationService {
     });
   }
 
-  /**
-   * Create a notification (internal use)
-   */
   async createNotification(
     userId: string,
     type: string,
@@ -305,9 +270,6 @@ class NotificationService {
     }, 50, 100);
   }
 
-  /**
-   * Get notification icon and color based on type
-   */
   getNotificationStyle(type: string): { icon: string; color: string; bgColor: string } {
     const styles: Record<string, { icon: string; color: string; bgColor: string }> = {
       appointment_confirmed: { icon: 'check-circle', color: '#10B981', bgColor: '#ECFDF5' },

@@ -9,7 +9,6 @@ import { useAuth } from '@/contexts';
 import { paymentApi } from '@/api/paymentApi';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Local types
 interface PaymentMethod {
   id: string;
   cardBrand: string;
@@ -49,28 +48,23 @@ function PaymentContent() {
   const [selectedMethodId, setSelectedMethodId] = useState<string | null>(null);
   const [summary, setSummary] = useState<PaymentSummary | null>(null);
 
-  // Promo code state
   const [promoCode, setPromoCode] = useState('');
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [promoDescription, setPromoDescription] = useState('');
   const [promoError, setPromoError] = useState('');
   const [isValidatingPromo, setIsValidatingPromo] = useState(false);
 
-  // Tip state
   const [selectedTip, setSelectedTip] = useState<number>(0);
   const tipOptions = [0, 5, 10, 15, 20];
 
-  // Service details from params or defaults
   const serviceName = params.serviceName || 'Hair Spa';
   const servicePrice = parseFloat(params.servicePrice || '40');
 
   const loadPaymentMethods = useCallback(async (_uid: string) => {
     try {
-      // Try real API
       const apiRes = await paymentApi.getPaymentMethods();
 
       if (apiRes.success && apiRes.data && apiRes.data.length > 0) {
-        // Map API response to local format
         const mappedMethods = apiRes.data.map((method) => ({
           id: method.id,
           cardBrand: method.brand || 'visa',
@@ -80,7 +74,6 @@ function PaymentContent() {
           isDefault: method.isDefault || false,
         }));
         setPaymentMethods(mappedMethods);
-        // Select default method
         const defaultMethod = mappedMethods.find(m => m.isDefault);
         if (defaultMethod) {
           setSelectedMethodId(defaultMethod.id);
@@ -88,22 +81,19 @@ function PaymentContent() {
           setSelectedMethodId(mappedMethods[0].id);
         }
       } else {
-        // API returned no data - show empty state
         console.log('API returned no payment methods');
         setPaymentMethods([]);
       }
     } catch (error) {
       console.error('Error loading payment methods:', error);
-      // On error - show empty state (don't crash)
       setPaymentMethods([]);
     }
   }, []);
 
   const calculateSummary = useCallback(() => {
-    // Calculate locally
     const discount = promoDiscount > 0 ? (servicePrice * promoDiscount / 100) : 0;
     const subtotal = servicePrice - discount;
-    const tax = subtotal * 0.1; // 10% tax
+    const tax = subtotal * 0.1;
     const total = subtotal + tax + selectedTip;
 
     setSummary({
@@ -133,8 +123,6 @@ function PaymentContent() {
     setIsValidatingPromo(true);
     setPromoError('');
 
-    // Simple local promo validation (in production, this would call an API)
-    // For now, just show "feature not available" or accept some test codes
     const testCodes: Record<string, { discount: number; description: string }> = {
       'SAVE10': { discount: 10, description: '10% off your booking' },
       'SAVE20': { discount: 20, description: '20% off your booking' },
@@ -200,7 +188,6 @@ function PaymentContent() {
     setIsProcessing(true);
 
     try {
-      // Try real API first
       const apiRes = await paymentApi.createPayment({
         bookingId: params.appointmentId || 'apt-temp',
         paymentMethodId: selectedMethodId,
@@ -209,7 +196,6 @@ function PaymentContent() {
       });
 
       if (apiRes.success && apiRes.data && apiRes.data.id) {
-        // Navigate to feedback with payment details
         router.push({
           pathname: '/feedback',
           params: {
@@ -221,7 +207,6 @@ function PaymentContent() {
         return;
       }
 
-      // API failed - show error
       Alert.alert('Payment Failed', apiRes.message || 'Please try again.');
     } catch (error) {
       Alert.alert('Payment Error', 'An unexpected error occurred. Please try again.');
@@ -272,7 +257,6 @@ function PaymentContent() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Pink decorative background */}
       <View
         className="absolute rounded-full"
         style={{
@@ -286,7 +270,6 @@ function PaymentContent() {
       />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View
           className="flex-row items-center px-5"
           style={{ paddingTop: insets.top + hp(1), gap: wp(3) }}
@@ -301,7 +284,6 @@ function PaymentContent() {
           <Text style={{ fontSize: rf(20), fontWeight: '600', color: '#000' }}>Payment</Text>
         </View>
 
-        {/* Service Summary */}
         {params.serviceName && (
           <View
             className="mx-5 rounded-2xl p-4"
@@ -326,7 +308,6 @@ function PaymentContent() {
           </View>
         )}
 
-        {/* Promo Code Section */}
         <View className="px-5" style={{ marginTop: hp(3) }}>
           <Text style={{ fontSize: rf(16), fontWeight: '600', color: '#000', marginBottom: hp(1.5) }}>
             Promo Code
@@ -392,7 +373,6 @@ function PaymentContent() {
           ) : null}
         </View>
 
-        {/* Tip Section */}
         <View className="px-5" style={{ marginTop: hp(3) }}>
           <Text style={{ fontSize: rf(16), fontWeight: '600', color: '#000', marginBottom: hp(1.5) }}>
             Add a Tip
@@ -424,7 +404,6 @@ function PaymentContent() {
           </View>
         </View>
 
-        {/* Price Breakdown */}
         <View className="px-5" style={{ marginTop: hp(3) }}>
           <Text style={{ fontSize: rf(16), fontWeight: '600', color: '#000', marginBottom: hp(1.5) }}>
             Order Summary
@@ -477,13 +456,11 @@ function PaymentContent() {
           </View>
         </View>
 
-        {/* Payment Methods Section */}
         <View className="px-5" style={{ marginTop: hp(3) }}>
           <Text style={{ fontSize: rf(16), fontWeight: '600', color: '#000', marginBottom: hp(1.5) }}>
             Payment Method
           </Text>
 
-          {/* Payment Method Cards */}
           {paymentMethods.map((method) => (
             <TouchableOpacity
               key={method.id}
@@ -495,7 +472,6 @@ function PaymentContent() {
                 backgroundColor: '#FFF',
               }}
             >
-              {/* Selection indicator */}
               <View
                 className="rounded-full items-center justify-center"
                 style={{
@@ -511,7 +487,6 @@ function PaymentContent() {
                 )}
               </View>
 
-              {/* Card Logo */}
               <View
                 className="rounded-lg overflow-hidden items-center justify-center"
                 style={{ width: wp(14), height: wp(9), marginLeft: wp(3), backgroundColor: Colors.gray[100] }}
@@ -519,7 +494,6 @@ function PaymentContent() {
                 {getCardIcon(method.cardBrand || 'visa')}
               </View>
 
-              {/* Card Info */}
               <View style={{ flex: 1, marginLeft: wp(3) }}>
                 <Text style={{ fontSize: rf(14), fontWeight: '600', color: '#000' }}>
                   {(method.cardBrand || 'Card').charAt(0).toUpperCase() + (method.cardBrand || 'card').slice(1)} •••• {method.lastFourDigits}
@@ -529,7 +503,6 @@ function PaymentContent() {
                 </Text>
               </View>
 
-              {/* Default badge or actions */}
               {method.isDefault ? (
                 <View
                   className="rounded-full px-2 py-1"
@@ -550,7 +523,6 @@ function PaymentContent() {
             </TouchableOpacity>
           ))}
 
-          {/* Add New Card */}
           <TouchableOpacity
             onPress={() => router.push('/add-card' as any)}
             className="flex-row items-center justify-center rounded-2xl p-4"
@@ -566,7 +538,6 @@ function PaymentContent() {
         <View style={{ height: hp(20) }} />
       </ScrollView>
 
-      {/* Book Now Button */}
       <View
         className="absolute bottom-0 left-0 right-0 px-5"
         style={{ paddingBottom: hp(4), paddingTop: hp(2), backgroundColor: 'white' }}

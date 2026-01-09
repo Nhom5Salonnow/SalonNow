@@ -1,27 +1,27 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  RefreshControl,
-  Alert,
-} from "react-native";
-import { router } from "expo-router";
-import { wp, hp, rf } from "@/utils/responsive";
-import { Colors } from "@/constants";
+import { waitlistApi } from "@/api";
 import { DecorativeCircle } from "@/components";
+import { Colors } from "@/constants";
+import { hp, rf, wp } from "@/utils/responsive";
+import { router } from "expo-router";
 import {
+  Calendar,
+  CheckCircle,
   ChevronLeft,
   Clock,
-  Users,
-  CheckCircle,
-  XCircle,
   Phone,
-  Calendar,
   Play,
+  Users,
+  XCircle,
 } from "lucide-react-native";
-import { waitlistApi } from "@/api";
+import { useCallback, useEffect, useState } from "react";
+import {
+  Alert,
+  FlatList,
+  RefreshControl,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface WaitlistEntry {
   id: string;
@@ -103,11 +103,9 @@ export default function AdminWaitlistScreen() {
 
   const loadWaitlist = useCallback(async () => {
     try {
-      // Call real API
       const entriesRes = await waitlistApi.getAdminWaitlist();
 
       if (entriesRes.success && entriesRes.data) {
-        // Map API response to local format
         setEntries(entriesRes.data.map((w: any) => ({
           id: w.id,
           userId: w.userId,
@@ -125,7 +123,6 @@ export default function AdminWaitlistScreen() {
           userPhone: w.userPhone || w.user?.phone,
         })));
 
-        // Calculate stats locally
         const waiting = entriesRes.data.filter((e: any) => e.status === 'waiting').length;
         setStats({
           totalWaiting: waiting,
@@ -134,7 +131,6 @@ export default function AdminWaitlistScreen() {
           byService: [],
         });
       } else {
-        // API returned no data - show empty
         setEntries([]);
         setStats({
           totalWaiting: 0,
@@ -183,7 +179,6 @@ export default function AdminWaitlistScreen() {
               const slotDate = today.toISOString().split("T")[0];
               const slotTime = entry.preferredTimeSlots[0] || "10:00 AM";
 
-              // Call real API
               const response = await waitlistApi.triggerSlotAvailable(entry.id, slotDate, slotTime);
               if (response.success) {
                 Alert.alert("Success", "Slot available notification sent!");
@@ -228,7 +223,6 @@ export default function AdminWaitlistScreen() {
           borderColor: item.status === "waiting" ? Colors.primary : "#F3F4F6",
         }}
       >
-        {/* Header */}
         <View className="flex-row items-start justify-between">
           <View className="flex-1">
             <Text style={{ fontSize: rf(16), fontWeight: "600", color: "#000" }}>
@@ -239,7 +233,6 @@ export default function AdminWaitlistScreen() {
             </Text>
           </View>
 
-          {/* Status Badge */}
           <View
             className="flex-row items-center rounded-full"
             style={{
@@ -262,7 +255,6 @@ export default function AdminWaitlistScreen() {
           </View>
         </View>
 
-        {/* Details */}
         <View className="flex-row flex-wrap" style={{ marginTop: hp(1.5), gap: wp(3) }}>
           <View className="flex-row items-center">
             <Calendar size={rf(14)} color={Colors.gray[400]} />
@@ -286,7 +278,6 @@ export default function AdminWaitlistScreen() {
           )}
         </View>
 
-        {/* Position & Wait Info */}
         {item.status === "waiting" && (
           <View
             className="flex-row items-center justify-between rounded-lg"
@@ -313,7 +304,6 @@ export default function AdminWaitlistScreen() {
           </View>
         )}
 
-        {/* Action Buttons */}
         {item.status === "waiting" && (
           <View className="flex-row" style={{ marginTop: hp(2), gap: wp(2) }}>
             <TouchableOpacity
@@ -342,7 +332,6 @@ export default function AdminWaitlistScreen() {
           </View>
         )}
 
-        {/* Available Slot Info */}
         {item.status === "slot_available" && item.availableSlot && (
           <View
             className="rounded-lg"
@@ -387,7 +376,7 @@ export default function AdminWaitlistScreen() {
           paddingHorizontal: wp(10),
         }}
       >
-        When customers join the waitlist for fully booked slots, they'll appear here.
+        When customers join the waitlist for fully booked slots, they will appear here.
       </Text>
     </View>
   );
@@ -396,7 +385,6 @@ export default function AdminWaitlistScreen() {
     <View className="flex-1 bg-white">
       <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
 
-      {/* Header */}
       <View
         className="flex-row items-center"
         style={{ paddingTop: hp(6), paddingHorizontal: wp(4), paddingBottom: hp(2) }}
@@ -409,7 +397,6 @@ export default function AdminWaitlistScreen() {
         </Text>
       </View>
 
-      {/* Stats Cards */}
       <View
         className="flex-row"
         style={{ paddingHorizontal: wp(4), marginBottom: hp(2), gap: wp(2) }}
@@ -452,7 +439,6 @@ export default function AdminWaitlistScreen() {
         </View>
       </View>
 
-      {/* Filters */}
       <View style={{ paddingHorizontal: wp(4), marginBottom: hp(2) }}>
         <FlatList
           horizontal
@@ -484,7 +470,6 @@ export default function AdminWaitlistScreen() {
         />
       </View>
 
-      {/* List */}
       <FlatList
         data={filteredEntries}
         keyExtractor={(item) => item.id}

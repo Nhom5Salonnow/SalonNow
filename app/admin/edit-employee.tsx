@@ -14,13 +14,11 @@ export default function EditEmployeeScreen() {
   const [email, setEmail] = useState('Do22@gmail.com');
 
   const handleSave = () => {
-    // Save employee data
     console.log('Saving employee:', { fullName, age, phone, email });
     router.back();
   };
 
   const handleDelete = () => {
-    // Delete employee
     console.log('Deleting employee');
     router.back();
   };
@@ -28,7 +26,6 @@ export default function EditEmployeeScreen() {
   return (
     <View className="flex-1 bg-white">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header with gradient background */}
         <LinearGradient
           colors={[Colors.primary, Colors.primary, '#FF8A8A']}
           style={{
@@ -38,7 +35,6 @@ export default function EditEmployeeScreen() {
             borderBottomRightRadius: wp(8),
           }}
         >
-          {/* Back button */}
           <TouchableOpacity
             onPress={() => router.back()}
             style={{ paddingHorizontal: wp(6) }}
@@ -46,7 +42,6 @@ export default function EditEmployeeScreen() {
             <ChevronLeft size={rf(28)} color="#000" />
           </TouchableOpacity>
 
-          {/* Profile Image */}
           <View className="items-center" style={{ marginTop: hp(2) }}>
             <View className="relative">
               <View
@@ -66,7 +61,6 @@ export default function EditEmployeeScreen() {
                   resizeMode="cover"
                 />
               </View>
-              {/* Edit photo button */}
               <TouchableOpacity
                 className="absolute rounded-full items-center justify-center bg-white"
                 style={{
@@ -95,7 +89,6 @@ export default function EditEmployeeScreen() {
           </View>
         </LinearGradient>
 
-        {/* Form */}
         <View
           className="bg-white rounded-3xl mx-4 -mt-4"
           style={{
@@ -130,7 +123,6 @@ export default function EditEmployeeScreen() {
           />
         </View>
 
-        {/* Action Buttons */}
         <View
           className="flex-row justify-center"
           style={{ marginTop: hp(4), paddingHorizontal: wp(6), gap: wp(4) }}

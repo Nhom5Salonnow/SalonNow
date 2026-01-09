@@ -17,7 +17,6 @@ interface ServiceItem {
   reviews: number;
 }
 
-// Hardcoded services for fallback/merge
 const HARDCODED_SERVICES: ServiceItem[] = SERVICES_MENU.map(s => ({
   id: s.id,
   name: s.name,
@@ -27,7 +26,6 @@ const HARDCODED_SERVICES: ServiceItem[] = SERVICES_MENU.map(s => ({
   reviews: s.reviews,
 }));
 
-// Merge API data with hardcoded (API takes priority)
 const mergeServices = (apiData: ServiceItem[], hardcodedData: ServiceItem[]): ServiceItem[] => {
   const merged = new Map<string, ServiceItem>();
   hardcodedData.forEach(item => merged.set(item.id, item));
@@ -41,18 +39,14 @@ export default function ServiceDetailScreen() {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [slotsAvailable, setSlotsAvailable] = useState<number>(0);
   const [isFullyBooked, setIsFullyBooked] = useState(false);
-  // Initialize with hardcoded services
   const [services, setServices] = useState<ServiceItem[]>(HARDCODED_SERVICES);
 
-  // Get category info from constants
   const categoryInfo = CATEGORY_INFO[params.id as string] || { name: 'Services', quote: '"Beauty Awaits."' };
   const { name: categoryName, quote: categoryQuote } = categoryInfo;
 
-  // Fetch services and merge with hardcoded
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        // Call real API
         const response = await serviceApi.getServices({ categoryId: params.id as string });
         if (response.success && response.data && response.data.length > 0) {
           const apiServices = response.data.map((svc: any) => ({
@@ -63,17 +57,13 @@ export default function ServiceDetailScreen() {
             price: svc.price || 50,
             reviews: svc.reviewCount || 0,
           }));
-          // Merge API data with hardcoded
           setServices(mergeServices(apiServices, HARDCODED_SERVICES));
         }
-        // If API fails/empty, keep hardcoded (already set as initial state)
       } catch (error) {
         console.error('Error fetching services:', error);
-        // Keep hardcoded on error
       }
 
-      // Simulate some services having limited/no availability
-      const availableSlots = Math.floor(Math.random() * 5); // 0-4 slots
+      const availableSlots = Math.floor(Math.random() * 5);
       setSlotsAvailable(availableSlots);
       setIsFullyBooked(availableSlots === 0);
     };
@@ -127,7 +117,7 @@ export default function ServiceDetailScreen() {
             {item.rating}
           </Text>
           <Text style={{ fontSize: rf(14), color: '#6B7280', marginLeft: 12 }}>
-            €{item.price}
+            ${item.price}
           </Text>
         </View>
       </View>
@@ -147,7 +137,6 @@ export default function ServiceDetailScreen() {
       <DecorativeCircle position="topLeft" size="large" opacity={0.5} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View
           className="flex-row items-center justify-between px-6"
           style={{ paddingTop: insets.top + hp(1) }}
@@ -163,7 +152,6 @@ export default function ServiceDetailScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Banner */}
         <View className="mx-4 mt-4">
           <QuoteBanner
             quote={categoryQuote}
@@ -171,7 +159,6 @@ export default function ServiceDetailScreen() {
           />
         </View>
 
-        {/* Menu Section */}
         <View className="px-6 mt-6">
           <Text
             className="text-center mb-4"
@@ -188,7 +175,6 @@ export default function ServiceDetailScreen() {
           />
         </View>
 
-        {/* Stylist Section */}
         <View className="px-6 mt-6">
           <Text
             className="text-center mb-4"
@@ -211,7 +197,6 @@ export default function ServiceDetailScreen() {
         <View style={{ height: hp(15) }} />
       </ScrollView>
 
-      {/* Availability Banner */}
       {isFullyBooked && (
         <View
           className="absolute left-0 right-0 flex-row items-center justify-center"
@@ -246,7 +231,6 @@ export default function ServiceDetailScreen() {
         </View>
       )}
 
-      {/* Bottom Actions */}
       <View
         className="absolute bottom-0 left-0 right-0 px-6"
         style={{ paddingBottom: hp(12), paddingTop: hp(2), backgroundColor: 'white' }}

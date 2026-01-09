@@ -12,13 +12,11 @@ function EditProfileContent() {
   const { user, updateUser, isLoading: authLoading } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
 
-  // Form fields
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [avatar, setAvatar] = useState('');
 
-  // Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -72,7 +70,6 @@ function EditProfileContent() {
     setIsSaving(true);
 
     try {
-      // Call real API
       const res = await userApi.updateProfile({
         name: name.trim(),
         email: email.trim(),
@@ -81,7 +78,6 @@ function EditProfileContent() {
       });
 
       if (res.success) {
-        // Update auth context
         await updateUser({
           name: name.trim(),
           email: email.trim(),
@@ -93,7 +89,6 @@ function EditProfileContent() {
           { text: 'OK', onPress: () => router.back() }
         ]);
       } else {
-        // API failed - show error
         Alert.alert('Error', res.message || 'Failed to update profile');
       }
     } catch (error) {
@@ -104,7 +99,6 @@ function EditProfileContent() {
   };
 
   const handleChangeAvatar = () => {
-    // In real app, this would open image picker
     Alert.alert(
       'Change Avatar',
       'Choose an option',
@@ -129,7 +123,6 @@ function EditProfileContent() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className="flex-1 bg-white"
     >
-      {/* Pink decorative background */}
       <View
         className="absolute rounded-full"
         style={{
@@ -143,7 +136,6 @@ function EditProfileContent() {
       />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View
           className="flex-row items-center justify-between px-5"
           style={{ paddingTop: hp(6) }}
@@ -159,7 +151,6 @@ function EditProfileContent() {
           <View style={{ width: wp(10) }} />
         </View>
 
-        {/* Avatar Section */}
         <View className="items-center" style={{ marginTop: hp(4) }}>
           <TouchableOpacity onPress={handleChangeAvatar}>
             <View
@@ -184,7 +175,6 @@ function EditProfileContent() {
               )}
             </View>
 
-            {/* Camera Icon */}
             <View
               className="absolute rounded-full items-center justify-center"
               style={{
@@ -204,9 +194,7 @@ function EditProfileContent() {
           </Text>
         </View>
 
-        {/* Form */}
         <View className="px-5" style={{ marginTop: hp(4) }}>
-          {/* Name Field */}
           <View style={{ marginBottom: hp(2.5) }}>
             <Text style={{ fontSize: rf(14), fontWeight: '500', color: Colors.gray[600], marginBottom: hp(1) }}>
               Full Name
@@ -234,7 +222,6 @@ function EditProfileContent() {
             )}
           </View>
 
-          {/* Email Field */}
           <View style={{ marginBottom: hp(2.5) }}>
             <Text style={{ fontSize: rf(14), fontWeight: '500', color: Colors.gray[600], marginBottom: hp(1) }}>
               Email Address
@@ -264,7 +251,6 @@ function EditProfileContent() {
             )}
           </View>
 
-          {/* Phone Field */}
           <View style={{ marginBottom: hp(2.5) }}>
             <Text style={{ fontSize: rf(14), fontWeight: '500', color: Colors.gray[600], marginBottom: hp(1) }}>
               Phone Number
@@ -293,7 +279,6 @@ function EditProfileContent() {
             )}
           </View>
 
-          {/* Change Password Link */}
           <TouchableOpacity
             onPress={() => router.push('/change-password' as any)}
             className="flex-row items-center justify-between rounded-xl px-4"
@@ -309,7 +294,6 @@ function EditProfileContent() {
         </View>
       </ScrollView>
 
-      {/* Save Button */}
       <View
         className="px-5"
         style={{ paddingBottom: hp(4), paddingTop: hp(2), backgroundColor: 'white' }}

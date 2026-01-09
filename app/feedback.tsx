@@ -50,7 +50,7 @@ export default function FeedbackScreen() {
 
   const renderStars = (category: RatingCategory) => {
     return (
-      <View className="flex-row mt-2">
+      <View className="flex-row" style={{ marginTop: hp(1) }}>
         {[1, 2, 3, 4, 5].map((star) => (
           <TouchableOpacity
             key={star}
@@ -68,7 +68,6 @@ export default function FeedbackScreen() {
     );
   };
 
-  // Calculate overall rating from all categories
   const calculateOverallRating = () => {
     const totalRating = ratings.reduce((sum, cat) => sum + cat.rating, 0);
     return Math.round(totalRating / ratings.length);
@@ -85,13 +84,11 @@ export default function FeedbackScreen() {
     try {
       const bookingId = params.bookingId || params.appointmentId;
 
-      // If we have a booking ID, submit as a review
       if (bookingId) {
         const overallRating = calculateOverallRating();
         const serviceRating = ratings.find(r => r.id === 'service')?.rating || overallRating;
         const stylistRating = ratings.find(r => r.id === 'stylist')?.rating || overallRating;
 
-        // Try real API first
         const apiResponse = await reviewApi.createReview({
           bookingId: bookingId,
           overallRating: overallRating,
@@ -109,12 +106,10 @@ export default function FeedbackScreen() {
           return;
         }
 
-        // API failed - show error
-        Alert.alert('Submission Failed', apiResponse.message || 'Please try again later.');
+                Alert.alert('Submission Failed', apiResponse.message || 'Please try again later.');
         return;
       }
 
-      // If no booking ID and user needs support, submit as feedback
       if (needSupport || comment.trim()) {
         const apiResponse = await feedbackApi.createFeedback({
           type: needSupport ? 'complaint' : 'suggestion',
@@ -133,12 +128,10 @@ export default function FeedbackScreen() {
           return;
         }
 
-        // API failed - show error
         Alert.alert('Submission Failed', apiResponse.message || 'Please try again later.');
         return;
       }
 
-      // General case - no booking ID and no comment, nothing to submit
       Alert.alert('No Feedback', 'Please provide a comment or rating before submitting.');
     } catch (error) {
       console.error('Error submitting feedback:', error);
@@ -151,7 +144,6 @@ export default function FeedbackScreen() {
   return (
     <View className="flex-1 bg-white">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View
           className="flex-row items-center justify-between px-6"
           style={{ paddingTop: insets.top + hp(1) }}
@@ -165,7 +157,6 @@ export default function FeedbackScreen() {
           <View style={{ width: wp(7) }} />
         </View>
 
-        {/* Payment Success Info (if coming from payment) */}
         {params.receiptNumber && (
           <View
             className="mx-6 mt-4 p-4 rounded-xl"
@@ -188,7 +179,6 @@ export default function FeedbackScreen() {
           </View>
         )}
 
-        {/* Feedback Form */}
         <View
           className="mx-6 mt-8 rounded-3xl bg-white p-6"
           style={{
@@ -203,7 +193,6 @@ export default function FeedbackScreen() {
             Share Your Feedback
           </Text>
 
-          {/* Rating Categories */}
           {ratings.map((category) => (
             <View key={category.id} style={{ marginTop: hp(3) }}>
               <Text style={{ fontSize: rf(14), color: '#6B7280' }}>
@@ -213,7 +202,6 @@ export default function FeedbackScreen() {
             </View>
           ))}
 
-          {/* Comment Section */}
           <View style={{ marginTop: hp(3) }}>
             <View className="flex-row items-center justify-between">
               <Text style={{ fontSize: rf(16), fontWeight: '600', color: '#000' }}>
@@ -258,7 +246,6 @@ export default function FeedbackScreen() {
             />
           </View>
 
-          {/* Submit Button */}
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={isSubmitting}

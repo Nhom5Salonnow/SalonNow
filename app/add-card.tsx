@@ -17,19 +17,15 @@ function AddCardContent() {
   const [cvv, setCvv] = useState('');
   const [setAsDefault, setSetAsDefault] = useState(false);
 
-  // Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const formatCardNumber = (text: string) => {
-    // Remove non-digits
     const cleaned = text.replace(/\D/g, '');
-    // Add space every 4 digits
     const formatted = cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
-    return formatted.slice(0, 19); // 16 digits + 3 spaces
+    return formatted.slice(0, 19);
   };
 
   const formatExpiry = (text: string) => {
-    // Remove non-digits
     const cleaned = text.replace(/\D/g, '');
     if (cleaned.length >= 2) {
       return cleaned.slice(0, 2) + '/' + cleaned.slice(2, 4);
@@ -82,7 +78,6 @@ function AddCardContent() {
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    // Card number validation
     const cleanedNumber = cardNumber.replace(/\D/g, '');
     if (!cleanedNumber) {
       newErrors.cardNumber = 'Card number is required';
@@ -90,12 +85,10 @@ function AddCardContent() {
       newErrors.cardNumber = 'Invalid card number';
     }
 
-    // Holder name validation
     if (!holderName.trim()) {
       newErrors.holderName = 'Cardholder name is required';
     }
 
-    // Expiry validation
     const expiryParts = expiryDate.split('/');
     if (expiryParts.length !== 2) {
       newErrors.expiry = 'Invalid expiry date';
@@ -113,7 +106,6 @@ function AddCardContent() {
       }
     }
 
-    // CVV validation
     if (!cvv) {
       newErrors.cvv = 'CVV is required';
     } else if (cvv.length < 3 || cvv.length > 4) {
@@ -133,7 +125,6 @@ function AddCardContent() {
       const expiryParts = expiryDate.split('/');
       const cleanedNumber = cardNumber.replace(/\D/g, '');
 
-      // Call real API
       const res = await paymentApi.addPaymentMethod({
         type: 'card',
         cardNumber: cleanedNumber,
@@ -149,7 +140,6 @@ function AddCardContent() {
           { text: 'OK', onPress: () => router.back() }
         ]);
       } else {
-        // API failed - show error
         Alert.alert('Error', res.message || 'Failed to add card');
       }
     } catch (error) {
@@ -164,7 +154,6 @@ function AddCardContent() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className="flex-1 bg-white"
     >
-      {/* Pink decorative background */}
       <View
         className="absolute rounded-full"
         style={{
@@ -178,7 +167,6 @@ function AddCardContent() {
       />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View
           className="flex-row items-center px-5"
           style={{ paddingTop: hp(6), gap: wp(3) }}
@@ -193,7 +181,6 @@ function AddCardContent() {
           <Text style={{ fontSize: rf(20), fontWeight: '600', color: '#000' }}>Add New Card</Text>
         </View>
 
-        {/* Card Preview */}
         <View
           className="mx-5 rounded-2xl p-5"
           style={{
@@ -237,9 +224,7 @@ function AddCardContent() {
           </View>
         </View>
 
-        {/* Form */}
         <View className="px-5" style={{ marginTop: hp(4) }}>
-          {/* Card Number */}
           <View style={{ marginBottom: hp(2.5) }}>
             <Text style={{ fontSize: rf(14), fontWeight: '500', color: Colors.gray[600], marginBottom: hp(1) }}>
               Card Number
@@ -269,7 +254,6 @@ function AddCardContent() {
             )}
           </View>
 
-          {/* Cardholder Name */}
           <View style={{ marginBottom: hp(2.5) }}>
             <Text style={{ fontSize: rf(14), fontWeight: '500', color: Colors.gray[600], marginBottom: hp(1) }}>
               Cardholder Name
@@ -295,7 +279,6 @@ function AddCardContent() {
             )}
           </View>
 
-          {/* Expiry and CVV */}
           <View className="flex-row" style={{ gap: wp(4), marginBottom: hp(2.5) }}>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: rf(14), fontWeight: '500', color: Colors.gray[600], marginBottom: hp(1) }}>
@@ -354,7 +337,6 @@ function AddCardContent() {
             </View>
           </View>
 
-          {/* Set as Default */}
           <TouchableOpacity
             onPress={() => setSetAsDefault(!setAsDefault)}
             className="flex-row items-center"
@@ -379,7 +361,6 @@ function AddCardContent() {
             </Text>
           </TouchableOpacity>
 
-          {/* Security Note */}
           <View
             className="flex-row items-center rounded-xl p-4"
             style={{ backgroundColor: Colors.gray[50], marginBottom: hp(4) }}
@@ -392,7 +373,6 @@ function AddCardContent() {
         </View>
       </ScrollView>
 
-      {/* Add Card Button */}
       <View
         className="px-5"
         style={{ paddingBottom: hp(4), paddingTop: hp(2), backgroundColor: 'white' }}

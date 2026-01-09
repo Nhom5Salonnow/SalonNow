@@ -39,7 +39,6 @@ export default function WaitlistScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Modal state
   const [selectedEntry, setSelectedEntry] = useState<WaitlistEntry | null>(null);
   const [showSlotModal, setShowSlotModal] = useState(false);
 
@@ -50,11 +49,9 @@ export default function WaitlistScreen() {
         return;
       }
 
-      // Call real API
       const response = await waitlistApi.getMyWaitlist();
 
       if (response.success && response.data) {
-        // Map API response to local format
         setWaitlistEntries(response.data.map((w: any) => ({
           id: w.id,
           salonName: w.salonName || w.salon?.name || 'Salon',
@@ -67,7 +64,6 @@ export default function WaitlistScreen() {
           expiresAt: w.expiresAt,
         })));
       } else {
-        // API returned no data - show empty
         setWaitlistEntries([]);
       }
     } catch (error) {
@@ -109,7 +105,6 @@ export default function WaitlistScreen() {
     if (!selectedEntry) return;
 
     try {
-      // Call real API
       const response = await waitlistApi.confirmSlot(selectedEntry.id);
 
       if (response.success) {
@@ -128,7 +123,6 @@ export default function WaitlistScreen() {
     if (!selectedEntry) return;
 
     try {
-      // Call real API
       const response = await waitlistApi.skipSlot(selectedEntry.id);
       if (response.success) {
         setShowSlotModal(false);
@@ -191,7 +185,6 @@ export default function WaitlistScreen() {
     <View className="flex-1 bg-white">
       <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
 
-      {/* Header */}
       <View
         className="flex-row items-center"
         style={{ paddingTop: hp(6), paddingHorizontal: wp(4), paddingBottom: hp(2) }}
@@ -204,7 +197,6 @@ export default function WaitlistScreen() {
         </Text>
       </View>
 
-      {/* Filters */}
       <View style={{ paddingHorizontal: wp(4), marginBottom: hp(2) }}>
         <FlatList
           horizontal
@@ -236,7 +228,6 @@ export default function WaitlistScreen() {
         />
       </View>
 
-      {/* Stats Summary */}
       {waitlistEntries.length > 0 && (
         <View
           className="flex-row"
@@ -272,7 +263,6 @@ export default function WaitlistScreen() {
         </View>
       )}
 
-      {/* Waitlist List */}
       <FlatList
         data={filteredEntries}
         keyExtractor={(item) => item.id}
@@ -298,7 +288,6 @@ export default function WaitlistScreen() {
         ListEmptyComponent={!isLoading ? renderEmptyState : null}
       />
 
-      {/* Slot Available Modal */}
       <SlotAvailableModal
         visible={showSlotModal}
         entry={selectedEntry}

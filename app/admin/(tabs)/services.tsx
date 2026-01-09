@@ -25,7 +25,6 @@ interface Category {
   servicesCount: number;
 }
 
-// Hardcoded categories for fallback/merge
 const HARDCODED_CATEGORIES: Category[] = HOME_CATEGORIES.map((cat, idx) => ({
   id: cat.id,
   name: cat.name,
@@ -33,7 +32,6 @@ const HARDCODED_CATEGORIES: Category[] = HOME_CATEGORIES.map((cat, idx) => ({
   servicesCount: idx === 0 ? 8 : idx === 1 ? 6 : 5,
 }));
 
-// Hardcoded services for fallback/merge
 const HARDCODED_SERVICES: Service[] = SERVICES_MENU.map(svc => ({
   id: svc.id,
   name: svc.name,
@@ -46,7 +44,6 @@ const HARDCODED_SERVICES: Service[] = SERVICES_MENU.map(svc => ({
   isActive: true,
 }));
 
-// Merge helpers
 const mergeCategories = (apiData: Category[], hardcodedData: Category[]): Category[] => {
   const merged = new Map<string, Category>();
   hardcodedData.forEach(item => merged.set(item.id, item));
@@ -67,11 +64,9 @@ export default function AdminServicesScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>("categories");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-  // Initialize with hardcoded data
   const [categories, setCategories] = useState<Category[]>(HARDCODED_CATEGORIES);
   const [services, setServices] = useState<Service[]>(HARDCODED_SERVICES);
 
-  // Fetch categories on mount and merge with hardcoded
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -83,19 +78,15 @@ export default function AdminServicesScreen() {
             image: cat.image || cat.imageUrl || HARDCODED_CATEGORIES[0]?.image,
             servicesCount: cat.servicesCount || 0,
           }));
-          // Merge API data with hardcoded
           setCategories(mergeCategories(apiCategories, HARDCODED_CATEGORIES));
         }
-        // If API fails/empty, keep hardcoded (already set as initial state)
       } catch (error) {
         console.error("Error fetching categories:", error);
-        // Keep hardcoded on error
       }
     };
     fetchCategories();
   }, []);
 
-  // Fetch services when category is selected and merge with hardcoded
   useEffect(() => {
     const fetchServices = async () => {
       if (!selectedCategoryId) return;
@@ -113,13 +104,10 @@ export default function AdminServicesScreen() {
             image: svc.image || svc.imageUrl || HARDCODED_SERVICES[0]?.image,
             isActive: svc.isActive !== false,
           }));
-          // Merge API data with hardcoded
           setServices(mergeServices(apiServices, HARDCODED_SERVICES));
         }
-        // If API fails/empty, keep hardcoded (already set as initial state)
       } catch (error) {
         console.error("Error fetching services:", error);
-        // Keep hardcoded on error
       }
     };
     if (viewMode === "services") {
@@ -241,7 +229,6 @@ export default function AdminServicesScreen() {
     <View className="flex-1 bg-white">
       <DecorativeCircle position="topLeft" size="large" opacity={0.4} />
 
-      {/* Header */}
       <View style={{ paddingTop: hp(6), paddingHorizontal: wp(6) }}>
         <View className="flex-row items-center justify-between">
           <View>
@@ -274,7 +261,6 @@ export default function AdminServicesScreen() {
         </View>
       </View>
 
-      {/* List */}
       <FlatList
         data={(viewMode === "categories" ? categories : filteredServices) as any}
         renderItem={viewMode === "categories" ? renderCategory : renderService as any}

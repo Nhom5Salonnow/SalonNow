@@ -6,31 +6,21 @@ export interface ApiErrorResponse {
   success?: boolean;
 }
 
-/**
- * Extract error message from API error response
- * Returns a user-friendly error message
- */
 export const handleApiError = (error: AxiosError<ApiErrorResponse> | any): string => {
-  // If it's not an Axios error, return generic message
   if (!error?.isAxiosError) {
     return error?.message || 'Co loi xay ra';
   }
 
   if (error.response) {
-    // Server responded with error status
     const status = error.response.status;
     const data = error.response.data;
 
-    // Get message from response
     const message = data?.message || data?.error;
 
-    // Handle specific status codes
     switch (status) {
       case 400:
         return message || 'Du lieu khong hop le';
       case 401:
-        // For 401, prefer API message if available (e.g., "Invalid credentials")
-        // Only use default "session expired" if no message from API
         return message || 'Email hoac mat khau khong dung';
       case 403:
         return 'Ban khong co quyen thuc hien thao tac nay';
@@ -46,32 +36,20 @@ export const handleApiError = (error: AxiosError<ApiErrorResponse> | any): strin
         return message || 'Co loi xay ra';
     }
   } else if (error.request) {
-    // No response received (network error)
     return 'Khong the ket noi den server. Vui long kiem tra ket noi mang';
   } else {
-    // Request setup error
     return 'Loi ket noi. Vui long thu lai';
   }
 };
 
-/**
- * Check if error is a network error
- */
 export const isNetworkError = (error: AxiosError | any): boolean => {
   return !error?.response && !!error?.request;
 };
 
-/**
- * Check if error is an authentication error
- */
 export const isAuthError = (error: AxiosError | any): boolean => {
   return error?.response?.status === 401;
 };
 
-/**
- * Create a safe API response for failed requests
- * This prevents the app from crashing when API fails
- */
 export const createSafeErrorResponse = <T>(defaultData: T) => {
   return {
     success: false,

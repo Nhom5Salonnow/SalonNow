@@ -1,15 +1,14 @@
-import { Colors, NotificationItem, DEFAULT_AVATAR } from "@/constants";
-import { hp, rf, wp } from "@/utils/responsive";
-import { NotificationCard } from "@/components/ui";
-import { Menu, User, Bell, Check, Trash2 } from "lucide-react-native";
-import { FlatList, Image, Text, TouchableOpacity, View, RefreshControl, Alert } from "react-native";
-import { router } from "expo-router";
-import { useState, useCallback, useEffect } from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth } from "@/contexts";
 import { notificationApi } from "@/api";
+import { NotificationCard } from "@/components/ui";
+import { Colors, DEFAULT_AVATAR, NotificationItem } from "@/constants";
+import { useAuth } from "@/contexts";
+import { hp, rf, wp } from "@/utils/responsive";
+import { router } from "expo-router";
+import { Bell, Check, Menu, Trash2, User } from "lucide-react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Alert, FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// Guest welcome notification
 const GUEST_NOTIFICATIONS: NotificationItem[] = [
   {
     id: "welcome",
@@ -46,14 +45,12 @@ export default function NotificationsScreen() {
 
   const loadNotifications = useCallback(async (_userId: string) => {
     try {
-      // Call real API
       const [apiNotifRes, apiCountRes] = await Promise.all([
         notificationApi.getNotifications(),
         notificationApi.getUnreadCount(),
       ]);
 
       if (apiNotifRes.success && apiNotifRes.data) {
-        // Use API data
         setNotifications(apiNotifRes.data.map((n: any) => ({
           id: n.id || n._id,
           type: n.type as NotificationItem['type'],
@@ -64,13 +61,11 @@ export default function NotificationsScreen() {
         })));
         setUnreadCount(apiCountRes.data?.count || 0);
       } else {
-        // API returned no data - show empty
         setNotifications([]);
         setUnreadCount(0);
       }
     } catch (error) {
       console.error("Error loading notifications:", error);
-      // On error - show empty
       setNotifications([]);
       setUnreadCount(0);
     }
@@ -99,7 +94,6 @@ export default function NotificationsScreen() {
 
   const handleMarkAllRead = async () => {
     if (!user) return;
-    // Call real API
     const apiRes = await notificationApi.markAllAsRead();
     if (apiRes.success) {
       setNotifications(notifications.map(n => ({ ...n, read: true })));
@@ -120,7 +114,6 @@ export default function NotificationsScreen() {
           text: "Clear All",
           style: "destructive",
           onPress: async () => {
-            // Call real API
             const res = await notificationApi.deleteAllNotifications();
             if (res.success) {
               setNotifications([]);
@@ -138,7 +131,6 @@ export default function NotificationsScreen() {
   const displayNotifications = isGuest ? GUEST_NOTIFICATIONS : notifications;
 
   const handleNotificationPress = (item: NotificationItem) => {
-    // Navigate based on notification type
     switch (item.type) {
       case "appointment_confirm":
       case "appointment_update":
@@ -154,7 +146,6 @@ export default function NotificationsScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Decorative pink circle */}
       <View
         className="absolute rounded-full"
         style={{
@@ -167,7 +158,6 @@ export default function NotificationsScreen() {
         }}
       />
 
-      {/* Header */}
       <View
         className="flex-row items-center justify-between"
         style={{
@@ -176,7 +166,6 @@ export default function NotificationsScreen() {
           paddingBottom: hp(1),
         }}
       >
-        {/* Left: Menu + Title */}
         <View className="flex-row items-center">
           <TouchableOpacity
             onPress={() => router.push("/settings" as any)}
@@ -200,7 +189,6 @@ export default function NotificationsScreen() {
           </Text>
         </View>
 
-        {/* Profile Avatar */}
         <TouchableOpacity
           onPress={() => router.push(isGuest ? "/auth/login" : "/profile" as any)}
           className="rounded-full overflow-hidden items-center justify-center"
@@ -224,7 +212,6 @@ export default function NotificationsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Action Bar - only show when logged in and has notifications */}
       {!isGuest && displayNotifications.length > 0 && (
         <View
           className="flex-row items-center justify-end"
@@ -247,7 +234,6 @@ export default function NotificationsScreen() {
         </View>
       )}
 
-      {/* Notification List */}
       <FlatList
         data={displayNotifications}
         renderItem={({ item }) => (
@@ -272,7 +258,7 @@ export default function NotificationsScreen() {
                 No Notifications
               </Text>
               <Text style={{ fontSize: rf(14), color: Colors.gray[500], marginTop: hp(1), textAlign: 'center' }}>
-                You're all caught up! We'll notify you when something important happens.
+                You are all caught up! We will notify you when something important happens.
               </Text>
             </View>
           ) : null

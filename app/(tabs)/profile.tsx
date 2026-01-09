@@ -90,10 +90,8 @@ export default function ProfileScreen() {
 
   const loadStats = useCallback(async (userId: string) => {
     try {
-      // Call real API
       const apiRes = await userApi.getUserById(userId);
       if (apiRes.success && apiRes.data && apiRes.data.id) {
-        // Map API response to stats format
         const userData = apiRes.data;
         setStats({
           totalAppointments: userData.totalAppointments || 0,
@@ -109,7 +107,6 @@ export default function ProfileScreen() {
         return;
       }
 
-      // API returned no data - show empty stats
       console.log('API returned no user stats');
       setStats(null);
     } catch (error) {
@@ -135,7 +132,6 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = async () => {
-    // On web, use window.confirm instead of Alert.alert
     if (Platform.OS === 'web') {
       const confirmed = window.confirm('Are you sure you want to logout?');
       if (confirmed) {
@@ -145,7 +141,6 @@ export default function ProfileScreen() {
       return;
     }
 
-    // On native, use Alert.alert
     Alert.alert(
       "Logout",
       "Are you sure you want to logout?",
@@ -205,7 +200,6 @@ export default function ProfileScreen() {
           <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
         }
       >
-        {/* Header */}
         <View
           className="flex-row items-center justify-between"
           style={{
@@ -228,7 +222,6 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* Profile Section */}
         <View
           className="items-center"
           style={{
@@ -236,7 +229,6 @@ export default function ProfileScreen() {
             paddingBottom: hp(3),
           }}
         >
-          {/* Profile Image */}
           <View
             className="rounded-full overflow-hidden items-center justify-center"
             style={{
@@ -258,7 +250,6 @@ export default function ProfileScreen() {
             )}
           </View>
 
-          {/* User Name */}
           <Text
             style={{
               fontSize: rf(22),
@@ -270,7 +261,6 @@ export default function ProfileScreen() {
             {isLoggedIn ? (user?.name || "User") : "Guest"}
           </Text>
 
-          {/* User Email or Guest Message */}
           <Text
             style={{
               fontSize: rf(14),
@@ -281,7 +271,6 @@ export default function ProfileScreen() {
             {isLoggedIn ? (user?.email || "") : "Sign in to access all features"}
           </Text>
 
-          {/* Member Since (only for logged in users) */}
           {isLoggedIn && stats?.memberSince && (
             <View className="flex-row items-center" style={{ marginTop: hp(0.5) }}>
               <Award size={rf(14)} color={Colors.gray[400]} />
@@ -291,7 +280,6 @@ export default function ProfileScreen() {
             </View>
           )}
 
-          {/* Login/Register buttons for guest */}
           {!isLoggedIn && (
             <View style={{ marginTop: hp(3) }}>
               <GuestPrompt showButtons={true} message="" />
@@ -299,13 +287,11 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* Stats Cards (only for logged in users) */}
         {isLoggedIn && (
           <View
             className="flex-row"
             style={{ paddingHorizontal: wp(5), gap: wp(3), marginBottom: hp(3) }}
           >
-            {/* Loyalty Points */}
             <View
               className="flex-1 rounded-2xl items-center py-4"
               style={{ backgroundColor: Colors.salon.pinkBg }}
@@ -322,7 +308,6 @@ export default function ProfileScreen() {
               <Text style={{ fontSize: rf(12), color: Colors.gray[500] }}>Points</Text>
             </View>
 
-            {/* Appointments */}
             <View
               className="flex-1 rounded-2xl items-center py-4"
               style={{ backgroundColor: '#F0F9FF' }}
@@ -339,7 +324,6 @@ export default function ProfileScreen() {
               <Text style={{ fontSize: rf(12), color: Colors.gray[500] }}>Visits</Text>
             </View>
 
-            {/* Reviews Given */}
             <View
               className="flex-1 rounded-2xl items-center py-4"
               style={{ backgroundColor: '#FEF3C7' }}
@@ -358,7 +342,6 @@ export default function ProfileScreen() {
           </View>
         )}
 
-        {/* Total Spent Section (only for logged in users) */}
         {isLoggedIn && stats && stats.totalSpent > 0 && (
           <View
             className="mx-5 rounded-2xl p-4 flex-row items-center justify-between"
@@ -382,7 +365,6 @@ export default function ProfileScreen() {
           </View>
         )}
 
-        {/* Favorite Services (only for logged in users) */}
         {isLoggedIn && stats && stats.favoriteServices.length > 0 && (
           <View style={{ paddingHorizontal: wp(5), marginBottom: hp(3) }}>
             <Text style={{ fontSize: rf(16), fontWeight: '600', color: Colors.salon.dark, marginBottom: hp(1.5) }}>
@@ -412,7 +394,6 @@ export default function ProfileScreen() {
           </View>
         )}
 
-        {/* Menu Items */}
         <View
           style={{
             paddingHorizontal: wp(5),
@@ -462,7 +443,6 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           ))}
 
-          {/* Logout Button (only for logged in users) */}
           {isLoggedIn && (
             <TouchableOpacity
               onPress={handleLogout}
@@ -488,7 +468,6 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* Bottom spacing */}
         <View style={{ height: hp(12) }} />
       </ScrollView>
     </View>

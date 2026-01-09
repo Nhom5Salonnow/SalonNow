@@ -28,10 +28,8 @@ function PaymentMethodsContent() {
 
   const loadPaymentMethods = useCallback(async (_uid: string) => {
     try {
-      // Call real API
       const res = await paymentApi.getPaymentMethods();
       if (res.success && res.data) {
-        // Map API response to local format
         const mapped = res.data.map((m: any) => ({
           id: m.id,
           cardBrand: m.brand || m.cardBrand || 'visa',
@@ -43,7 +41,6 @@ function PaymentMethodsContent() {
         }));
         setPaymentMethods(mapped);
       } else {
-        // API returned no data - show empty
         setPaymentMethods([]);
       }
     } catch (error) {
@@ -67,7 +64,6 @@ function PaymentMethodsContent() {
   };
 
   const handleSetDefault = async (methodId: string) => {
-    // Call real API
     const res = await paymentApi.setDefaultPaymentMethod(methodId);
     if (res.success) {
       await loadPaymentMethods(userId);
@@ -96,7 +92,6 @@ function PaymentMethodsContent() {
           text: 'Remove',
           style: 'destructive',
           onPress: async () => {
-            // Call real API
             const res = await paymentApi.deletePaymentMethod(methodId);
             if (res.success) {
               await loadPaymentMethods(userId);
@@ -150,7 +145,6 @@ function PaymentMethodsContent() {
       }}
     >
       <View className="flex-row items-center">
-        {/* Card Logo */}
         <View
           className="rounded-xl items-center justify-center"
           style={{ width: wp(14), height: wp(10), backgroundColor: Colors.gray[100] }}
@@ -158,7 +152,6 @@ function PaymentMethodsContent() {
           {getCardIcon(item.cardBrand)}
         </View>
 
-        {/* Card Info */}
         <View style={{ flex: 1, marginLeft: wp(3) }}>
           <View className="flex-row items-center">
             <Text style={{ fontSize: rf(15), fontWeight: '600', color: '#000' }}>
@@ -182,7 +175,6 @@ function PaymentMethodsContent() {
         </View>
       </View>
 
-      {/* Actions */}
       <View
         className="flex-row items-center justify-between pt-3 mt-3"
         style={{ borderTopWidth: 1, borderTopColor: Colors.gray[100] }}
@@ -229,7 +221,6 @@ function PaymentMethodsContent() {
 
   return (
     <View className="flex-1 bg-gray-50">
-      {/* Header */}
       <View className="bg-white" style={{ paddingTop: hp(6), paddingBottom: hp(2), paddingHorizontal: wp(5) }}>
         <View className="flex-row items-center" style={{ gap: wp(3) }}>
           <TouchableOpacity
@@ -243,7 +234,6 @@ function PaymentMethodsContent() {
         </View>
       </View>
 
-      {/* Payment Methods List */}
       <FlatList
         data={paymentMethods}
         renderItem={renderPaymentMethod}
@@ -286,7 +276,6 @@ function PaymentMethodsContent() {
         }
       />
 
-      {/* Security Note */}
       <View
         className="absolute bottom-0 left-0 right-0 px-5"
         style={{ paddingBottom: hp(4), backgroundColor: 'white' }}

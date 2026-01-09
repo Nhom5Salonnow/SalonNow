@@ -26,7 +26,6 @@ function AppointmentContent() {
   const params = useLocalSearchParams() as BookingParams;
   const { user } = useAuth();
 
-  // Get current date info
   const today = new Date();
   const currentDay = today.getDate();
 
@@ -34,21 +33,17 @@ function AppointmentContent() {
   const [selectedHour, setSelectedHour] = useState('14:00');
   const [isBooking, setIsBooking] = useState(false);
 
-  // Get month name
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'];
   const currentMonth = monthNames[today.getMonth()];
 
-  // Generate week days using helper
   const weekDays = generateWeekDays(currentDay - 2, selectedDate);
 
-  // Available time slots
   const timeSlots = [
     '09:00', '10:00', '11:00', '12:00',
     '14:00', '15:00', '16:00', '17:00', '18:00'
   ];
 
-  // Extract service info from params or use defaults
   const serviceName = params.serviceName || 'Hair Design & Cut';
   const servicePrice = params.servicePrice || '50';
   const salonName = params.salonName || 'Salon';
@@ -69,13 +64,11 @@ function AppointmentContent() {
     setIsBooking(true);
 
     try {
-      // Build start time from selected date and hour
       const bookingDate = new Date(today.getFullYear(), today.getMonth(), selectedDate);
       const [hours, minutes] = selectedHour.split(':').map(Number);
       bookingDate.setHours(hours, minutes, 0, 0);
       const startTime = bookingDate.toISOString();
 
-      // Call real API
       const apiResponse = await bookingApi.createBooking({
         salonId: params.salonId,
         serviceId: params.serviceId,
@@ -100,7 +93,6 @@ function AppointmentContent() {
           ]
         );
       } else {
-        // API failed - show error
         Alert.alert('Booking Failed', apiResponse.message || 'Please try again.');
       }
     } catch (error) {
@@ -113,7 +105,6 @@ function AppointmentContent() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Pink gradient header background */}
       <LinearGradient
         colors={['#FECDD3', '#FFF5F5', '#FFFFFF']}
         locations={[0, 0.5, 1]}
@@ -127,7 +118,6 @@ function AppointmentContent() {
         keyboardShouldPersistTaps="handled"
         bounces={false}
       >
-        {/* Header */}
         <View
           className="flex-row items-center px-6"
           style={{ paddingTop: insets.top + hp(1) }}
@@ -144,7 +134,6 @@ function AppointmentContent() {
           <View style={{ width: wp(7) }} />
         </View>
 
-        {/* Week Calendar */}
         <View style={{ marginTop: hp(2) }}>
           <WeekCalendar
             month={currentMonth}
@@ -153,7 +142,6 @@ function AppointmentContent() {
           />
         </View>
 
-        {/* Time Slots */}
         <View style={{ marginTop: hp(3), paddingHorizontal: wp(6) }}>
           <Text style={{ fontSize: rf(16), fontWeight: '600', color: '#000', marginBottom: hp(1.5) }}>
             Select Time
@@ -186,7 +174,6 @@ function AppointmentContent() {
           </View>
         </View>
 
-        {/* Service Card */}
         <View
           className="mx-6 rounded-2xl bg-white border border-gray-200"
           style={{
@@ -199,7 +186,6 @@ function AppointmentContent() {
             elevation: 2,
           }}
         >
-          {/* Service Type */}
           <Text
             style={{
               fontSize: rf(16),
@@ -210,7 +196,6 @@ function AppointmentContent() {
             {serviceName}
           </Text>
 
-          {/* Stylist Info */}
           <View className="flex-row items-center">
             <Image
               source={{ uri: stylistImage }}
@@ -234,7 +219,6 @@ function AppointmentContent() {
             </View>
           </View>
 
-          {/* Service Details */}
           <View
             className="flex-row justify-between items-center"
             style={{ marginTop: hp(2) }}
@@ -248,11 +232,9 @@ function AppointmentContent() {
           </View>
         </View>
 
-        {/* Spacer */}
         <View style={{ height: hp(15) }} />
       </ScrollView>
 
-      {/* Book Button */}
       <View
         className="absolute bottom-0 left-0 right-0 px-6"
         style={{ paddingBottom: hp(4) }}

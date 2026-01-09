@@ -1,6 +1,6 @@
 import apiClient from './apiClient';
 import { safeApiCallOptional } from './apiHelper';
-import { ApiResponse, PaginatedResponse } from './types/common.types';
+import { ApiResponse } from './types/common.types';
 import {
   Payment,
   CreatePaymentRequest,
@@ -10,15 +10,7 @@ import {
   PaymentSearchParams,
 } from './types/payment.types';
 
-/**
- * Payment API Service
- * ALL ENDPOINTS MAY NOT BE AVAILABLE YET
- * Will gracefully fail without crashing
- */
 export const paymentApi = {
-  /**
-   * Create payment
-   */
   createPayment: async (data: CreatePaymentRequest): Promise<ApiResponse<Payment>> => {
     return safeApiCallOptional(
       () => apiClient.post('/payments', data),
@@ -26,9 +18,6 @@ export const paymentApi = {
     );
   },
 
-  /**
-   * Get my payments
-   */
   getMyPayments: async (params?: PaymentSearchParams): Promise<ApiResponse<Payment[]>> => {
     return safeApiCallOptional(
       () => apiClient.get('/payments/my-payments', { params }),
@@ -36,9 +25,6 @@ export const paymentApi = {
     );
   },
 
-  /**
-   * Get payment by ID
-   */
   getPaymentById: async (paymentId: string): Promise<ApiResponse<Payment>> => {
     return safeApiCallOptional(
       () => apiClient.get(`/payments/${paymentId}`),
@@ -46,9 +32,6 @@ export const paymentApi = {
     );
   },
 
-  /**
-   * Refund payment
-   */
   refundPayment: async (paymentId: string, data: RefundPaymentRequest): Promise<ApiResponse<Payment>> => {
     return safeApiCallOptional(
       () => apiClient.post(`/payments/${paymentId}/refund`, data),
@@ -56,9 +39,6 @@ export const paymentApi = {
     );
   },
 
-  /**
-   * Get payment methods
-   */
   getPaymentMethods: async (): Promise<ApiResponse<PaymentMethodInfo[]>> => {
     return safeApiCallOptional(
       () => apiClient.get('/payments/methods'),
@@ -66,9 +46,6 @@ export const paymentApi = {
     );
   },
 
-  /**
-   * Add payment method
-   */
   addPaymentMethod: async (data: CreatePaymentMethodRequest): Promise<ApiResponse<PaymentMethodInfo>> => {
     return safeApiCallOptional(
       () => apiClient.post('/payments/methods', data),
@@ -76,9 +53,6 @@ export const paymentApi = {
     );
   },
 
-  /**
-   * Delete payment method
-   */
   deletePaymentMethod: async (methodId: string): Promise<ApiResponse<null>> => {
     return safeApiCallOptional(
       () => apiClient.delete(`/payments/methods/${methodId}`),
@@ -86,9 +60,6 @@ export const paymentApi = {
     );
   },
 
-  /**
-   * Set default payment method
-   */
   setDefaultPaymentMethod: async (methodId: string): Promise<ApiResponse<PaymentMethodInfo>> => {
     return safeApiCallOptional(
       () => apiClient.patch(`/payments/methods/${methodId}/default`),
