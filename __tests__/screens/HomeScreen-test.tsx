@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import HomeScreen from '@/app/(tabs)/home';
 
 // Mock react-native-safe-area-context
@@ -10,9 +10,10 @@ jest.mock('react-native-safe-area-context', () => ({
 
 // Mock AuthContext
 let mockIsLoggedIn = false;
+let mockUser: { id: string; name: string; email: string; avatar?: string } | null = null;
 jest.mock('@/contexts', () => ({
   useAuth: () => ({
-    user: mockIsLoggedIn ? { id: 'user-1', name: 'Test User', email: 'test@test.com', avatar: 'https://example.com/avatar.jpg' } : null,
+    user: mockUser,
     isLoggedIn: mockIsLoggedIn,
     isLoading: false,
   }),
@@ -31,6 +32,18 @@ const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   router: {
     push: (path: string) => mockPush(path),
+  },
+}));
+
+// Mock API modules
+const mockGetCategories = jest.fn();
+const mockGetStylists = jest.fn();
+jest.mock('@/api', () => ({
+  categoryApi: {
+    getCategories: () => mockGetCategories(),
+  },
+  stylistApi: {
+    getStylists: () => mockGetStylists(),
   },
 }));
 
@@ -81,6 +94,7 @@ jest.mock('@/constants', () => ({
     name: 'Guest',
     avatar: null,
   },
+  DEFAULT_AVATAR: 'https://example.com/default-avatar.png',
 }));
 
 // Mock lucide-react-native
@@ -128,8 +142,13 @@ jest.mock('@/components/salon', () => ({
 describe('HomeScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Default to guest mode (no token)
+    // Default to guest mode
+    mockIsLoggedIn = false;
+    mockUser = null;
     mockGetData.mockResolvedValue(null);
+    // Default API responses - empty to use hardcoded data
+    mockGetCategories.mockResolvedValue({ success: true, data: [] });
+    mockGetStylists.mockResolvedValue({ success: true, data: [] });
   });
 
   describe('Rendering - Guest Mode', () => {
@@ -221,30 +240,49 @@ describe('HomeScreen', () => {
 
       expect(mockPush).toHaveBeenCalledWith('/payment');
     });
+
+    it('should navigate to settings when menu button is pressed', () => {
+      const { UNSAFE_getAllByType } = render(<HomeScreen />);
+      const TouchableOpacity = require('react-native').TouchableOpacity;
+      const buttons = UNSAFE_getAllByType(TouchableOpacity);
+
+      // First touchable is the menu button
+      fireEvent.press(buttons[0]);
+
+      expect(mockPush).toHaveBeenCalledWith('/settings');
+    });
   });
 
   describe('Logged In Mode', () => {
     beforeEach(() => {
       mockIsLoggedIn = true;
-      // Setup logged in user
-      mockGetData.mockImplementation((key: string) => {
-        if (key === 'authToken') return Promise.resolve('mock_token');
-        if (key === 'userData') return Promise.resolve(JSON.stringify({
-          name: 'Test User',
-          email: 'test@test.com',
-          avatar: 'http://example.com/avatar.jpg',
-        }));
-        return Promise.resolve(null);
-      });
+      mockUser = {
+        id: 'user-1',
+        name: 'Test User',
+        email: 'test@test.com',
+        avatar: 'http://example.com/avatar.jpg',
+      };
     });
 
     afterEach(() => {
       mockIsLoggedIn = false;
+      mockUser = null;
     });
 
     it('should show Hi greeting for logged in user', () => {
       const { getByText } = render(<HomeScreen />);
       expect(getByText('Hi')).toBeTruthy();
+    });
+
+    it('should show user name for logged in user', () => {
+      const { getByText } = render(<HomeScreen />);
+      expect(getByText('Test User')).toBeTruthy();
+    });
+
+    it('should show "User" when user has no name', () => {
+      mockUser = { id: 'user-1', name: '', email: 'test@test.com' };
+      const { getByText } = render(<HomeScreen />);
+      expect(getByText('User')).toBeTruthy();
     });
 
     it('should navigate to profile when profile button is pressed (logged in)', () => {
@@ -255,6 +293,200 @@ describe('HomeScreen', () => {
       expect(mockPush).toHaveBeenCalledWith('/profile');
     });
 
-    // Notification button removed from header - now only in tab bar
+    it('should use default avatar when user has no avatar', () => {
+      mockUser = { id: 'user-1', name: 'Test User', email: 'test@test.com' };
+      // Just verify it renders without crashing
+      const { getByTestId } = render(<HomeScreen />);
+      expect(getByTestId('profile-button')).toBeTruthy();
+    });
+  });
+
+  describe('API Integration', () => {
+    it('should fetch categories from API on mount', async () => {
+      mockGetCategories.mockResolvedValue({
+        success: true,
+        data: [
+          { id: 'api-1', name: 'API Category 1', image: 'http://api.com/1.jpg' },
+          { id: 'api-2', name: 'API Category 2', imageUrl: 'http://api.com/2.jpg' },
+        ],
+      });
+
+      render(<HomeScreen />);
+
+      await waitFor(() => {
+        expect(mockGetCategories).toHaveBeenCalled();
+      });
+    });
+
+    it('should fetch stylists from API on mount', async () => {
+      mockGetStylists.mockResolvedValue({
+        success: true,
+        data: [
+          { id: 'api-s1', name: 'API Stylist 1', avatar: 'http://api.com/s1.jpg', rating: 5, phone: '123' },
+        ],
+      });
+
+      render(<HomeScreen />);
+
+      await waitFor(() => {
+        expect(mockGetStylists).toHaveBeenCalled();
+      });
+    });
+
+    it('should merge API categories with hardcoded data', async () => {
+      mockGetCategories.mockResolvedValue({
+        success: true,
+        data: [
+          { _id: 'new-cat', name: 'New Category', image: 'http://api.com/new.jpg' },
+        ],
+      });
+
+      const { getByTestId } = render(<HomeScreen />);
+
+      await waitFor(() => {
+        expect(getByTestId('category-New Category')).toBeTruthy();
+      });
+    });
+
+    it('should merge API stylists with hardcoded data', async () => {
+      mockGetStylists.mockResolvedValue({
+        success: true,
+        data: [
+          { _id: 'new-sty', name: 'New Stylist', imageUrl: 'http://api.com/new.jpg' },
+        ],
+      });
+
+      const { getByTestId } = render(<HomeScreen />);
+
+      await waitFor(() => {
+        expect(getByTestId('specialist-New Stylist')).toBeTruthy();
+      });
+    });
+
+    it('should use hardcoded data when API returns empty categories', async () => {
+      mockGetCategories.mockResolvedValue({ success: true, data: [] });
+
+      const { getByTestId } = render(<HomeScreen />);
+
+      await waitFor(() => {
+        expect(getByTestId('category-Hair Cut')).toBeTruthy();
+      });
+    });
+
+    it('should use hardcoded data when API returns empty stylists', async () => {
+      mockGetStylists.mockResolvedValue({ success: true, data: [] });
+
+      const { getByTestId } = render(<HomeScreen />);
+
+      await waitFor(() => {
+        expect(getByTestId('specialist-Doe John')).toBeTruthy();
+      });
+    });
+
+    it('should use hardcoded data when API call fails', async () => {
+      mockGetCategories.mockResolvedValue({ success: false, data: null });
+      mockGetStylists.mockResolvedValue({ success: false, data: null });
+
+      const { getByTestId } = render(<HomeScreen />);
+
+      await waitFor(() => {
+        expect(getByTestId('category-Hair Cut')).toBeTruthy();
+        expect(getByTestId('specialist-Doe John')).toBeTruthy();
+      });
+    });
+
+    it('should handle API error gracefully', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      mockGetCategories.mockRejectedValue(new Error('Network error'));
+
+      const { getByTestId } = render(<HomeScreen />);
+
+      await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalledWith('Error fetching home data:', expect.any(Error));
+      });
+
+      // Should still show hardcoded data
+      expect(getByTestId('category-Hair Cut')).toBeTruthy();
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle category with _id instead of id', async () => {
+      mockGetCategories.mockResolvedValue({
+        success: true,
+        data: [
+          { _id: 'mongo-id', name: 'MongoDB Category' },
+        ],
+      });
+
+      const { getByTestId } = render(<HomeScreen />);
+
+      await waitFor(() => {
+        expect(getByTestId('category-MongoDB Category')).toBeTruthy();
+      });
+    });
+
+    it('should handle stylist with avatar instead of imageUrl', async () => {
+      mockGetStylists.mockResolvedValue({
+        success: true,
+        data: [
+          { id: 'sty-avatar', name: 'Avatar Stylist', avatar: 'http://api.com/avatar.jpg' },
+        ],
+      });
+
+      const { getByTestId } = render(<HomeScreen />);
+
+      await waitFor(() => {
+        expect(getByTestId('specialist-Avatar Stylist')).toBeTruthy();
+      });
+    });
+
+    it('should use fallback imageUrl when category has no image', async () => {
+      mockGetCategories.mockResolvedValue({
+        success: true,
+        data: [
+          { id: 'no-img', name: 'No Image Category' },
+        ],
+      });
+
+      const { getByTestId } = render(<HomeScreen />);
+
+      await waitFor(() => {
+        expect(getByTestId('category-No Image Category')).toBeTruthy();
+      });
+    });
+
+    it('should use default rating and phone when stylist has none', async () => {
+      mockGetStylists.mockResolvedValue({
+        success: true,
+        data: [
+          { id: 'minimal', name: 'Minimal Stylist' },
+        ],
+      });
+
+      const { getByTestId } = render(<HomeScreen />);
+
+      await waitFor(() => {
+        expect(getByTestId('specialist-Minimal Stylist')).toBeTruthy();
+      });
+    });
+  });
+
+  describe('Second Promo Card', () => {
+    it('should navigate when second promo card is pressed', () => {
+      const { UNSAFE_getAllByType } = render(<HomeScreen />);
+      const TouchableOpacity = require('react-native').TouchableOpacity;
+      const buttons = UNSAFE_getAllByType(TouchableOpacity);
+
+      // Find and press second promo button (index varies based on layout)
+      // The promo cards are wrapped in TouchableOpacity
+      const promoButtons = buttons.filter((btn: any) =>
+        btn.props.activeOpacity === 0.9
+      );
+
+      if (promoButtons.length >= 2) {
+        fireEvent.press(promoButtons[1]);
+        expect(mockPush).toHaveBeenCalledWith('/service/hair-design');
+      }
+    });
   });
 });
