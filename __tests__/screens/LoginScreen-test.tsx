@@ -23,19 +23,13 @@ jest.mock('expo-router', () => ({
   Link: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-// Mock authService
-const mockAuthLogin = jest.fn();
-jest.mock('@/api/authService', () => ({
-  authService: {
-    login: (input: any) => mockAuthLogin(input),
-  },
-}));
-
 // Mock AuthContext
+const mockLoginWithCredentials = jest.fn();
 const mockContextLogin = jest.fn();
 jest.mock('@/contexts', () => ({
   useAuth: () => ({
     login: mockContextLogin,
+    loginWithCredentials: mockLoginWithCredentials,
     user: null,
     isLoggedIn: false,
     isLoading: false,
@@ -85,10 +79,7 @@ jest.mock('expo-linear-gradient', () => ({
 describe('LoginScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockAuthLogin.mockResolvedValue({
-      user: { id: '1', email: 'test@test.com', name: 'Test User', phone: '123456', avatar: 'https://example.com/avatar.jpg' },
-      token: 'mock_token',
-    });
+    mockLoginWithCredentials.mockResolvedValue({ success: true });
     mockContextLogin.mockResolvedValue(undefined);
   });
 
@@ -144,7 +135,7 @@ describe('LoginScreen', () => {
   });
 
   describe('Form Submission', () => {
-    it('should call authService.login with credentials', async () => {
+    it('should call loginWithCredentials with email and password', async () => {
       const { getByPlaceholderText, getAllByText } = render(<LoginScreen />);
 
       fireEvent.changeText(getByPlaceholderText('Email'), 'test@example.com');
@@ -155,10 +146,10 @@ describe('LoginScreen', () => {
       fireEvent.press(loginButtons[loginButtons.length - 1]);
 
       await waitFor(() => {
-        expect(mockAuthLogin).toHaveBeenCalledWith({
-          email: 'test@example.com',
-          password: 'password123',
-        });
+        expect(mockLoginWithCredentials).toHaveBeenCalledWith(
+          'test@example.com',
+          'password123'
+        );
       });
     });
 
@@ -177,7 +168,10 @@ describe('LoginScreen', () => {
     });
 
     it('should show error message on failed login', async () => {
-      mockAuthLogin.mockRejectedValue(new Error('Invalid email or password'));
+      mockLoginWithCredentials.mockResolvedValue({
+        success: false,
+        message: 'Invalid email or password'
+      });
 
       const { getByPlaceholderText, getAllByText, findByText } = render(<LoginScreen />);
 

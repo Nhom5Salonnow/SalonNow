@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import ServiceDetailScreen from '@/app/service/[id]';
 
 // Mock react-native-safe-area-context
@@ -17,6 +17,20 @@ jest.mock('expo-router', () => ({
     push: (path: string) => mockPush(path),
   },
   useLocalSearchParams: () => ({ id: 'hair-design' }),
+}));
+
+// Mock serviceApi
+jest.mock('@/api', () => ({
+  serviceApi: {
+    getServices: jest.fn().mockResolvedValue({
+      success: true,
+      data: [
+        { id: '1', name: 'Basic Haircut', price: 60, rating: 4.8, reviews: 120, image: 'https://example.com/basic.jpg' },
+        { id: '2', name: 'Layered Haircut', price: 65, rating: 4.7, reviews: 85, image: 'https://example.com/layered.jpg' },
+        { id: '3', name: 'Bob Haircut', price: 65, rating: 4.9, reviews: 100, image: 'https://example.com/bob.jpg' },
+      ],
+    }),
+  },
 }));
 
 // Mock responsive utilities
@@ -42,6 +56,18 @@ jest.mock('@/constants', () => ({
       400: '#9CA3AF',
       500: '#6B7280',
       600: '#4B5563',
+    },
+  },
+  SERVICES_MENU: [
+    { id: '1', name: 'Basic Haircut', image: 'https://example.com/basic.jpg', rating: 3, price: 60, reviews: 24 },
+    { id: '2', name: 'Layered Haircut', image: 'https://example.com/layered.jpg', rating: 4, price: 65, reviews: 30 },
+    { id: '3', name: 'Bob Haircut', image: 'https://example.com/bob.jpg', rating: 5, price: 65, reviews: 50 },
+  ],
+  CATEGORY_INFO: {
+    'hair-design': {
+      name: 'Hair Design & Cut',
+      quote: '"Crafting Confidence,\nOne Cut at a Time."',
+      image: 'https://example.com/hair.jpg',
     },
   },
 }));
@@ -112,18 +138,22 @@ describe('ServiceDetailScreen', () => {
       expect(getByText('Menu')).toBeTruthy();
     });
 
-    it('should render service items', () => {
+    it('should render service items', async () => {
       const { getByText } = render(<ServiceDetailScreen />);
-      expect(getByText('Basic Haircut')).toBeTruthy();
-      expect(getByText('Layered Haircut')).toBeTruthy();
-      expect(getByText('Bob Haircut')).toBeTruthy();
+      await waitFor(() => {
+        expect(getByText('Basic Haircut')).toBeTruthy();
+        expect(getByText('Layered Haircut')).toBeTruthy();
+        expect(getByText('Bob Haircut')).toBeTruthy();
+      });
     });
 
-    it('should render service prices', () => {
+    it('should render service prices', async () => {
       const { getByText, getAllByText } = render(<ServiceDetailScreen />);
-      expect(getByText('€60')).toBeTruthy();
-      // There are two services with €65 (Layered and Bob)
-      expect(getAllByText('€65').length).toBe(2);
+      await waitFor(() => {
+        expect(getByText('€60')).toBeTruthy();
+        // There are two services with €65 (Layered and Bob)
+        expect(getAllByText('€65').length).toBe(2);
+      });
     });
 
     it('should render Stylist section', () => {

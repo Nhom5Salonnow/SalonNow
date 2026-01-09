@@ -53,30 +53,21 @@ jest.mock('@/contexts', () => ({
   }),
 }));
 
-// Mock paymentService
-jest.mock('@/api/paymentService', () => ({
-  paymentService: {
+// Mock paymentApi
+jest.mock('@/api/paymentApi', () => ({
+  paymentApi: {
     getPaymentMethods: jest.fn().mockResolvedValue({
       success: true,
       data: [
         { id: 'pm-1', type: 'credit_card', last4: '4242', brand: 'Visa', isDefault: true },
       ],
     }),
-    calculateSummary: jest.fn().mockResolvedValue({
+    createPayment: jest.fn().mockResolvedValue({
       success: true,
-      data: {
-        subtotal: 40,
-        tax: 2.5,
-        tip: 0,
-        discount: 0,
-        total: 42.5,
-      },
+      data: { id: 'payment-1', amount: 44 },
     }),
-    validatePromoCode: jest.fn().mockResolvedValue({
-      success: true,
-      data: { valid: false },
-    }),
-    processPayment: jest.fn().mockResolvedValue({ success: true }),
+    deletePaymentMethod: jest.fn().mockResolvedValue({ success: true }),
+    setDefaultPaymentMethod: jest.fn().mockResolvedValue({ success: true }),
   },
   PaymentSummary: {},
 }));
@@ -163,13 +154,13 @@ describe('PaymentScreen', () => {
     it('should render tax', async () => {
       const { findByText } = render(<PaymentScreen />);
       expect(await findByText('Tax (10%)')).toBeTruthy();
-      expect(await findByText('$2.50')).toBeTruthy();
+      expect(await findByText('$4.00')).toBeTruthy();
     });
 
     it('should render total price', async () => {
       const { findByText } = render(<PaymentScreen />);
       expect(await findByText('Total')).toBeTruthy();
-      expect(await findByText('$42.50')).toBeTruthy();
+      expect(await findByText('$44.00')).toBeTruthy();
     });
 
     it('should render payment button', async () => {

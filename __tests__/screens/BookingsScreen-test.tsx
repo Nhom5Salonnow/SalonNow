@@ -59,12 +59,47 @@ jest.mock('@/api/mockServer/database', () => ({
   },
 }));
 
-// Mock appointmentService
-jest.mock('@/api/appointmentService', () => ({
-  appointmentService: {
-    getUserAppointments: jest.fn().mockResolvedValue({
+// Mock bookingApi
+jest.mock('@/api', () => ({
+  bookingApi: {
+    getMyBookings: jest.fn().mockResolvedValue({
       success: true,
-      data: [],
+      data: [
+        {
+          id: '1',
+          userId: 'user-1',
+          serviceId: 'svc-1',
+          serviceName: 'Haircut',
+          serviceImage: 'https://example.com/img.jpg',
+          salonName: 'Test Salon',
+          stylistId: 'stylist-1',
+          stylistName: 'Doe John',
+          date: '2030-01-15',
+          time: '10:00 AM',
+          dayTime: 'Morning',
+          price: 50,
+          status: 'confirmed',
+          hasReview: false,
+          createdAt: '2030-01-15T10:00:00Z',
+        },
+        {
+          id: '2',
+          userId: 'user-1',
+          serviceId: 'svc-2',
+          serviceName: 'Color',
+          serviceImage: 'https://example.com/img2.jpg',
+          salonName: 'Test Salon 2',
+          stylistId: 'stylist-2',
+          stylistName: 'Jane Doe',
+          date: '2030-01-10',
+          time: '2:00 PM',
+          dayTime: 'Afternoon',
+          price: 80,
+          status: 'pending',
+          hasReview: false,
+          createdAt: '2030-01-10T14:00:00Z',
+        },
+      ],
     }),
   },
 }));
@@ -144,6 +179,7 @@ jest.mock('@/constants', () => ({
     name: 'Default User',
     avatar: 'https://example.com/avatar.jpg',
   },
+  DEFAULT_AVATAR: 'https://example.com/avatar.jpg',
 }));
 
 // Mock lucide-react-native
@@ -157,6 +193,7 @@ jest.mock('lucide-react-native', () => ({
   XCircle: () => null,
   AlertCircle: () => null,
   ChevronRight: () => null,
+  LogIn: () => null,
 }));
 
 // Mock components
@@ -198,10 +235,12 @@ describe('BookingsScreen', () => {
       expect(getByText('Past')).toBeTruthy();
     });
 
-    it('should render appointment services', () => {
+    it('should render appointment services', async () => {
       const { getByText } = render(<BookingsScreen />);
-      expect(getByText('Haircut')).toBeTruthy();
-      expect(getByText('Color')).toBeTruthy();
+      await waitFor(() => {
+        expect(getByText('Haircut')).toBeTruthy();
+        expect(getByText('Color')).toBeTruthy();
+      });
     });
   });
 

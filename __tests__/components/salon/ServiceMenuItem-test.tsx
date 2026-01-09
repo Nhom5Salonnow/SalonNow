@@ -31,6 +31,7 @@ describe('ServiceMenuItem', () => {
     price: 25,
     rating: 4.5,
     image: 'https://example.com/haircut.jpg',
+    reviews: 120,
   };
 
   beforeEach(() => {

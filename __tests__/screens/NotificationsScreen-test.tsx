@@ -111,19 +111,19 @@ jest.mock('lucide-react-native', () => ({
   Trash2: () => null,
 }));
 
-// Mock notificationService
-jest.mock('@/api/notificationService', () => ({
-  notificationService: {
-    getUserNotifications: jest.fn().mockResolvedValue({
+// Mock notificationApi
+jest.mock('@/api', () => ({
+  notificationApi: {
+    getNotifications: jest.fn().mockResolvedValue({
       success: true,
       data: [
-        { id: '1', title: 'Appointment Confirmed', message: 'Your appointment has been confirmed', type: 'appointment_confirm', createdAt: new Date().toISOString(), read: false },
-        { id: '2', title: 'Appointment Updated', message: 'Your appointment time has been changed', type: 'appointment_update', createdAt: new Date().toISOString(), read: false },
-        { id: '3', title: 'Leave Feedback', message: 'Please leave feedback for your recent visit', type: 'feedback', createdAt: new Date().toISOString(), read: false },
-        { id: '4', title: 'General Update', message: 'New services available', type: 'general', createdAt: new Date().toISOString(), read: true },
+        { id: '1', title: 'Appointment Confirmed', description: 'Your appointment has been confirmed', type: 'appointment_confirm', time: '2 hours ago', read: false },
+        { id: '2', title: 'Appointment Updated', description: 'Your appointment time has been changed', type: 'appointment_update', time: '1 day ago', read: false },
+        { id: '3', title: 'Leave Feedback', description: 'Please leave feedback for your recent visit', type: 'feedback', time: '3 days ago', read: false },
+        { id: '4', title: 'General Update', description: 'New services available', type: 'general', time: '1 week ago', read: true },
       ],
     }),
-    getUnreadCount: jest.fn().mockResolvedValue({ success: true, data: 3 }),
+    getUnreadCount: jest.fn().mockResolvedValue({ success: true, data: { count: 3 } }),
     markAllAsRead: jest.fn().mockResolvedValue({ success: true }),
     deleteAllNotifications: jest.fn().mockResolvedValue({ success: true }),
   },

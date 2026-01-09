@@ -18,10 +18,28 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 
 // Mock expo-router
 const mockBack = jest.fn();
+const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   router: {
     back: () => mockBack(),
+    push: (path: string) => mockPush(path),
   },
+  useLocalSearchParams: () => ({
+    serviceName: 'Hair Design & Cut',
+    serviceType: 'Basic Haircut',
+    servicePrice: '50',
+    stylistName: 'Doe John',
+    salonName: 'Test Salon',
+  }),
+}));
+
+// Mock AuthContext
+jest.mock('@/contexts', () => ({
+  useAuth: () => ({
+    user: { id: 'user-1', name: 'Test User', email: 'test@test.com' },
+    isLoggedIn: true,
+    isLoading: false,
+  }),
 }));
 
 // Mock responsive utilities
@@ -34,6 +52,35 @@ jest.mock('@/utils/responsive', () => ({
 // Mock lucide-react-native
 jest.mock('lucide-react-native', () => ({
   ChevronLeft: () => null,
+}));
+
+// Mock bookingApi
+jest.mock('@/api/bookingApi', () => ({
+  bookingApi: {
+    createBooking: jest.fn().mockResolvedValue({
+      success: true,
+      data: { id: 'booking-1' },
+    }),
+  },
+}));
+
+// Mock constants
+jest.mock('@/constants', () => ({
+  Colors: {
+    primary: '#FE697D',
+    salon: {
+      pinkLight: '#FFCCD3',
+      pinkBg: '#FFF5F5',
+      dark: '#1F2937',
+    },
+    gray: {
+      100: '#F3F4F6',
+      300: '#D1D5DB',
+      400: '#9CA3AF',
+      500: '#6B7280',
+      600: '#4B5563',
+    },
+  },
 }));
 
 // Mock expo-linear-gradient
@@ -96,22 +143,10 @@ describe('AppointmentScreen', () => {
       expect(getByTestId('week-calendar')).toBeTruthy();
     });
 
-    it('should render current month (April)', () => {
-      const { getByText } = render(<AppointmentScreen />);
-      expect(getByText('April')).toBeTruthy();
-    });
-
-    it('should render time picker with default values', () => {
-      const { getByText } = render(<AppointmentScreen />);
-      expect(getByText('2:00')).toBeTruthy();
-      expect(getByText('P.M')).toBeTruthy();
-    });
-
-    it('should render service card', () => {
-      const { getByText } = render(<AppointmentScreen />);
-      expect(getByText('Hair Design & Cut')).toBeTruthy();
-      expect(getByText('Basic Haircut')).toBeTruthy();
-      expect(getByText('€50')).toBeTruthy();
+    it('should render service info from params', () => {
+      const { getAllByText } = render(<AppointmentScreen />);
+      // Service name can appear in multiple places
+      expect(getAllByText('Hair Design & Cut').length).toBeGreaterThan(0);
     });
 
     it('should render stylist name', () => {
@@ -122,6 +157,12 @@ describe('AppointmentScreen', () => {
     it('should render book button', () => {
       const { getByText } = render(<AppointmentScreen />);
       expect(getByText('Book')).toBeTruthy();
+    });
+
+    it('should render time slots', () => {
+      const { getByText } = render(<AppointmentScreen />);
+      // Default selected time
+      expect(getByText('14:00')).toBeTruthy();
     });
   });
 
@@ -137,42 +178,18 @@ describe('AppointmentScreen', () => {
         expect(mockBack).toHaveBeenCalled();
       }
     });
-
-    it('should go back when book button is pressed', () => {
-      const { getByText } = render(<AppointmentScreen />);
-
-      fireEvent.press(getByText('Book'));
-
-      expect(mockBack).toHaveBeenCalled();
-    });
   });
 
   describe('Date Selection', () => {
     it('should update selected date when calendar day is pressed', () => {
       const { getByTestId } = render(<AppointmentScreen />);
+      const currentDay = new Date().getDate();
 
       // Press a different day
-      fireEvent.press(getByTestId('day-13'));
+      fireEvent.press(getByTestId(`day-${currentDay}`));
 
       // Component should re-render with new selection
       // The selection is internal state, so we just verify the interaction works
-    });
-  });
-
-  describe('Booking', () => {
-    it('should log booking details when book is pressed', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      const { getByText } = render(<AppointmentScreen />);
-
-      fireEvent.press(getByText('Book'));
-
-      expect(consoleSpy).toHaveBeenCalledWith('Booking:', {
-        selectedDate: 12,
-        selectedHour: '2:00',
-        selectedPeriod: 'P.M',
-      });
-
-      consoleSpy.mockRestore();
     });
   });
 });

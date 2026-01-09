@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import MyAppointmentsScreen from '@/app/my-appointments';
 
 // Mock react-native-safe-area-context
@@ -59,14 +59,49 @@ jest.mock('@/api/mockServer/database', () => ({
   },
 }));
 
-// Mock appointmentService
-jest.mock('@/api/appointmentService', () => ({
-  appointmentService: {
-    getUserAppointments: jest.fn().mockResolvedValue({
+// Mock bookingApi
+jest.mock('@/api/bookingApi', () => ({
+  bookingApi: {
+    getMyBookings: jest.fn().mockResolvedValue({
       success: true,
-      data: [],
+      data: [
+        {
+          id: '1',
+          userId: 'user-1',
+          serviceId: 'svc-1',
+          serviceName: 'Basic Haircut',
+          serviceImage: 'https://example.com/img.jpg',
+          salonName: 'Test Salon',
+          stylistId: 'stylist-1',
+          stylistName: 'Lisa',
+          date: '2030-04-12',
+          time: '2:00 PM',
+          dayTime: 'Afternoon',
+          price: 50,
+          status: 'confirmed',
+          hasReview: false,
+          createdAt: '2030-04-12T14:00:00Z',
+        },
+        {
+          id: '2',
+          userId: 'user-1',
+          serviceId: 'svc-2',
+          serviceName: 'Hair dying',
+          serviceImage: 'https://example.com/img2.jpg',
+          salonName: 'Test Salon 2',
+          stylistId: 'stylist-1',
+          stylistName: 'Lisa',
+          date: '2030-04-12',
+          time: '5:00 PM',
+          dayTime: 'Evening',
+          price: 29,
+          status: 'pending',
+          hasReview: false,
+          createdAt: '2030-04-12T17:00:00Z',
+        },
+      ],
     }),
-    cancelAppointment: jest.fn().mockResolvedValue({ success: true }),
+    cancelBooking: jest.fn().mockResolvedValue({ success: true }),
   },
 }));
 
@@ -160,10 +195,12 @@ describe('MyAppointmentsScreen', () => {
       expect(getByText('Past')).toBeTruthy();
     });
 
-    it('should render appointment services', () => {
+    it('should render appointment services', async () => {
       const { getByText } = render(<MyAppointmentsScreen />);
-      expect(getByText('Basic Haircut')).toBeTruthy();
-      expect(getByText('Hair dying')).toBeTruthy();
+      await waitFor(() => {
+        expect(getByText('Basic Haircut')).toBeTruthy();
+        expect(getByText('Hair dying')).toBeTruthy();
+      });
     });
 
     it('should render book appointment button', () => {
@@ -207,14 +244,18 @@ describe('MyAppointmentsScreen', () => {
   });
 
   describe('Appointment List', () => {
-    it('should render confirmed appointment', () => {
+    it('should render confirmed appointment', async () => {
       const { getByText } = render(<MyAppointmentsScreen />);
-      expect(getByText('Basic Haircut')).toBeTruthy();
+      await waitFor(() => {
+        expect(getByText('Basic Haircut')).toBeTruthy();
+      });
     });
 
-    it('should render pending appointment', () => {
+    it('should render pending appointment', async () => {
       const { getByText } = render(<MyAppointmentsScreen />);
-      expect(getByText('Hair dying')).toBeTruthy();
+      await waitFor(() => {
+        expect(getByText('Hair dying')).toBeTruthy();
+      });
     });
   });
 });
